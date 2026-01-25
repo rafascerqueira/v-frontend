@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useAuth } from "@/contexts/auth-context";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 export default function AuthLayout({
 	children,
@@ -50,6 +51,7 @@ export default function AuthLayout({
 							width={200}
 							height={48}
 							className="brightness-0 invert"
+							style={{ width: "auto", height: "auto" }}
 							priority
 						/>
 					</div>
@@ -91,12 +93,17 @@ export default function AuthLayout({
 					transition={{ duration: 0.6, delay: 0.4 }}
 					className="relative z-10 text-indigo-200 text-sm"
 				>
-					© 2025 Vendinhas. Todos os direitos reservados.
+					2025 Vendinhas. Todos os direitos reservados.
 				</motion.div>
 			</div>
 
 			{/* Right side - Form */}
-			<div className="flex-1 flex items-center justify-center p-8">
+			<div className="flex-1 flex items-center justify-center p-8 relative">
+				{/* Theme Toggle */}
+				<div className="absolute top-4 right-4">
+					<ThemeToggle />
+				</div>
+
 				<motion.div
 					initial={{ opacity: 0, scale: 0.95 }}
 					animate={{ opacity: 1, scale: 1 }}

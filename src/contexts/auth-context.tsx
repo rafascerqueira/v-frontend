@@ -1,6 +1,5 @@
 "use client";
 
-import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import {
 	createContext,
@@ -12,16 +11,22 @@ import {
 } from "react";
 import { api } from "@/lib/api";
 
+export type AccountRole = "seller" | "admin";
+export type PlanType = "free" | "pro" | "enterprise";
+
 interface User {
 	id: string;
 	email: string;
 	name?: string;
+	role: AccountRole;
+	planType: PlanType;
 }
 
 interface AuthContextType {
 	user: User | null;
 	isLoading: boolean;
 	isAuthenticated: boolean;
+	isAdmin: boolean;
 	login: (email: string, password: string) => Promise<void>;
 	register: (name: string, email: string, password: string) => Promise<void>;
 	logout: () => Promise<void>;
@@ -35,14 +40,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	const router = useRouter();
 
 	const isAuthenticated = !!user;
+	const isAdmin = user?.role === "admin";
 
 	const fetchUser = useCallback(async () => {
 		try {
 			const { data } = await api.get("/auth/me");
 			setUser(data);
 		} catch {
-			Cookies.remove("access_token");
-			Cookies.remove("refresh_token");
 			setUser(null);
 		} finally {
 			setIsLoading(false);
@@ -50,25 +54,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	}, []);
 
 	useEffect(() => {
-		const token = Cookies.get("access_token");
-		if (token) {
-			fetchUser();
-		} else {
-			setIsLoading(false);
-		}
+		fetchUser();
 	}, [fetchUser]);
 
 	const login = useCallback(
 		async (email: string, password: string) => {
-			const { data } = await api.post("/auth/login", { email, password });
+			await api.post("/auth/login", { email, password });
+			const { data: userData } = await api.get("/auth/me");
+			setUser(userData);
+			setIsLoading(false);
 
-			Cookies.set("access_token", data.accessToken, { expires: 1 });
-			Cookies.set("refresh_token", data.refreshToken, { expires: 7 });
-
-			await fetchUser();
-			router.push("/dashboard");
+			if (userData.role === "admin") {
+				router.push("/admin");
+			} else {
+				router.push("/dashboard");
+			}
 		},
-		[router, fetchUser],
+		[router],
 	);
 
 	const register = useCallback(
@@ -86,15 +88,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 			// Continue with logout even if API fails
 		}
 
-		Cookies.remove("access_token");
-		Cookies.remove("refresh_token");
 		setUser(null);
 		router.push("/login");
 	}, [router]);
 
 	return (
 		<AuthContext.Provider
-			value={{ user, isLoading, isAuthenticated, login, register, logout }}
+			value={{ user, isLoading, isAuthenticated, isAdmin, login, register, logout }}
 		>
 			{children}
 		</AuthContext.Provider>

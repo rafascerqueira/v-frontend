@@ -17,9 +17,8 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { ReactNode } from "react";
-import { useState } from "react";
-import toast from "react-hot-toast";
-import { api } from "@/lib/api";
+import { useEffect, useState } from "react";
+import { useAuth } from "@/contexts/auth-context";
 
 const navigation = [
 	{ name: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -32,16 +31,28 @@ const navigation = [
 export default function AdminLayout({ children }: { children: ReactNode }) {
 	const pathname = usePathname();
 	const router = useRouter();
+	const { isLoading, isAuthenticated, isAdmin, logout } = useAuth();
 	const [sidebarOpen, setSidebarOpen] = useState(false);
 	const [userMenuOpen, setUserMenuOpen] = useState(false);
 
-	const handleLogout = async () => {
-		try {
-			await api.post("/auth/logout");
+	useEffect(() => {
+		if (!isLoading && !isAuthenticated) {
 			router.push("/login");
-		} catch {
-			toast.error("Erro ao fazer logout");
+		} else if (!isLoading && isAuthenticated && !isAdmin) {
+			router.push("/dashboard");
 		}
+	}, [isLoading, isAuthenticated, isAdmin, router]);
+
+	if (isLoading || !isAuthenticated || !isAdmin) {
+		return (
+			<div className="min-h-screen flex items-center justify-center bg-gray-900">
+				<div className="animate-spin rounded-full h-8 w-8 border-2 border-red-600 border-t-transparent" />
+			</div>
+		);
+	}
+
+	const handleLogout = async () => {
+		await logout();
 	};
 
 	return (
@@ -82,11 +93,10 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 										key={item.name}
 										href={item.href}
 										onClick={() => setSidebarOpen(false)}
-										className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-											isActive
-												? "bg-red-600 text-white"
-												: "text-gray-400 hover:bg-gray-800 hover:text-white"
-										}`}
+										className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive
+											? "bg-red-600 text-white"
+											: "text-gray-400 hover:bg-gray-800 hover:text-white"
+											}`}
 									>
 										<item.icon className="w-5 h-5" />
 										{item.name}
@@ -114,11 +124,10 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 								<Link
 									key={item.name}
 									href={item.href}
-									className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-										isActive
-											? "bg-red-600 text-white"
-											: "text-gray-400 hover:bg-gray-800 hover:text-white"
-									}`}
+									className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive
+										? "bg-red-600 text-white"
+										: "text-gray-400 hover:bg-gray-800 hover:text-white"
+										}`}
 								>
 									<item.icon className="w-5 h-5" />
 									{item.name}

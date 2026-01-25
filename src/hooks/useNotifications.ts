@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { io, type Socket } from "socket.io-client";
 import { useAuth } from "@/contexts/auth-context";
 
@@ -22,39 +22,62 @@ export function useNotifications() {
 	const [notifications, setNotifications] = useState<Notification[]>([]);
 	const [unreadCount, setUnreadCount] = useState(0);
 
+	const socketRef = useRef<Socket | null>(null);
+
 	useEffect(() => {
 		if (!user?.id) return;
 
-		const newSocket = io(`${API_URL}/notifications`, {
-			query: { userId: user.id },
-			transports: ["websocket", "polling"],
-			withCredentials: true,
-		});
+		// Delay connection to avoid React StrictMode double-invoke issues
+		const timeoutId = setTimeout(() => {
+			if (socketRef.current?.connected) return;
 
-		newSocket.on("connect", () => {
-			console.log("[WS] Connected to notifications");
-		});
+			const newSocket = io(`${API_URL}/notifications`, {
+				query: { userId: user.id },
+				transports: ["polling", "websocket"],
+				withCredentials: true,
+				reconnectionAttempts: 3,
+				reconnectionDelay: 1000,
+				autoConnect: true,
+			});
 
-		newSocket.on("notification", (notification: Notification) => {
-			setNotifications((prev) => [notification, ...prev]);
-			setUnreadCount((prev) => prev + 1);
-		});
+			newSocket.on("connect", () => {
+				if (process.env.NODE_ENV === "development") {
+					console.log("[WS] Connected to notifications");
+				}
+			});
 
-		newSocket.on("notificationRead", (notificationId: string) => {
-			setNotifications((prev) =>
-				prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n)),
-			);
-			setUnreadCount((prev) => Math.max(0, prev - 1));
-		});
+			newSocket.on("notification", (notification: Notification) => {
+				setNotifications((prev) => [notification, ...prev]);
+				setUnreadCount((prev) => prev + 1);
+			});
 
-		newSocket.on("disconnect", () => {
-			console.log("[WS] Disconnected from notifications");
-		});
+			newSocket.on("notificationRead", (notificationId: string) => {
+				setNotifications((prev) =>
+					prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n)),
+				);
+				setUnreadCount((prev) => Math.max(0, prev - 1));
+			});
 
-		setSocket(newSocket);
+			newSocket.on("disconnect", () => {
+				if (process.env.NODE_ENV === "development") {
+					console.log("[WS] Disconnected from notifications");
+				}
+			});
+
+			newSocket.on("connect_error", () => {
+				// Silently handle connection errors
+			});
+
+			socketRef.current = newSocket;
+			setSocket(newSocket);
+		}, 100);
 
 		return () => {
-			newSocket.close();
+			clearTimeout(timeoutId);
+			if (socketRef.current) {
+				socketRef.current.disconnect();
+				socketRef.current = null;
+			}
 		};
 	}, [user?.id]);
 

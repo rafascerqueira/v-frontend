@@ -45,7 +45,7 @@ export default function DashboardLayout({
 }: {
 	children: React.ReactNode;
 }) {
-	const { user, isLoading, isAuthenticated, logout } = useAuth();
+	const { user, isLoading, isAuthenticated, isAdmin, logout } = useAuth();
 	const router = useRouter();
 	const pathname = usePathname();
 	const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -57,19 +57,21 @@ export default function DashboardLayout({
 	useEffect(() => {
 		if (!isLoading && !isAuthenticated) {
 			router.push("/login");
+		} else if (!isLoading && isAuthenticated && isAdmin) {
+			router.push("/admin");
 		}
-	}, [isAuthenticated, isLoading, router]);
+	}, [isAuthenticated, isLoading, isAdmin, router]);
 
-	if (isLoading || !isAuthenticated) {
+	if (isLoading || !isAuthenticated || isAdmin) {
 		return (
-			<div className="min-h-screen flex items-center justify-center bg-gray-50">
+			<div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
 				<div className="animate-spin rounded-full h-8 w-8 border-2 border-indigo-600 border-t-transparent" />
 			</div>
 		);
 	}
 
 	return (
-		<div className="min-h-screen bg-gray-50">
+		<div className="min-h-screen bg-gray-50 dark:bg-gray-900">
 			{/* Mobile sidebar overlay */}
 			<AnimatePresence>
 				{sidebarOpen && (

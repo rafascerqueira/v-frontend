@@ -73,8 +73,8 @@ export default function SettingsPage() {
 	return (
 		<div className="space-y-6">
 			<div>
-				<h1 className="text-2xl font-bold text-gray-900">Configurações</h1>
-				<p className="text-gray-500 mt-1">
+				<h1 className="text-2xl font-bold text-gray-900 dark:text-white">Configurações</h1>
+				<p className="text-gray-500 dark:text-gray-400 mt-1">
 					Gerencie suas preferências e configurações da conta
 				</p>
 			</div>
@@ -90,11 +90,10 @@ export default function SettingsPage() {
 										key={tab.id}
 										type="button"
 										onClick={() => setActiveTab(tab.id)}
-										className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-											activeTab === tab.id
-												? "bg-indigo-50 text-indigo-700"
-												: "text-gray-600 hover:bg-gray-100"
-										}`}
+										className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${activeTab === tab.id
+												? "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300"
+												: "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+											}`}
 									>
 										<tab.icon
 											className={`h-5 w-5 ${activeTab === tab.id ? "text-indigo-600" : "text-gray-400"}`}
@@ -295,25 +294,22 @@ export default function SettingsPage() {
 													key={t.id}
 													type="button"
 													onClick={() => setTheme(t.id)}
-													className={`p-4 rounded-lg border-2 text-center transition-colors ${
-														theme === t.id
+													className={`p-4 rounded-lg border-2 text-center transition-colors ${theme === t.id
 															? "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30"
 															: "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
-													}`}
+														}`}
 												>
 													<t.icon
-														className={`w-6 h-6 mx-auto mb-2 ${
-															theme === t.id
+														className={`w-6 h-6 mx-auto mb-2 ${theme === t.id
 																? "text-indigo-600 dark:text-indigo-400"
 																: "text-gray-500 dark:text-gray-400"
-														}`}
+															}`}
 													/>
 													<span
-														className={`text-sm font-medium ${
-															theme === t.id
+														className={`text-sm font-medium ${theme === t.id
 																? "text-indigo-600 dark:text-indigo-400"
 																: "text-gray-700 dark:text-gray-300"
-														}`}
+															}`}
 													>
 														{t.label}
 													</span>
@@ -321,10 +317,9 @@ export default function SettingsPage() {
 											))}
 										</div>
 									</div>
-									<div className="p-4 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg">
-										<p className="text-sm text-green-800 dark:text-green-300">
-											✓ Modo escuro ativado! As alterações são salvas
-											automaticamente.
+									<div className="p-4 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800 rounded-lg">
+										<p className="text-sm text-indigo-800 dark:text-indigo-300">
+											✓ Tema {theme === 'dark' ? 'escuro' : theme === 'light' ? 'claro' : 'do sistema'} selecionado. As alterações são salvas automaticamente.
 										</p>
 									</div>
 								</CardContent>

@@ -194,6 +194,24 @@ export default function LoginPage() {
 							</Link>
 						</p>
 					</FadeIn>
+
+					<FadeIn delay={0.5}>
+						<div className="flex items-center justify-center gap-4 pt-4 border-t border-gray-100">
+							<Link
+								href="/terms"
+								className="text-xs text-gray-500 hover:text-gray-700 transition-colors"
+							>
+								Termos de Uso
+							</Link>
+							<span className="text-gray-300">|</span>
+							<Link
+								href="/privacy"
+								className="text-xs text-gray-500 hover:text-gray-700 transition-colors"
+							>
+								Política de Privacidade
+							</Link>
+						</div>
+					</FadeIn>
 				</CardContent>
 			</Card>
 		</>
