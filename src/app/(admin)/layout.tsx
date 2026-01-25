@@ -93,10 +93,11 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 										key={item.name}
 										href={item.href}
 										onClick={() => setSidebarOpen(false)}
-										className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive
-											? "bg-red-600 text-white"
-											: "text-gray-400 hover:bg-gray-800 hover:text-white"
-											}`}
+										className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+											isActive
+												? "bg-red-600 text-white"
+												: "text-gray-400 hover:bg-gray-800 hover:text-white"
+										}`}
 									>
 										<item.icon className="w-5 h-5" />
 										{item.name}
@@ -124,10 +125,11 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 								<Link
 									key={item.name}
 									href={item.href}
-									className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive
-										? "bg-red-600 text-white"
-										: "text-gray-400 hover:bg-gray-800 hover:text-white"
-										}`}
+									className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+										isActive
+											? "bg-red-600 text-white"
+											: "text-gray-400 hover:bg-gray-800 hover:text-white"
+									}`}
 								>
 									<item.icon className="w-5 h-5" />
 									{item.name}

@@ -152,10 +152,11 @@ export default function PlansPage() {
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ delay: index * 0.1 }}
-							className={`relative bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden ${plan.popular
+							className={`relative bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden ${
+								plan.popular
 									? "ring-2 ring-indigo-600"
 									: "border border-gray-200 dark:border-gray-700"
-								}`}
+							}`}
 						>
 							{plan.popular && (
 								<div className="absolute top-0 right-0 bg-indigo-600 text-white text-xs font-medium px-3 py-1 rounded-bl-lg">
@@ -165,20 +166,22 @@ export default function PlansPage() {
 
 							<div className="p-6">
 								<div
-									className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${plan.color === "gray"
+									className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${
+										plan.color === "gray"
 											? "bg-gray-100 dark:bg-gray-700"
 											: plan.color === "indigo"
 												? "bg-indigo-100 dark:bg-indigo-900/30"
 												: "bg-purple-100 dark:bg-purple-900/30"
-										}`}
+									}`}
 								>
 									<Icon
-										className={`w-6 h-6 ${plan.color === "gray"
+										className={`w-6 h-6 ${
+											plan.color === "gray"
 												? "text-gray-600 dark:text-gray-400"
 												: plan.color === "indigo"
 													? "text-indigo-600 dark:text-indigo-400"
 													: "text-purple-600 dark:text-purple-400"
-											}`}
+										}`}
 									/>
 								</div>
 
@@ -204,12 +207,13 @@ export default function PlansPage() {
 									type="button"
 									onClick={() => handleSelectPlan(planId)}
 									disabled={isCurrentPlan}
-									className={`w-full py-3 px-4 rounded-xl font-medium transition-colors ${isCurrentPlan
+									className={`w-full py-3 px-4 rounded-xl font-medium transition-colors ${
+										isCurrentPlan
 											? "bg-gray-100 dark:bg-gray-700 text-gray-500 cursor-not-allowed"
 											: plan.popular
 												? "bg-indigo-600 hover:bg-indigo-700 text-white"
 												: "bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white"
-										}`}
+									}`}
 								>
 									{isCurrentPlan ? "Plano atual" : "Selecionar plano"}
 								</button>

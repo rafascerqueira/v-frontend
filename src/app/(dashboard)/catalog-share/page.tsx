@@ -161,10 +161,11 @@ export default function CatalogSharePage() {
 						<button
 							type="button"
 							onClick={handleCopy}
-							className={`px-4 py-3 rounded-xl font-medium transition-all flex items-center gap-2 ${copied
+							className={`px-4 py-3 rounded-xl font-medium transition-all flex items-center gap-2 ${
+								copied
 									? "bg-green-500 text-white"
 									: "bg-indigo-600 hover:bg-indigo-700 text-white"
-								}`}
+							}`}
 						>
 							{copied ? (
 								<>
@@ -348,10 +349,11 @@ export default function CatalogSharePage() {
 									<button
 										type="button"
 										onClick={() => handleCopyCustomerLink(customer.id)}
-										className={`p-2 rounded-lg transition-colors ${copiedCustomerId === customer.id
+										className={`p-2 rounded-lg transition-colors ${
+											copiedCustomerId === customer.id
 												? "bg-green-500 text-white"
 												: "bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500"
-											}`}
+										}`}
 										title="Copiar link personalizado"
 									>
 										{copiedCustomerId === customer.id ? (

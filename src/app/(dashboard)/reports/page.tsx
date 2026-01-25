@@ -79,10 +79,11 @@ export default function ReportsPage() {
 								key={p}
 								type="button"
 								onClick={() => setPeriod(p)}
-								className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${period === p
+								className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+									period === p
 										? "bg-white text-gray-900 shadow-sm"
 										: "text-gray-600 hover:text-gray-900"
-									}`}
+								}`}
 							>
 								{p === "week" ? "Semana" : p === "month" ? "Mês" : "Ano"}
 							</button>
