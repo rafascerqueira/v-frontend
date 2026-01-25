@@ -79,11 +79,10 @@ export default function ReportsPage() {
 								key={p}
 								type="button"
 								onClick={() => setPeriod(p)}
-								className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-									period === p
+								className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${period === p
 										? "bg-white text-gray-900 shadow-sm"
 										: "text-gray-600 hover:text-gray-900"
-								}`}
+									}`}
 							>
 								{p === "week" ? "Semana" : p === "month" ? "Mês" : "Ano"}
 							</button>
@@ -161,7 +160,7 @@ export default function ReportsPage() {
 										<XAxis dataKey="month" fontSize={12} tickLine={false} />
 										<YAxis fontSize={12} tickLine={false} axisLine={false} />
 										<Tooltip
-											formatter={(value: number) => formatCurrency(value)}
+											formatter={(value) => formatCurrency(Number(value))}
 											contentStyle={{
 												borderRadius: 8,
 												border: "1px solid #e5e7eb",
@@ -221,7 +220,7 @@ export default function ReportsPage() {
 											))}
 										</Pie>
 										<Tooltip
-											formatter={(value: number) => `${value}%`}
+											formatter={(value) => `${value}%`}
 											contentStyle={{
 												borderRadius: 8,
 												border: "1px solid #e5e7eb",

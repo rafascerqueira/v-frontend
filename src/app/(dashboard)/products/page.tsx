@@ -38,7 +38,7 @@ const productSchema = z.object({
 	sku: z.string().min(3, "SKU deve ter pelo menos 3 caracteres"),
 	category: z.string().min(2, "Categoria é obrigatória"),
 	brand: z.string().min(2, "Marca é obrigatória"),
-	unit: z.string().default("un"),
+	unit: z.string().min(1, "Unidade é obrigatória"),
 });
 
 type ProductFormData = z.infer<typeof productSchema>;
