@@ -99,8 +99,9 @@ export default function OrdersPage() {
 
 	const fetchCustomers = useCallback(async () => {
 		try {
-			const { data } = await api.get("/customers");
-			setCustomers(Array.isArray(data) ? data : []);
+			const { data: response } = await api.get("/customers");
+			const customers = response?.data ?? response;
+			setCustomers(Array.isArray(customers) ? customers : []);
 		} catch (error) {
 			console.error(error);
 		}
@@ -108,8 +109,9 @@ export default function OrdersPage() {
 
 	const fetchProducts = useCallback(async () => {
 		try {
-			const { data } = await api.get("/products");
-			setProducts(Array.isArray(data) ? data : []);
+			const { data: response } = await api.get("/products");
+			const products = response?.data ?? response;
+			setProducts(Array.isArray(products) ? products : []);
 		} catch (error) {
 			console.error(error);
 		}
@@ -150,13 +152,22 @@ export default function OrdersPage() {
 	const addOrderItem = () => {
 		setOrderItems([
 			...orderItems,
-			{ product_id: 0, quantity: 1, unit_price: 0 },
+			{ product_id: 0, quantity: 1, unit_price: 0 }, // unit_price in cents
 		]);
 	};
 
 	const updateOrderItem = (index: number, field: string, value: number) => {
 		const updated = [...orderItems];
 		updated[index] = { ...updated[index], [field]: value };
+
+		// Auto-fill price when product is selected (price stays in cents)
+		if (field === "product_id" && value > 0) {
+			const product = products.find((p) => p.id === value);
+			if (product?.prices?.[0]?.price) {
+				updated[index].unit_price = product.prices[0].price;
+			}
+		}
+
 		setOrderItems(updated);
 	};
 
@@ -179,10 +190,13 @@ export default function OrdersPage() {
 		}
 
 		try {
+			// Prices are already in cents
 			await api.post("/orders", {
 				...data,
 				items: orderItems.map((item) => ({
-					...item,
+					product_id: item.product_id,
+					quantity: item.quantity,
+					unit_price: item.unit_price,
 					discount: 0,
 				})),
 			});
@@ -230,6 +244,7 @@ export default function OrdersPage() {
 			order.customer?.name?.toLowerCase().includes(searchTerm.toLowerCase()),
 	);
 
+	// Calculate total in cents
 	const orderTotal = orderItems.reduce(
 		(acc, item) => acc + item.quantity * item.unit_price,
 		0,
@@ -324,7 +339,7 @@ export default function OrdersPage() {
 											</TableCell>
 											<TableCell>
 												<span className="font-medium text-gray-900">
-													{formatCurrency(order.total / 100)}
+													{formatCurrency(order.total)}
 												</span>
 											</TableCell>
 											<TableCell>
@@ -511,13 +526,13 @@ export default function OrdersPage() {
 											type="number"
 											min="0"
 											step="0.01"
-											placeholder="Preço (centavos)"
-											value={item.unit_price}
+											placeholder="Preço R$"
+											value={(item.unit_price / 100).toFixed(2)}
 											onChange={(e) =>
 												updateOrderItem(
 													index,
 													"unit_price",
-													Number(e.target.value),
+													Math.round(parseFloat(e.target.value || "0") * 100),
 												)
 											}
 											className="w-32 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -532,8 +547,8 @@ export default function OrdersPage() {
 									</div>
 								))}
 								<div className="flex justify-end pt-2 border-t border-gray-200">
-									<p className="text-sm font-medium text-gray-900">
-										Total: {formatCurrency(orderTotal / 100)}
+									<p className="text-lg font-semibold text-gray-900">
+										Total: {formatCurrency(orderTotal)}
 									</p>
 								</div>
 							</div>
@@ -591,7 +606,7 @@ export default function OrdersPage() {
 							<div>
 								<p className="text-sm text-gray-500">Total</p>
 								<p className="font-medium text-lg">
-									{formatCurrency(viewingOrder.total / 100)}
+									{formatCurrency(viewingOrder.total)}
 								</p>
 							</div>
 						</div>

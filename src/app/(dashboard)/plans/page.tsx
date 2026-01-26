@@ -35,7 +35,9 @@ const PLAN_FEATURES = {
 	pro: {
 		name: "Profissional",
 		description: "Para vendedores em crescimento",
-		price: 4990,
+		price: 1490,
+		originalPrice: 1990,
+		promoLabel: "Early Adopter",
 		icon: Star,
 		color: "indigo",
 		popular: true,
@@ -61,7 +63,8 @@ const PLAN_FEATURES = {
 	enterprise: {
 		name: "Empresarial",
 		description: "Para grandes operações",
-		price: 14990,
+		price: 0,
+		comingSoon: true,
 		icon: Crown,
 		color: "purple",
 		popular: false,
@@ -152,11 +155,10 @@ export default function PlansPage() {
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ delay: index * 0.1 }}
-							className={`relative bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden ${
-								plan.popular
+							className={`relative bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden ${plan.popular
 									? "ring-2 ring-indigo-600"
 									: "border border-gray-200 dark:border-gray-700"
-							}`}
+								}`}
 						>
 							{plan.popular && (
 								<div className="absolute top-0 right-0 bg-indigo-600 text-white text-xs font-medium px-3 py-1 rounded-bl-lg">
@@ -166,22 +168,20 @@ export default function PlansPage() {
 
 							<div className="p-6">
 								<div
-									className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${
-										plan.color === "gray"
+									className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${plan.color === "gray"
 											? "bg-gray-100 dark:bg-gray-700"
 											: plan.color === "indigo"
 												? "bg-indigo-100 dark:bg-indigo-900/30"
 												: "bg-purple-100 dark:bg-purple-900/30"
-									}`}
+										}`}
 								>
 									<Icon
-										className={`w-6 h-6 ${
-											plan.color === "gray"
+										className={`w-6 h-6 ${plan.color === "gray"
 												? "text-gray-600 dark:text-gray-400"
 												: plan.color === "indigo"
 													? "text-indigo-600 dark:text-indigo-400"
 													: "text-purple-600 dark:text-purple-400"
-										}`}
+											}`}
 									/>
 								</div>
 
@@ -193,29 +193,52 @@ export default function PlansPage() {
 								</p>
 
 								<div className="mt-4 mb-6">
-									<span className="text-3xl font-bold text-gray-900 dark:text-white">
-										{formatPrice(plan.price)}
-									</span>
-									{plan.price > 0 && (
-										<span className="text-gray-500 dark:text-gray-400">
-											/mês
+									{(plan as any).comingSoon ? (
+										<span className="text-xl font-bold text-purple-600 dark:text-purple-400">
+											Em breve
 										</span>
+									) : (
+										<>
+											{(plan as any).originalPrice && (
+												<div className="flex items-center gap-2 mb-1">
+													<span className="text-sm line-through text-gray-400">
+														{formatPrice((plan as any).originalPrice)}
+													</span>
+													<span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
+														{(plan as any).promoLabel}
+													</span>
+												</div>
+											)}
+											<span className="text-3xl font-bold text-gray-900 dark:text-white">
+												{formatPrice(plan.price)}
+											</span>
+											{plan.price > 0 && (
+												<span className="text-gray-500 dark:text-gray-400">
+													/mês
+												</span>
+											)}
+										</>
 									)}
 								</div>
 
 								<button
 									type="button"
 									onClick={() => handleSelectPlan(planId)}
-									disabled={isCurrentPlan}
-									className={`w-full py-3 px-4 rounded-xl font-medium transition-colors ${
-										isCurrentPlan
-											? "bg-gray-100 dark:bg-gray-700 text-gray-500 cursor-not-allowed"
-											: plan.popular
-												? "bg-indigo-600 hover:bg-indigo-700 text-white"
-												: "bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white"
-									}`}
+									disabled={isCurrentPlan || (plan as any).comingSoon}
+									className={`w-full py-3 px-4 rounded-xl font-medium transition-colors ${(plan as any).comingSoon
+											? "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 cursor-not-allowed"
+											: isCurrentPlan
+												? "bg-gray-100 dark:bg-gray-700 text-gray-500 cursor-not-allowed"
+												: plan.popular
+													? "bg-indigo-600 hover:bg-indigo-700 text-white"
+													: "bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white"
+										}`}
 								>
-									{isCurrentPlan ? "Plano atual" : "Selecionar plano"}
+									{(plan as any).comingSoon
+										? "Em desenvolvimento"
+										: isCurrentPlan
+											? "Plano atual"
+											: "Selecionar plano"}
 								</button>
 
 								<ul className="mt-6 space-y-3">

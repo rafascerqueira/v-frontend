@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
 	BarChart3,
 	ChevronDown,
+	CreditCard,
 	FileText,
 	LayoutDashboard,
 	LogOut,
@@ -13,6 +14,7 @@ import {
 	Share2,
 	ShoppingCart,
 	Users,
+	Warehouse,
 	X,
 } from "lucide-react";
 import Image from "next/image";
@@ -32,11 +34,13 @@ import { cn } from "@/lib/utils";
 const navigation = [
 	{ name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
 	{ name: "Produtos", href: "/products", icon: Package },
+	{ name: "Estoque", href: "/stock", icon: Warehouse },
 	{ name: "Clientes", href: "/customers", icon: Users },
 	{ name: "Pedidos", href: "/orders", icon: ShoppingCart },
 	{ name: "Cobranças", href: "/billings", icon: FileText },
 	{ name: "Catálogo", href: "/catalog-share", icon: Share2 },
 	{ name: "Relatórios", href: "/reports", icon: BarChart3 },
+	{ name: "Planos", href: "/plans", icon: CreditCard },
 	{ name: "Configurações", href: "/settings", icon: Settings },
 ];
 

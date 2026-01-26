@@ -32,13 +32,13 @@ import type { Product } from "@/types";
 
 const productSchema = z.object({
 	name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
-	description: z
-		.string()
-		.min(10, "Descrição deve ter pelo menos 10 caracteres"),
-	sku: z.string().min(3, "SKU deve ter pelo menos 3 caracteres"),
-	category: z.string().min(2, "Categoria é obrigatória"),
-	brand: z.string().min(2, "Marca é obrigatória"),
-	unit: z.string().min(1, "Unidade é obrigatória"),
+	description: z.string().optional().or(z.literal("")),
+	sku: z.string().optional().or(z.literal("")),
+	category: z.string().optional().or(z.literal("")),
+	brand: z.string().optional().or(z.literal("")),
+	unit: z.string().default("un"),
+	price: z.coerce.number().min(0, "Preço deve ser maior ou igual a 0").optional(),
+	initialStock: z.coerce.number().int().min(0, "Estoque deve ser maior ou igual a 0").optional(),
 });
 
 type ProductFormData = z.infer<typeof productSchema>;
@@ -64,8 +64,9 @@ export default function ProductsPage() {
 	const fetchProducts = useCallback(async () => {
 		try {
 			setIsLoading(true);
-			const { data } = await api.get("/products");
-			setProducts(Array.isArray(data) ? data : []);
+			const { data: response } = await api.get("/products");
+			const products = response?.data ?? response;
+			setProducts(Array.isArray(products) ? products : []);
 		} catch (error) {
 			toast.error("Erro ao carregar produtos");
 			console.error(error);
@@ -93,13 +94,15 @@ export default function ProductsPage() {
 
 	const openEditModal = (product: Product) => {
 		setEditingProduct(product);
+		const currentPrice = product.prices?.[0]?.price;
 		reset({
 			name: product.name,
-			description: product.description,
-			sku: product.sku,
-			category: product.category,
-			brand: product.brand,
+			description: product.description ?? "",
+			sku: product.sku ?? "",
+			category: product.category ?? "",
+			brand: product.brand ?? "",
 			unit: product.unit,
+			price: currentPrice ? currentPrice / 100 : undefined,
 		});
 		setIsModalOpen(true);
 		setActiveMenu(null);
@@ -113,17 +116,42 @@ export default function ProductsPage() {
 
 	const onSubmit = async (data: ProductFormData) => {
 		try {
+			const { price, initialStock, ...productData } = data;
+			let productId: number;
+
 			if (editingProduct) {
-				await api.patch(`/products/${editingProduct.id}`, data);
+				await api.patch(`/products/${editingProduct.id}`, productData);
+				productId = editingProduct.id;
 				toast.success("Produto atualizado com sucesso!");
 			} else {
-				await api.post("/products", {
-					...data,
+				const { data: newProduct } = await api.post("/products", {
+					...productData,
 					specifications: {},
 					images: [],
 				});
+				productId = newProduct.id;
 				toast.success("Produto criado com sucesso!");
 			}
+
+			// Save price if provided
+			if (price && price > 0) {
+				await api.post(`/products/${productId}/prices`, {
+					price: Math.round(price * 100), // Convert to cents
+					price_type: "sale",
+				});
+			}
+
+			// Set initial stock if provided (only for new products)
+			if (!editingProduct && initialStock && initialStock > 0) {
+				await api.post("/stock-movements", {
+					movement_type: "in",
+					reference_type: "adjustment",
+					reference_id: productId,
+					product_id: productId,
+					quantity: initialStock,
+				});
+			}
+
 			closeModal();
 			fetchProducts();
 		} catch (error: unknown) {
@@ -204,8 +232,8 @@ export default function ProductsPage() {
 								<TableRow>
 									<TableCell as="th">Produto</TableCell>
 									<TableCell as="th">SKU</TableCell>
-									<TableCell as="th">Categoria</TableCell>
-									<TableCell as="th">Marca</TableCell>
+									<TableCell as="th">Preço</TableCell>
+									<TableCell as="th">Estoque</TableCell>
 									<TableCell as="th">Status</TableCell>
 									<TableCell as="th" className="text-right">
 										Ações
@@ -233,11 +261,24 @@ export default function ProductsPage() {
 										</TableCell>
 										<TableCell>
 											<code className="px-2 py-1 bg-gray-100 rounded text-xs">
-												{product.sku}
+												{product.sku || "-"}
 											</code>
 										</TableCell>
-										<TableCell>{product.category}</TableCell>
-										<TableCell>{product.brand}</TableCell>
+										<TableCell>
+											{product.prices?.[0]?.price
+												? `R$ ${(product.prices[0].price / 100).toFixed(2)}`
+												: "-"}
+										</TableCell>
+										<TableCell>
+											<span
+												className={`font-medium ${(product.stock?.quantity ?? 0) <= (product.stock?.min_stock ?? 0)
+													? "text-red-600"
+													: "text-gray-900"
+													}`}
+											>
+												{product.stock?.quantity ?? 0}
+											</span>
+										</TableCell>
 										<TableCell>
 											<Badge variant={product.active ? "success" : "error"}>
 												{product.active ? "Ativo" : "Inativo"}
@@ -302,21 +343,21 @@ export default function ProductsPage() {
 			>
 				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 					<Input
-						label="Nome do Produto"
+						label="Nome do Produto *"
 						placeholder="Ex: Camiseta Básica"
 						error={errors.name?.message}
 						{...register("name")}
 					/>
 					<Input
 						label="Descrição"
-						placeholder="Descrição detalhada do produto"
+						placeholder="Descrição detalhada do produto (opcional)"
 						error={errors.description?.message}
 						{...register("description")}
 					/>
 					<div className="grid grid-cols-2 gap-4">
 						<Input
 							label="SKU"
-							placeholder="Ex: CAM-001"
+							placeholder="Ex: CAM-001 (opcional)"
 							error={errors.sku?.message}
 							{...register("sku")}
 						/>
@@ -330,16 +371,37 @@ export default function ProductsPage() {
 					<div className="grid grid-cols-2 gap-4">
 						<Input
 							label="Categoria"
-							placeholder="Ex: Vestuário"
+							placeholder="Ex: Vestuário (opcional)"
 							error={errors.category?.message}
 							{...register("category")}
 						/>
 						<Input
 							label="Marca"
-							placeholder="Ex: Nike"
+							placeholder="Ex: Nike (opcional)"
 							error={errors.brand?.message}
 							{...register("brand")}
 						/>
+					</div>
+					<div className="grid grid-cols-2 gap-4">
+						<Input
+							label="Preço de Venda (R$)"
+							type="number"
+							step="0.01"
+							min="0"
+							placeholder="Ex: 99.90"
+							error={errors.price?.message}
+							{...register("price")}
+						/>
+						{!editingProduct && (
+							<Input
+								label="Estoque Inicial"
+								type="number"
+								min="0"
+								placeholder="Ex: 100"
+								error={errors.initialStock?.message}
+								{...register("initialStock")}
+							/>
+						)}
 					</div>
 					<div className="flex justify-end gap-3 pt-4">
 						<Button type="button" variant="outline" onClick={closeModal}>

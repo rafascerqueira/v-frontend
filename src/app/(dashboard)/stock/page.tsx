@@ -3,9 +3,13 @@
 import { motion } from "framer-motion";
 import {
 	AlertTriangle,
+	ArrowDownCircle,
+	ArrowUpCircle,
 	Edit2,
+	History,
 	MoreVertical,
 	Package,
+	Plus,
 	Search,
 	TrendingDown,
 	TrendingUp,
@@ -53,6 +57,18 @@ export default function StockPage() {
 		quantity: 0,
 	});
 	const [activeMenu, setActiveMenu] = useState<number | null>(null);
+	const [movementModal, setMovementModal] = useState<{
+		stock: StockItem;
+		type: "in" | "out";
+	} | null>(null);
+	const [movementForm, setMovementForm] = useState({
+		quantity: 1,
+		reference_type: "adjustment" as "purchase" | "adjustment" | "return" | "transfer",
+		notes: "",
+	});
+	const [products, setProducts] = useState<{ id: number; name: string }[]>([]);
+	const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
+	const [newStockModal, setNewStockModal] = useState(false);
 
 	const fetchStocks = useCallback(async () => {
 		try {
@@ -96,6 +112,78 @@ export default function StockPage() {
 		}
 	};
 
+	const fetchProducts = useCallback(async () => {
+		try {
+			const { data: response } = await api.get("/products");
+			const prods = response?.data ?? response;
+			setProducts(Array.isArray(prods) ? prods : []);
+		} catch (error) {
+			console.error(error);
+		}
+	}, []);
+
+	useEffect(() => {
+		fetchProducts();
+	}, [fetchProducts]);
+
+	const openMovementModal = (stock: StockItem, type: "in" | "out") => {
+		setMovementModal({ stock, type });
+		setMovementForm({ quantity: 1, reference_type: "adjustment", notes: "" });
+		setActiveMenu(null);
+	};
+
+	const handleMovement = async () => {
+		if (!movementModal) return;
+
+		try {
+			await api.post("/stock-movements", {
+				movement_type: movementModal.type,
+				reference_type: movementForm.reference_type,
+				reference_id: 0,
+				product_id: movementModal.stock.product_id,
+				quantity: movementForm.quantity,
+			});
+			toast.success(
+				movementModal.type === "in"
+					? "Entrada registrada com sucesso!"
+					: "Saída registrada com sucesso!"
+			);
+			setMovementModal(null);
+			fetchStocks();
+		} catch (error: unknown) {
+			const message =
+				error instanceof Error ? error.message : "Erro ao registrar movimentação";
+			toast.error(message);
+		}
+	};
+
+	const handleCreateStock = async () => {
+		if (!selectedProductId) {
+			toast.error("Selecione um produto");
+			return;
+		}
+
+		try {
+			await api.patch(`/store-stock/${selectedProductId}`, {
+				quantity: 0,
+				min_stock: 5,
+				max_stock: 100,
+			});
+			toast.success("Estoque criado!");
+			setNewStockModal(false);
+			setSelectedProductId(null);
+			fetchStocks();
+		} catch (error: unknown) {
+			const message =
+				error instanceof Error ? error.message : "Erro ao criar estoque";
+			toast.error(message);
+		}
+	};
+
+	const productsWithoutStock = products.filter(
+		(p) => !stocks.some((s) => s.product_id === p.id)
+	);
+
 	const filteredStocks = stocks
 		.filter((stock) => {
 			if (filter === "low") return stock.isLowStock;
@@ -121,6 +209,12 @@ export default function StockPage() {
 						Controle e monitoramento de estoque
 					</p>
 				</div>
+				{productsWithoutStock.length > 0 && (
+					<Button onClick={() => setNewStockModal(true)}>
+						<Plus className="h-4 w-4 mr-2" />
+						Adicionar Produto ao Estoque
+					</Button>
+				)}
 			</div>
 
 			{/* Stats Cards */}
@@ -238,11 +332,10 @@ export default function StockPage() {
 										key={f.id}
 										type="button"
 										onClick={() => setFilter(f.id as "all" | "low" | "ok")}
-										className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-											filter === f.id
-												? "bg-white text-gray-900 shadow-sm"
-												: "text-gray-600 hover:text-gray-900"
-										}`}
+										className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${filter === f.id
+											? "bg-white text-gray-900 shadow-sm"
+											: "text-gray-600 hover:text-gray-900"
+											}`}
 									>
 										{f.label}
 									</button>
@@ -361,6 +454,22 @@ export default function StockPage() {
 													>
 														<button
 															type="button"
+															onClick={() => openMovementModal(stock, "in")}
+															className="flex items-center gap-2 w-full px-4 py-2 text-sm text-green-700 hover:bg-green-50"
+														>
+															<ArrowUpCircle className="h-4 w-4" />
+															Entrada
+														</button>
+														<button
+															type="button"
+															onClick={() => openMovementModal(stock, "out")}
+															className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-700 hover:bg-red-50"
+														>
+															<ArrowDownCircle className="h-4 w-4" />
+															Saída
+														</button>
+														<button
+															type="button"
 															onClick={() => openEditModal(stock)}
 															className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
 														>
@@ -447,6 +556,127 @@ export default function StockPage() {
 						</Button>
 						<Button type="button" onClick={handleUpdateStock}>
 							Salvar
+						</Button>
+					</div>
+				</div>
+			</Modal>
+
+			{/* Movement Modal */}
+			<Modal
+				isOpen={!!movementModal}
+				onClose={() => setMovementModal(null)}
+				title={`${movementModal?.type === "in" ? "Entrada" : "Saída"} de Estoque - ${movementModal?.stock.product?.name}`}
+				size="sm"
+			>
+				<div className="space-y-4">
+					<div>
+						<label className="block text-sm font-medium text-gray-700 mb-1">
+							Quantidade
+						</label>
+						<input
+							type="number"
+							min="1"
+							value={movementForm.quantity}
+							onChange={(e) =>
+								setMovementForm({ ...movementForm, quantity: Number(e.target.value) })
+							}
+							className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+						/>
+					</div>
+					<div>
+						<label className="block text-sm font-medium text-gray-700 mb-1">
+							Motivo
+						</label>
+						<select
+							value={movementForm.reference_type}
+							onChange={(e) =>
+								setMovementForm({
+									...movementForm,
+									reference_type: e.target.value as "purchase" | "adjustment" | "return" | "transfer",
+								})
+							}
+							className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+						>
+							{movementModal?.type === "in" ? (
+								<>
+									<option value="purchase">Compra/Reposição</option>
+									<option value="return">Devolução de Cliente</option>
+									<option value="adjustment">Ajuste de Inventário</option>
+									<option value="transfer">Transferência</option>
+								</>
+							) : (
+								<>
+									<option value="adjustment">Avaria/Vencimento</option>
+									<option value="transfer">Transferência</option>
+									<option value="return">Devolução ao Fornecedor</option>
+								</>
+							)}
+						</select>
+					</div>
+					<div className="flex justify-end gap-3 pt-4">
+						<Button
+							type="button"
+							variant="outline"
+							onClick={() => setMovementModal(null)}
+						>
+							Cancelar
+						</Button>
+						<Button
+							type="button"
+							onClick={handleMovement}
+							className={movementModal?.type === "in" ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"}
+						>
+							{movementModal?.type === "in" ? "Registrar Entrada" : "Registrar Saída"}
+						</Button>
+					</div>
+				</div>
+			</Modal>
+
+			{/* New Stock Modal */}
+			<Modal
+				isOpen={newStockModal}
+				onClose={() => {
+					setNewStockModal(false);
+					setSelectedProductId(null);
+				}}
+				title="Adicionar Produto ao Estoque"
+				size="sm"
+			>
+				<div className="space-y-4">
+					<div>
+						<label className="block text-sm font-medium text-gray-700 mb-1">
+							Selecione o Produto
+						</label>
+						<select
+							value={selectedProductId || ""}
+							onChange={(e) => setSelectedProductId(Number(e.target.value))}
+							className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+						>
+							<option value="">Selecione...</option>
+							{productsWithoutStock.map((product) => (
+								<option key={product.id} value={product.id}>
+									{product.name}
+								</option>
+							))}
+						</select>
+					</div>
+					<p className="text-sm text-gray-500">
+						O produto será adicionado com estoque inicial 0. Use a opção
+						&quot;Entrada&quot; para adicionar quantidades.
+					</p>
+					<div className="flex justify-end gap-3 pt-4">
+						<Button
+							type="button"
+							variant="outline"
+							onClick={() => {
+								setNewStockModal(false);
+								setSelectedProductId(null);
+							}}
+						>
+							Cancelar
+						</Button>
+						<Button type="button" onClick={handleCreateStock}>
+							Adicionar
 						</Button>
 					</div>
 				</div>

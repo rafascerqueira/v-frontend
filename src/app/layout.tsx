@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ToastProvider } from "@/components/ui/toast";
 import { AuthProvider } from "@/contexts/auth-context";
+import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 
 const inter = Inter({
 	variable: "--font-inter",
@@ -15,6 +16,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+	metadataBase: new URL("https://vendinhas.app"),
 	title: "Vendinhas - Sistema de Vendas",
 	description: "Sistema completo de gestão de vendas",
 	manifest: "/manifest.json",
@@ -42,8 +44,10 @@ export default function RootLayout({
 			>
 				<ThemeProvider>
 					<AuthProvider>
-						{children}
-						<ToastProvider />
+						<SubscriptionProvider>
+							{children}
+							<ToastProvider />
+						</SubscriptionProvider>
 					</AuthProvider>
 				</ThemeProvider>
 			</body>

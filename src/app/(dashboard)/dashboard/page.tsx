@@ -69,7 +69,7 @@ export default function DashboardPage() {
 	const statCards = [
 		{
 			name: "Receita Total",
-			value: formatCurrency((stats?.totalRevenue || 0) / 100),
+			value: formatCurrency(stats?.totalRevenue || 0),
 			icon: DollarSign,
 			color: "bg-green-500",
 		},
@@ -264,14 +264,14 @@ export default function DashboardPage() {
 													{order.customer}
 												</td>
 												<td className="py-3 px-4 text-sm font-medium text-gray-900">
-													{formatCurrency(order.total / 100)}
+													{formatCurrency(order.total)}
 												</td>
 												<td className="py-3 px-4">
 													<span
 														className={cn(
 															"inline-flex px-2 py-1 text-xs font-medium rounded-full",
 															statusColors[order.status] ||
-																"bg-gray-100 text-gray-800",
+															"bg-gray-100 text-gray-800",
 														)}
 													>
 														{statusLabels[order.status] || order.status}

@@ -1,8 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Calendar, Download, Filter, TrendingUp } from "lucide-react";
-import { useState } from "react";
+import { Calendar, Download, Filter, Loader2, TrendingUp } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import {
 	Bar,
 	BarChart,
@@ -19,71 +19,125 @@ import {
 } from "recharts";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { api } from "@/lib/api";
 import { formatCurrency } from "@/lib/utils";
 
-const salesData = [
-	{ month: "Jan", vendas: 4000, meta: 4500 },
-	{ month: "Fev", vendas: 3000, meta: 4500 },
-	{ month: "Mar", vendas: 5000, meta: 4500 },
-	{ month: "Abr", vendas: 4500, meta: 4500 },
-	{ month: "Mai", vendas: 6000, meta: 5000 },
-	{ month: "Jun", vendas: 5500, meta: 5000 },
-	{ month: "Jul", vendas: 7000, meta: 5500 },
-	{ month: "Ago", vendas: 6500, meta: 5500 },
-	{ month: "Set", vendas: 8000, meta: 6000 },
-	{ month: "Out", vendas: 7500, meta: 6000 },
-	{ month: "Nov", vendas: 9000, meta: 6500 },
-	{ month: "Dez", vendas: 10000, meta: 7000 },
-];
+interface ReportData {
+	summary: {
+		totalRevenue: number;
+		revenueChange: number;
+		totalOrders: number;
+		ordersChange: number;
+		avgTicket: number;
+		avgTicketChange: number;
+		conversionRate: number;
+		conversionChange: number;
+	};
+	salesData: Array<{ month: string; vendas: number; meta: number }>;
+	categoryData: Array<{ name: string; value: number; color: string }>;
+	weeklyData: Array<{ day: string; pedidos: number }>;
+	topProducts: Array<{ name: string; vendas: number; receita: number }>;
+}
 
-const categoryData = [
-	{ name: "Eletrônicos", value: 35, color: "#6366f1" },
-	{ name: "Vestuário", value: 25, color: "#8b5cf6" },
-	{ name: "Alimentos", value: 20, color: "#a855f7" },
-	{ name: "Casa", value: 12, color: "#d946ef" },
-	{ name: "Outros", value: 8, color: "#ec4899" },
-];
-
-const weeklyData = [
-	{ day: "Seg", pedidos: 12 },
-	{ day: "Ter", pedidos: 19 },
-	{ day: "Qua", pedidos: 15 },
-	{ day: "Qui", pedidos: 22 },
-	{ day: "Sex", pedidos: 28 },
-	{ day: "Sáb", pedidos: 35 },
-	{ day: "Dom", pedidos: 18 },
-];
-
-const topProducts = [
-	{ name: "Smartphone XYZ", vendas: 142, receita: 28400 },
-	{ name: "Notebook Pro", vendas: 98, receita: 49000 },
-	{ name: "Fone Bluetooth", vendas: 87, receita: 8700 },
-	{ name: "Smart Watch", vendas: 65, receita: 13000 },
-	{ name: "Tablet Plus", vendas: 52, receita: 15600 },
-];
+type Period = "week" | "month" | "year";
 
 export default function ReportsPage() {
-	const [period, setPeriod] = useState("month");
+	const [period, setPeriod] = useState<Period>("month");
+	const [isLoading, setIsLoading] = useState(true);
+	const [error, setError] = useState<string | null>(null);
+	const [data, setData] = useState<ReportData | null>(null);
+
+	const fetchReport = useCallback(async () => {
+		setIsLoading(true);
+		setError(null);
+		try {
+			const response = await api.get(`/reports?period=${period}`);
+			setData(response.data);
+		} catch (err) {
+			console.error("Erro ao carregar relatórios:", err);
+			setError("Erro ao carregar os dados. Tente novamente.");
+		} finally {
+			setIsLoading(false);
+		}
+	}, [period]);
+
+	useEffect(() => {
+		fetchReport();
+	}, [fetchReport]);
+
+	if (isLoading) {
+		return (
+			<div className="flex items-center justify-center h-96">
+				<Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+			</div>
+		);
+	}
+
+	if (error) {
+		return (
+			<div className="flex flex-col items-center justify-center h-96 gap-4">
+				<p className="text-red-600">{error}</p>
+				<Button onClick={fetchReport}>Tentar novamente</Button>
+			</div>
+		);
+	}
+
+	const summary = data?.summary;
+	const salesData = data?.salesData || [];
+	const categoryData = data?.categoryData || [];
+	const weeklyData = data?.weeklyData || [];
+	const topProducts = data?.topProducts || [];
+
+	const revenueChange = summary?.revenueChange ?? 0;
+	const ordersChange = summary?.ordersChange ?? 0;
+	const avgTicketChange = summary?.avgTicketChange ?? 0;
+	const conversionChange = summary?.conversionChange ?? 0;
+
+	const summaryCards = [
+		{
+			label: "Receita Total",
+			value: formatCurrency(summary?.totalRevenue ?? 0),
+			change: `${revenueChange >= 0 ? "+" : ""}${revenueChange}%`,
+			positive: revenueChange >= 0,
+		},
+		{
+			label: "Pedidos",
+			value: String(summary?.totalOrders ?? 0),
+			change: `${ordersChange >= 0 ? "+" : ""}${ordersChange}%`,
+			positive: ordersChange >= 0,
+		},
+		{
+			label: "Ticket Médio",
+			value: formatCurrency(summary?.avgTicket ?? 0),
+			change: `${avgTicketChange >= 0 ? "+" : ""}${avgTicketChange}%`,
+			positive: avgTicketChange >= 0,
+		},
+		{
+			label: "Taxa de Conversão",
+			value: `${summary?.conversionRate?.toFixed(1) ?? 0}%`,
+			change: `${conversionChange >= 0 ? "+" : ""}${conversionChange}%`,
+			positive: conversionChange >= 0,
+		},
+	];
 
 	return (
 		<div className="space-y-6">
 			<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 				<div>
-					<h1 className="text-2xl font-bold text-gray-900">Relatórios</h1>
-					<p className="text-gray-500 mt-1">Análise detalhada do seu negócio</p>
+					<h1 className="text-2xl font-bold text-gray-900 dark:text-white">Relatórios</h1>
+					<p className="text-gray-500 dark:text-gray-400 mt-1">Análise detalhada do seu negócio</p>
 				</div>
 				<div className="flex gap-2">
-					<div className="flex bg-gray-100 rounded-lg p-1">
-						{["week", "month", "year"].map((p) => (
+					<div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+						{(["week", "month", "year"] as Period[]).map((p) => (
 							<button
 								key={p}
 								type="button"
 								onClick={() => setPeriod(p)}
-								className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-									period === p
-										? "bg-white text-gray-900 shadow-sm"
-										: "text-gray-600 hover:text-gray-900"
-								}`}
+								className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${period === p
+									? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm"
+									: "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+									}`}
 							>
 								{p === "week" ? "Semana" : p === "month" ? "Mês" : "Ano"}
 							</button>
@@ -102,31 +156,11 @@ export default function ReportsPage() {
 
 			{/* Summary Cards */}
 			<div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-				{[
-					{
-						label: "Receita Total",
-						value: formatCurrency(76500),
-						change: "+12.5%",
-						positive: true,
-					},
-					{ label: "Pedidos", value: "342", change: "+8.2%", positive: true },
-					{
-						label: "Ticket Médio",
-						value: formatCurrency(223.68),
-						change: "+3.1%",
-						positive: true,
-					},
-					{
-						label: "Taxa de Conversão",
-						value: "3.2%",
-						change: "-0.5%",
-						positive: false,
-					},
-				].map((stat) => (
+				{summaryCards.map((stat) => (
 					<Card key={stat.label}>
 						<CardContent className="p-4">
-							<p className="text-sm text-gray-500">{stat.label}</p>
-							<p className="text-2xl font-bold text-gray-900 mt-1">
+							<p className="text-sm text-gray-500 dark:text-gray-400">{stat.label}</p>
+							<p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
 								{stat.value}
 							</p>
 							<p
@@ -155,35 +189,41 @@ export default function ReportsPage() {
 						</CardHeader>
 						<CardContent>
 							<div className="h-72">
-								<ResponsiveContainer width="100%" height="100%">
-									<BarChart data={salesData}>
-										<CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-										<XAxis dataKey="month" fontSize={12} tickLine={false} />
-										<YAxis fontSize={12} tickLine={false} axisLine={false} />
-										<Tooltip
-											formatter={(value) => formatCurrency(Number(value))}
-											contentStyle={{
-												borderRadius: 8,
-												border: "1px solid #e5e7eb",
-											}}
-										/>
-										<Bar
-											dataKey="vendas"
-											fill="#6366f1"
-											radius={[4, 4, 0, 0]}
-										/>
-										<Bar dataKey="meta" fill="#e5e7eb" radius={[4, 4, 0, 0]} />
-									</BarChart>
-								</ResponsiveContainer>
+								{salesData.length > 0 ? (
+									<ResponsiveContainer width="100%" height="100%">
+										<BarChart data={salesData}>
+											<CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+											<XAxis dataKey="month" fontSize={12} tickLine={false} />
+											<YAxis fontSize={12} tickLine={false} axisLine={false} />
+											<Tooltip
+												formatter={(value) => formatCurrency(Number(value))}
+												contentStyle={{
+													borderRadius: 8,
+													border: "1px solid #e5e7eb",
+												}}
+											/>
+											<Bar
+												dataKey="vendas"
+												fill="#6366f1"
+												radius={[4, 4, 0, 0]}
+											/>
+											<Bar dataKey="meta" fill="#e5e7eb" radius={[4, 4, 0, 0]} />
+										</BarChart>
+									</ResponsiveContainer>
+								) : (
+									<div className="flex items-center justify-center h-full text-gray-500">
+										Nenhum dado disponível
+									</div>
+								)}
 							</div>
 							<div className="flex justify-center gap-6 mt-4">
 								<div className="flex items-center gap-2">
 									<div className="w-3 h-3 bg-indigo-500 rounded" />
-									<span className="text-sm text-gray-600">Vendas</span>
+									<span className="text-sm text-gray-600 dark:text-gray-400">Vendas</span>
 								</div>
 								<div className="flex items-center gap-2">
 									<div className="w-3 h-3 bg-gray-200 rounded" />
-									<span className="text-sm text-gray-600">Meta</span>
+									<span className="text-sm text-gray-600 dark:text-gray-400">Meta</span>
 								</div>
 							</div>
 						</CardContent>
@@ -205,30 +245,34 @@ export default function ReportsPage() {
 						</CardHeader>
 						<CardContent>
 							<div className="h-72 flex items-center justify-center">
-								<ResponsiveContainer width="100%" height="100%">
-									<PieChart>
-										<Pie
-											data={categoryData}
-											cx="50%"
-											cy="50%"
-											innerRadius={60}
-											outerRadius={100}
-											paddingAngle={2}
-											dataKey="value"
-										>
-											{categoryData.map((entry) => (
-												<Cell key={entry.name} fill={entry.color} />
-											))}
-										</Pie>
-										<Tooltip
-											formatter={(value) => `${value}%`}
-											contentStyle={{
-												borderRadius: 8,
-												border: "1px solid #e5e7eb",
-											}}
-										/>
-									</PieChart>
-								</ResponsiveContainer>
+								{categoryData.length > 0 ? (
+									<ResponsiveContainer width="100%" height="100%">
+										<PieChart>
+											<Pie
+												data={categoryData}
+												cx="50%"
+												cy="50%"
+												innerRadius={60}
+												outerRadius={100}
+												paddingAngle={2}
+												dataKey="value"
+											>
+												{categoryData.map((entry) => (
+													<Cell key={entry.name} fill={entry.color} />
+												))}
+											</Pie>
+											<Tooltip
+												formatter={(value) => `${value}%`}
+												contentStyle={{
+													borderRadius: 8,
+													border: "1px solid #e5e7eb",
+												}}
+											/>
+										</PieChart>
+									</ResponsiveContainer>
+								) : (
+									<div className="text-gray-500">Nenhum dado disponível</div>
+								)}
 							</div>
 							<div className="flex flex-wrap justify-center gap-4 mt-4">
 								{categoryData.map((cat) => (
@@ -237,7 +281,7 @@ export default function ReportsPage() {
 											className="w-3 h-3 rounded"
 											style={{ backgroundColor: cat.color }}
 										/>
-										<span className="text-sm text-gray-600">{cat.name}</span>
+										<span className="text-sm text-gray-600 dark:text-gray-400">{cat.name}</span>
 									</div>
 								))}
 							</div>
@@ -260,26 +304,32 @@ export default function ReportsPage() {
 						</CardHeader>
 						<CardContent>
 							<div className="h-64">
-								<ResponsiveContainer width="100%" height="100%">
-									<LineChart data={weeklyData}>
-										<CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-										<XAxis dataKey="day" fontSize={12} tickLine={false} />
-										<YAxis fontSize={12} tickLine={false} axisLine={false} />
-										<Tooltip
-											contentStyle={{
-												borderRadius: 8,
-												border: "1px solid #e5e7eb",
-											}}
-										/>
-										<Line
-											type="monotone"
-											dataKey="pedidos"
-											stroke="#6366f1"
-											strokeWidth={2}
-											dot={{ fill: "#6366f1", strokeWidth: 2 }}
-										/>
-									</LineChart>
-								</ResponsiveContainer>
+								{weeklyData.some((d) => d.pedidos > 0) ? (
+									<ResponsiveContainer width="100%" height="100%">
+										<LineChart data={weeklyData}>
+											<CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+											<XAxis dataKey="day" fontSize={12} tickLine={false} />
+											<YAxis fontSize={12} tickLine={false} axisLine={false} />
+											<Tooltip
+												contentStyle={{
+													borderRadius: 8,
+													border: "1px solid #e5e7eb",
+												}}
+											/>
+											<Line
+												type="monotone"
+												dataKey="pedidos"
+												stroke="#6366f1"
+												strokeWidth={2}
+												dot={{ fill: "#6366f1", strokeWidth: 2 }}
+											/>
+										</LineChart>
+									</ResponsiveContainer>
+								) : (
+									<div className="flex items-center justify-center h-full text-gray-500">
+										Nenhum pedido no período
+									</div>
+								)}
 							</div>
 						</CardContent>
 					</Card>
@@ -297,26 +347,32 @@ export default function ReportsPage() {
 						</CardHeader>
 						<CardContent>
 							<div className="space-y-4">
-								{topProducts.map((product, index) => (
-									<div key={product.name} className="flex items-center gap-4">
-										<div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center text-sm font-bold text-indigo-600">
-											{index + 1}
+								{topProducts.length > 0 ? (
+									topProducts.map((product, index) => (
+										<div key={product.name} className="flex items-center gap-4">
+											<div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/50 rounded-lg flex items-center justify-center text-sm font-bold text-indigo-600 dark:text-indigo-400">
+												{index + 1}
+											</div>
+											<div className="flex-1 min-w-0">
+												<p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+													{product.name}
+												</p>
+												<p className="text-xs text-gray-500 dark:text-gray-400">
+													{product.vendas} vendas
+												</p>
+											</div>
+											<div className="text-right">
+												<p className="text-sm font-medium text-gray-900 dark:text-white">
+													{formatCurrency(product.receita)}
+												</p>
+											</div>
 										</div>
-										<div className="flex-1 min-w-0">
-											<p className="text-sm font-medium text-gray-900 truncate">
-												{product.name}
-											</p>
-											<p className="text-xs text-gray-500">
-												{product.vendas} vendas
-											</p>
-										</div>
-										<div className="text-right">
-											<p className="text-sm font-medium text-gray-900">
-												{formatCurrency(product.receita)}
-											</p>
-										</div>
+									))
+								) : (
+									<div className="text-center text-gray-500 py-8">
+										Nenhum produto vendido no período
 									</div>
-								))}
+								)}
 							</div>
 						</CardContent>
 					</Card>

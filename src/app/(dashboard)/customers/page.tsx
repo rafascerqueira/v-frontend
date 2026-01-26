@@ -36,15 +36,17 @@ import type { Customer } from "@/types";
 
 const customerSchema = z.object({
 	name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
-	email: z.string().email("Email inválido"),
+	email: z.string().email("Email inválido").optional().or(z.literal("")),
 	phone: z.string().min(10, "Telefone inválido"),
 	document: z
 		.string()
 		.min(11, "CPF/CNPJ inválido")
-		.refine(validateDocument, "CPF/CNPJ inválido"),
+		.refine(validateDocument, "CPF/CNPJ inválido")
+		.optional()
+		.or(z.literal("")),
 	city: z.string().min(2, "Cidade é obrigatória"),
 	state: z.string().length(2, "Estado deve ter 2 caracteres"),
-	zip_code: z.string().min(8, "CEP inválido"),
+	zip_code: z.string().min(8, "CEP inválido").optional().or(z.literal("")),
 });
 
 type CustomerFormData = z.infer<typeof customerSchema>;
@@ -72,8 +74,9 @@ export default function CustomersPage() {
 	const fetchCustomers = useCallback(async () => {
 		try {
 			setIsLoading(true);
-			const { data } = await api.get("/customers");
-			setCustomers(Array.isArray(data) ? data : []);
+			const { data: response } = await api.get("/customers");
+			const customers = response?.data ?? response;
+			setCustomers(Array.isArray(customers) ? customers : []);
 		} catch (error) {
 			toast.error("Erro ao carregar clientes");
 			console.error(error);
@@ -326,49 +329,51 @@ export default function CustomersPage() {
 			>
 				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 					<Input
-						label="Nome Completo"
+						label="Nome Completo *"
 						placeholder="Ex: João Silva"
 						error={errors.name?.message}
 						{...register("name")}
 					/>
 					<div className="grid grid-cols-2 gap-4">
 						<Input
-							label="Email"
-							type="email"
-							placeholder="email@exemplo.com"
-							error={errors.email?.message}
-							{...register("email")}
-						/>
-						<Input
-							label="Telefone"
+							label="Telefone *"
 							placeholder="(11) 99999-9999"
 							error={errors.phone?.message}
 							{...register("phone")}
 						/>
-					</div>
-					<Input
-						label="CPF/CNPJ"
-						placeholder="000.000.000-00"
-						error={errors.document?.message}
-						{...register("document")}
-					/>
-					<div className="grid grid-cols-3 gap-4">
 						<Input
-							label="Cidade"
+							label="Email"
+							type="email"
+							placeholder="email@exemplo.com (opcional)"
+							error={errors.email?.message}
+							{...register("email")}
+						/>
+					</div>
+					<div className="grid grid-cols-2 gap-4">
+						<Input
+							label="Cidade *"
 							placeholder="São Paulo"
 							error={errors.city?.message}
 							{...register("city")}
 						/>
 						<Input
-							label="Estado"
+							label="Estado *"
 							placeholder="SP"
 							maxLength={2}
 							error={errors.state?.message}
 							{...register("state")}
 						/>
+					</div>
+					<div className="grid grid-cols-2 gap-4">
+						<Input
+							label="CPF/CNPJ"
+							placeholder="000.000.000-00 (opcional)"
+							error={errors.document?.message}
+							{...register("document")}
+						/>
 						<Input
 							label="CEP"
-							placeholder="00000-000"
+							placeholder="00000-000 (opcional)"
 							error={errors.zip_code?.message}
 							{...register("zip_code")}
 						/>

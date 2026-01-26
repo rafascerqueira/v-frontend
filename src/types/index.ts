@@ -1,14 +1,31 @@
+export interface ProductPrice {
+	id: number;
+	price: number;
+	price_type: "cost" | "sale" | "wholesale" | "promotional";
+	active: boolean;
+}
+
+export interface ProductStock {
+	id: number;
+	quantity: number;
+	reserved_quantity: number;
+	min_stock: number;
+	max_stock: number;
+}
+
 export interface Product {
 	id: number;
 	name: string;
-	description: string;
-	sku: string;
-	category: string;
-	brand: string;
+	description: string | null;
+	sku: string | null;
+	category: string | null;
+	brand: string | null;
 	unit: string;
 	specifications: Record<string, unknown>;
 	images: string[];
 	active: boolean;
+	prices?: ProductPrice[];
+	stock?: ProductStock | null;
 	createdAt: string;
 	updatedAt: string;
 }

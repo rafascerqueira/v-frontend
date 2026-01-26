@@ -10,6 +10,7 @@ import {
 } from "react";
 import toast from "react-hot-toast";
 import { api } from "@/lib/api";
+import { useAuth } from "./auth-context";
 
 export type PlanType = "free" | "pro" | "enterprise";
 
@@ -77,6 +78,7 @@ const SubscriptionContext = createContext<SubscriptionContextType | undefined>(
 );
 
 export function SubscriptionProvider({ children }: { children: ReactNode }) {
+	const { isAuthenticated, isLoading: authLoading } = useAuth();
 	const [subscription, setSubscription] = useState<SubscriptionInfo | null>(
 		null,
 	);
@@ -84,6 +86,13 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 	const [loading, setLoading] = useState(true);
 
 	const refreshSubscription = useCallback(async () => {
+		if (!isAuthenticated) {
+			setSubscription(null);
+			setPlans([]);
+			setLoading(false);
+			return;
+		}
+
 		try {
 			const [subRes, plansRes] = await Promise.all([
 				api.get("/subscriptions/info"),
@@ -93,14 +102,17 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 			setPlans(plansRes.data.plans);
 		} catch (error) {
 			console.error("Failed to fetch subscription info:", error);
+			setSubscription(null);
 		} finally {
 			setLoading(false);
 		}
-	}, []);
+	}, [isAuthenticated]);
 
 	useEffect(() => {
-		refreshSubscription();
-	}, [refreshSubscription]);
+		if (!authLoading) {
+			refreshSubscription();
+		}
+	}, [refreshSubscription, authLoading]);
 
 	const checkLimit = useCallback(
 		(type: "products" | "orders" | "customers") => {

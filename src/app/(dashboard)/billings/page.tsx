@@ -165,7 +165,7 @@ export default function BillingsPage() {
 							<div>
 								<p className="text-sm text-gray-500">Pendente</p>
 								<p className="text-xl font-bold text-gray-900">
-									{formatCurrency(totalPending / 100)}
+									{formatCurrency(totalPending)}
 								</p>
 							</div>
 						</div>
@@ -180,7 +180,7 @@ export default function BillingsPage() {
 							<div>
 								<p className="text-sm text-gray-500">Recebido</p>
 								<p className="text-xl font-bold text-gray-900">
-									{formatCurrency(totalPaid / 100)}
+									{formatCurrency(totalPaid)}
 								</p>
 							</div>
 						</div>
@@ -195,7 +195,7 @@ export default function BillingsPage() {
 							<div>
 								<p className="text-sm text-gray-500">Vencido</p>
 								<p className="text-xl font-bold text-gray-900">
-									{formatCurrency(totalOverdue / 100)}
+									{formatCurrency(totalOverdue)}
 								</p>
 							</div>
 						</div>
@@ -287,12 +287,12 @@ export default function BillingsPage() {
 											</TableCell>
 											<TableCell>
 												<span className="font-medium text-gray-900">
-													{formatCurrency(billing.total_amount / 100)}
+													{formatCurrency(billing.total_amount)}
 												</span>
 											</TableCell>
 											<TableCell>
 												<span className="text-green-600 font-medium">
-													{formatCurrency(billing.paid_amount / 100)}
+													{formatCurrency(billing.paid_amount)}
 												</span>
 											</TableCell>
 											<TableCell>
@@ -407,13 +407,13 @@ export default function BillingsPage() {
 							<div>
 								<p className="text-sm text-gray-500">Valor Total</p>
 								<p className="font-medium text-lg">
-									{formatCurrency(viewingBilling.total_amount / 100)}
+									{formatCurrency(viewingBilling.total_amount)}
 								</p>
 							</div>
 							<div>
 								<p className="text-sm text-gray-500">Valor Pago</p>
 								<p className="font-medium text-lg text-green-600">
-									{formatCurrency(viewingBilling.paid_amount / 100)}
+									{formatCurrency(viewingBilling.paid_amount)}
 								</p>
 							</div>
 							<div>
@@ -468,8 +468,7 @@ export default function BillingsPage() {
 							<p className="text-sm text-gray-500">Valor Pendente</p>
 							<p className="text-2xl font-bold text-gray-900">
 								{formatCurrency(
-									(updatingBilling.total_amount - updatingBilling.paid_amount) /
-										100,
+									updatingBilling.total_amount - updatingBilling.paid_amount,
 								)}
 							</p>
 						</div>
@@ -483,11 +482,11 @@ export default function BillingsPage() {
 										updatingBilling.id,
 										"partial",
 										updatingBilling.paid_amount +
-											Math.floor(
-												(updatingBilling.total_amount -
-													updatingBilling.paid_amount) /
-													2,
-											),
+										Math.floor(
+											(updatingBilling.total_amount -
+												updatingBilling.paid_amount) /
+											2,
+										),
 									)
 								}
 							>
