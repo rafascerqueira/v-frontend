@@ -7,7 +7,7 @@ interface TableProps {
 
 export function Table({ children, className }: TableProps) {
 	return (
-		<div className="overflow-x-auto">
+		<div className="overflow-x-auto overflow-y-visible">
 			<table className={cn("w-full text-sm", className)}>{children}</table>
 		</div>
 	);

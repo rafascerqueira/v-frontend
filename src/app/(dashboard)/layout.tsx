@@ -3,9 +3,12 @@
 import { AnimatePresence, motion } from "framer-motion";
 import {
 	BarChart3,
+	Box,
+	Building2,
 	ChevronDown,
 	CreditCard,
 	FileText,
+	Gift,
 	LayoutDashboard,
 	LogOut,
 	Menu,
@@ -34,10 +37,13 @@ import { cn } from "@/lib/utils";
 const navigation = [
 	{ name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
 	{ name: "Produtos", href: "/products", icon: Package },
+	{ name: "Kits", href: "/bundles", icon: Box },
 	{ name: "Estoque", href: "/stock", icon: Warehouse },
+	{ name: "Promoções", href: "/promotions", icon: Gift },
 	{ name: "Clientes", href: "/customers", icon: Users },
 	{ name: "Pedidos", href: "/orders", icon: ShoppingCart },
 	{ name: "Cobranças", href: "/billings", icon: FileText },
+	{ name: "Fornecedores", href: "/suppliers", icon: Building2 },
 	{ name: "Catálogo", href: "/catalog-share", icon: Share2 },
 	{ name: "Relatórios", href: "/reports", icon: BarChart3 },
 	{ name: "Planos", href: "/plans", icon: CreditCard },

@@ -34,6 +34,14 @@ import { api } from "@/lib/api";
 import { validateDocument } from "@/lib/validators";
 import type { Customer } from "@/types";
 
+const billingModeOptions = [
+	{ value: "per_sale", label: "Por Venda" },
+	{ value: "weekly", label: "Semanal" },
+	{ value: "biweekly", label: "Quinzenal" },
+	{ value: "monthly", label: "Mensal" },
+	{ value: "custom", label: "Data Personalizada" },
+];
+
 const customerSchema = z.object({
 	name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
 	email: z.string().email("Email inválido").optional().or(z.literal("")),
@@ -47,6 +55,10 @@ const customerSchema = z.object({
 	city: z.string().min(2, "Cidade é obrigatória"),
 	state: z.string().length(2, "Estado deve ter 2 caracteres"),
 	zip_code: z.string().min(8, "CEP inválido").optional().or(z.literal("")),
+	billing_mode: z
+		.enum(["per_sale", "weekly", "biweekly", "monthly", "custom"])
+		.optional(),
+	billing_day: z.number().min(1).max(31).optional(),
 });
 
 type CustomerFormData = z.infer<typeof customerSchema>;
@@ -99,6 +111,8 @@ export default function CustomersPage() {
 			city: "",
 			state: "",
 			zip_code: "",
+			billing_mode: "per_sale",
+			billing_day: undefined,
 		});
 		setIsModalOpen(true);
 	};
@@ -113,6 +127,15 @@ export default function CustomersPage() {
 			city: customer.city,
 			state: customer.state,
 			zip_code: customer.zip_code,
+			billing_mode:
+				((customer as Customer & { billing_mode?: string }).billing_mode as
+					| "per_sale"
+					| "weekly"
+					| "biweekly"
+					| "monthly"
+					| "custom") || "per_sale",
+			billing_day: (customer as Customer & { billing_day?: number })
+				.billing_day,
 		});
 		setIsModalOpen(true);
 		setActiveMenu(null);
@@ -376,6 +399,32 @@ export default function CustomersPage() {
 							placeholder="00000-000 (opcional)"
 							error={errors.zip_code?.message}
 							{...register("zip_code")}
+						/>
+					</div>
+					<div className="grid grid-cols-2 gap-4">
+						<div>
+							<label className="block text-sm font-medium text-gray-700 mb-1">
+								Modalidade de Cobrança
+							</label>
+							<select
+								{...register("billing_mode")}
+								className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+							>
+								{billingModeOptions.map((option) => (
+									<option key={option.value} value={option.value}>
+										{option.label}
+									</option>
+								))}
+							</select>
+						</div>
+						<Input
+							label="Dia de Cobrança"
+							type="number"
+							min={1}
+							max={31}
+							placeholder="1-31 (opcional)"
+							error={errors.billing_day?.message}
+							{...register("billing_day", { valueAsNumber: true })}
 						/>
 					</div>
 					<div className="flex justify-end gap-3 pt-4">

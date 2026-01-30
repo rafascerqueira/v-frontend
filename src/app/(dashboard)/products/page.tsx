@@ -16,6 +16,7 @@ import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { SkeletonTable } from "@/components/ui/skeleton";
@@ -36,9 +37,7 @@ const productSchema = z.object({
 	sku: z.string().optional().or(z.literal("")),
 	category: z.string().optional().or(z.literal("")),
 	brand: z.string().optional().or(z.literal("")),
-	unit: z.string().default("un"),
-	price: z.coerce.number().min(0, "Preço deve ser maior ou igual a 0").optional(),
-	initialStock: z.coerce.number().int().min(0, "Estoque deve ser maior ou igual a 0").optional(),
+	unit: z.string().min(1, "Unidade é obrigatória"),
 });
 
 type ProductFormData = z.infer<typeof productSchema>;
@@ -51,6 +50,8 @@ export default function ProductsPage() {
 	const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 	const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
 	const [activeMenu, setActiveMenu] = useState<number | null>(null);
+	const [priceValue, setPriceValue] = useState<number>(0);
+	const [initialStock, setInitialStock] = useState<number>(0);
 
 	const {
 		register,
@@ -81,6 +82,8 @@ export default function ProductsPage() {
 
 	const openCreateModal = () => {
 		setEditingProduct(null);
+		setPriceValue(0);
+		setInitialStock(0);
 		reset({
 			name: "",
 			description: "",
@@ -94,7 +97,8 @@ export default function ProductsPage() {
 
 	const openEditModal = (product: Product) => {
 		setEditingProduct(product);
-		const currentPrice = product.prices?.[0]?.price;
+		const currentPrice = product.prices?.[0]?.price ?? 0;
+		setPriceValue(currentPrice);
 		reset({
 			name: product.name,
 			description: product.description ?? "",
@@ -102,7 +106,6 @@ export default function ProductsPage() {
 			category: product.category ?? "",
 			brand: product.brand ?? "",
 			unit: product.unit,
-			price: currentPrice ? currentPrice / 100 : undefined,
 		});
 		setIsModalOpen(true);
 		setActiveMenu(null);
@@ -116,7 +119,7 @@ export default function ProductsPage() {
 
 	const onSubmit = async (data: ProductFormData) => {
 		try {
-			const { price, initialStock, ...productData } = data;
+			const productData = data;
 			let productId: number;
 
 			if (editingProduct) {
@@ -133,10 +136,10 @@ export default function ProductsPage() {
 				toast.success("Produto criado com sucesso!");
 			}
 
-			// Save price if provided
-			if (price && price > 0) {
+			// Save price if provided (priceValue is already in cents)
+			if (priceValue > 0) {
 				await api.post(`/products/${productId}/prices`, {
-					price: Math.round(price * 100), // Convert to cents
+					price: priceValue,
 					price_type: "sale",
 				});
 			}
@@ -179,8 +182,10 @@ export default function ProductsPage() {
 	const filteredProducts = products.filter(
 		(product) =>
 			product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			product.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			product.category.toLowerCase().includes(searchTerm.toLowerCase()),
+			(product.sku?.toLowerCase().includes(searchTerm.toLowerCase()) ??
+				false) ||
+			(product.category?.toLowerCase().includes(searchTerm.toLowerCase()) ??
+				false),
 	);
 
 	return (
@@ -271,10 +276,12 @@ export default function ProductsPage() {
 										</TableCell>
 										<TableCell>
 											<span
-												className={`font-medium ${(product.stock?.quantity ?? 0) <= (product.stock?.min_stock ?? 0)
-													? "text-red-600"
-													: "text-gray-900"
-													}`}
+												className={`font-medium ${
+													(product.stock?.quantity ?? 0) <=
+													(product.stock?.min_stock ?? 0)
+														? "text-red-600"
+														: "text-gray-900"
+												}`}
 											>
 												{product.stock?.quantity ?? 0}
 											</span>
@@ -383,14 +390,11 @@ export default function ProductsPage() {
 						/>
 					</div>
 					<div className="grid grid-cols-2 gap-4">
-						<Input
-							label="Preço de Venda (R$)"
-							type="number"
-							step="0.01"
-							min="0"
-							placeholder="Ex: 99.90"
-							error={errors.price?.message}
-							{...register("price")}
+						<CurrencyInput
+							label="Preço de Venda"
+							value={priceValue}
+							onChange={setPriceValue}
+							hint="Digite os números - o valor cresce da direita para a esquerda"
 						/>
 						{!editingProduct && (
 							<Input
@@ -398,8 +402,8 @@ export default function ProductsPage() {
 								type="number"
 								min="0"
 								placeholder="Ex: 100"
-								error={errors.initialStock?.message}
-								{...register("initialStock")}
+								value={initialStock || ""}
+								onChange={(e) => setInitialStock(Number(e.target.value) || 0)}
 							/>
 						)}
 					</div>

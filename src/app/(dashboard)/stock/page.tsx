@@ -6,7 +6,6 @@ import {
 	ArrowDownCircle,
 	ArrowUpCircle,
 	Edit2,
-	History,
 	MoreVertical,
 	Package,
 	Plus,
@@ -63,11 +62,17 @@ export default function StockPage() {
 	} | null>(null);
 	const [movementForm, setMovementForm] = useState({
 		quantity: 1,
-		reference_type: "adjustment" as "purchase" | "adjustment" | "return" | "transfer",
+		reference_type: "adjustment" as
+			| "purchase"
+			| "adjustment"
+			| "return"
+			| "transfer",
 		notes: "",
 	});
 	const [products, setProducts] = useState<{ id: number; name: string }[]>([]);
-	const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
+	const [selectedProductId, setSelectedProductId] = useState<number | null>(
+		null,
+	);
 	const [newStockModal, setNewStockModal] = useState(false);
 
 	const fetchStocks = useCallback(async () => {
@@ -146,13 +151,15 @@ export default function StockPage() {
 			toast.success(
 				movementModal.type === "in"
 					? "Entrada registrada com sucesso!"
-					: "Saída registrada com sucesso!"
+					: "Saída registrada com sucesso!",
 			);
 			setMovementModal(null);
 			fetchStocks();
 		} catch (error: unknown) {
 			const message =
-				error instanceof Error ? error.message : "Erro ao registrar movimentação";
+				error instanceof Error
+					? error.message
+					: "Erro ao registrar movimentação";
 			toast.error(message);
 		}
 	};
@@ -181,7 +188,7 @@ export default function StockPage() {
 	};
 
 	const productsWithoutStock = products.filter(
-		(p) => !stocks.some((s) => s.product_id === p.id)
+		(p) => !stocks.some((s) => s.product_id === p.id),
 	);
 
 	const filteredStocks = stocks
@@ -332,10 +339,11 @@ export default function StockPage() {
 										key={f.id}
 										type="button"
 										onClick={() => setFilter(f.id as "all" | "low" | "ok")}
-										className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${filter === f.id
-											? "bg-white text-gray-900 shadow-sm"
-											: "text-gray-600 hover:text-gray-900"
-											}`}
+										className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+											filter === f.id
+												? "bg-white text-gray-900 shadow-sm"
+												: "text-gray-600 hover:text-gray-900"
+										}`}
 									>
 										{f.label}
 									</button>
@@ -578,7 +586,10 @@ export default function StockPage() {
 							min="1"
 							value={movementForm.quantity}
 							onChange={(e) =>
-								setMovementForm({ ...movementForm, quantity: Number(e.target.value) })
+								setMovementForm({
+									...movementForm,
+									quantity: Number(e.target.value),
+								})
 							}
 							className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
 						/>
@@ -592,7 +603,11 @@ export default function StockPage() {
 							onChange={(e) =>
 								setMovementForm({
 									...movementForm,
-									reference_type: e.target.value as "purchase" | "adjustment" | "return" | "transfer",
+									reference_type: e.target.value as
+										| "purchase"
+										| "adjustment"
+										| "return"
+										| "transfer",
 								})
 							}
 							className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -624,9 +639,15 @@ export default function StockPage() {
 						<Button
 							type="button"
 							onClick={handleMovement}
-							className={movementModal?.type === "in" ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"}
+							className={
+								movementModal?.type === "in"
+									? "bg-green-600 hover:bg-green-700"
+									: "bg-red-600 hover:bg-red-700"
+							}
 						>
-							{movementModal?.type === "in" ? "Registrar Entrada" : "Registrar Saída"}
+							{movementModal?.type === "in"
+								? "Registrar Entrada"
+								: "Registrar Saída"}
 						</Button>
 					</div>
 				</div>

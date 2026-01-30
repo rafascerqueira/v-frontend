@@ -1,7 +1,14 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Calendar, Download, Filter, Loader2, TrendingUp } from "lucide-react";
+import {
+	Calendar,
+	FileSpreadsheet,
+	FileText,
+	Filter,
+	Loader2,
+	TrendingUp,
+} from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import {
 	Bar,
@@ -19,6 +26,7 @@ import {
 } from "recharts";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useExport } from "@/hooks/useExport";
 import { api } from "@/lib/api";
 import { formatCurrency } from "@/lib/utils";
 
@@ -46,6 +54,7 @@ export default function ReportsPage() {
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [data, setData] = useState<ReportData | null>(null);
+	const { exportData, isExporting } = useExport();
 
 	const fetchReport = useCallback(async () => {
 		setIsLoading(true);
@@ -124,8 +133,12 @@ export default function ReportsPage() {
 		<div className="space-y-6">
 			<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 				<div>
-					<h1 className="text-2xl font-bold text-gray-900 dark:text-white">Relatórios</h1>
-					<p className="text-gray-500 dark:text-gray-400 mt-1">Análise detalhada do seu negócio</p>
+					<h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+						Relatórios
+					</h1>
+					<p className="text-gray-500 dark:text-gray-400 mt-1">
+						Análise detalhada do seu negócio
+					</p>
 				</div>
 				<div className="flex gap-2">
 					<div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
@@ -134,10 +147,11 @@ export default function ReportsPage() {
 								key={p}
 								type="button"
 								onClick={() => setPeriod(p)}
-								className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${period === p
-									? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm"
-									: "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-									}`}
+								className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+									period === p
+										? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm"
+										: "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+								}`}
 							>
 								{p === "week" ? "Semana" : p === "month" ? "Mês" : "Ano"}
 							</button>
@@ -147,10 +161,26 @@ export default function ReportsPage() {
 						<Filter className="h-4 w-4 mr-2" />
 						Filtros
 					</Button>
-					<Button variant="outline" size="sm">
-						<Download className="h-4 w-4 mr-2" />
-						Exportar
-					</Button>
+					<div className="flex gap-1">
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => exportData("orders", "excel")}
+							disabled={isExporting}
+						>
+							<FileSpreadsheet className="h-4 w-4 mr-1" />
+							Excel
+						</Button>
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => exportData("orders", "pdf")}
+							disabled={isExporting}
+						>
+							<FileText className="h-4 w-4 mr-1" />
+							PDF
+						</Button>
+					</div>
 				</div>
 			</div>
 
@@ -159,7 +189,9 @@ export default function ReportsPage() {
 				{summaryCards.map((stat) => (
 					<Card key={stat.label}>
 						<CardContent className="p-4">
-							<p className="text-sm text-gray-500 dark:text-gray-400">{stat.label}</p>
+							<p className="text-sm text-gray-500 dark:text-gray-400">
+								{stat.label}
+							</p>
 							<p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
 								{stat.value}
 							</p>
@@ -207,7 +239,11 @@ export default function ReportsPage() {
 												fill="#6366f1"
 												radius={[4, 4, 0, 0]}
 											/>
-											<Bar dataKey="meta" fill="#e5e7eb" radius={[4, 4, 0, 0]} />
+											<Bar
+												dataKey="meta"
+												fill="#e5e7eb"
+												radius={[4, 4, 0, 0]}
+											/>
 										</BarChart>
 									</ResponsiveContainer>
 								) : (
@@ -219,11 +255,15 @@ export default function ReportsPage() {
 							<div className="flex justify-center gap-6 mt-4">
 								<div className="flex items-center gap-2">
 									<div className="w-3 h-3 bg-indigo-500 rounded" />
-									<span className="text-sm text-gray-600 dark:text-gray-400">Vendas</span>
+									<span className="text-sm text-gray-600 dark:text-gray-400">
+										Vendas
+									</span>
 								</div>
 								<div className="flex items-center gap-2">
 									<div className="w-3 h-3 bg-gray-200 rounded" />
-									<span className="text-sm text-gray-600 dark:text-gray-400">Meta</span>
+									<span className="text-sm text-gray-600 dark:text-gray-400">
+										Meta
+									</span>
 								</div>
 							</div>
 						</CardContent>
@@ -281,7 +321,9 @@ export default function ReportsPage() {
 											className="w-3 h-3 rounded"
 											style={{ backgroundColor: cat.color }}
 										/>
-										<span className="text-sm text-gray-600 dark:text-gray-400">{cat.name}</span>
+										<span className="text-sm text-gray-600 dark:text-gray-400">
+											{cat.name}
+										</span>
 									</div>
 								))}
 							</div>

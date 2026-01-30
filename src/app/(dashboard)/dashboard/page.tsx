@@ -271,7 +271,7 @@ export default function DashboardPage() {
 														className={cn(
 															"inline-flex px-2 py-1 text-xs font-medium rounded-full",
 															statusColors[order.status] ||
-															"bg-gray-100 text-gray-800",
+																"bg-gray-100 text-gray-800",
 														)}
 													>
 														{statusLabels[order.status] || order.status}

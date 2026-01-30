@@ -20,6 +20,10 @@ interface User {
 	name?: string;
 	role: AccountRole;
 	planType: PlanType;
+	phone?: string;
+	address?: string;
+	avatar?: string;
+	two_factor_enabled?: boolean;
 }
 
 interface AuthContextType {
@@ -30,6 +34,7 @@ interface AuthContextType {
 	login: (email: string, password: string) => Promise<void>;
 	register: (name: string, email: string, password: string) => Promise<void>;
 	logout: () => Promise<void>;
+	refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -102,6 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 				login,
 				register,
 				logout,
+				refreshUser: fetchUser,
 			}}
 		>
 			{children}

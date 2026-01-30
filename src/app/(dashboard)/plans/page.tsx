@@ -1,11 +1,26 @@
 "use client";
 
 import { motion } from "framer-motion";
+import type { LucideIcon } from "lucide-react";
 import { Check, Crown, Sparkles, Star, X, Zap } from "lucide-react";
 import toast from "react-hot-toast";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 
-const PLAN_FEATURES = {
+interface PlanFeature {
+	name: string;
+	description: string;
+	price: number;
+	originalPrice?: number;
+	promoLabel?: string;
+	comingSoon?: boolean;
+	icon: LucideIcon;
+	color: string;
+	popular: boolean;
+	highlights: string[];
+	features: Record<string, boolean>;
+}
+
+const PLAN_FEATURES: Record<string, PlanFeature> = {
 	free: {
 		name: "Gratuito",
 		description: "Para começar a vender",
@@ -155,10 +170,11 @@ export default function PlansPage() {
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ delay: index * 0.1 }}
-							className={`relative bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden ${plan.popular
+							className={`relative bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden ${
+								plan.popular
 									? "ring-2 ring-indigo-600"
 									: "border border-gray-200 dark:border-gray-700"
-								}`}
+							}`}
 						>
 							{plan.popular && (
 								<div className="absolute top-0 right-0 bg-indigo-600 text-white text-xs font-medium px-3 py-1 rounded-bl-lg">
@@ -168,20 +184,22 @@ export default function PlansPage() {
 
 							<div className="p-6">
 								<div
-									className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${plan.color === "gray"
+									className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${
+										plan.color === "gray"
 											? "bg-gray-100 dark:bg-gray-700"
 											: plan.color === "indigo"
 												? "bg-indigo-100 dark:bg-indigo-900/30"
 												: "bg-purple-100 dark:bg-purple-900/30"
-										}`}
+									}`}
 								>
 									<Icon
-										className={`w-6 h-6 ${plan.color === "gray"
+										className={`w-6 h-6 ${
+											plan.color === "gray"
 												? "text-gray-600 dark:text-gray-400"
 												: plan.color === "indigo"
 													? "text-indigo-600 dark:text-indigo-400"
 													: "text-purple-600 dark:text-purple-400"
-											}`}
+										}`}
 									/>
 								</div>
 
@@ -193,19 +211,19 @@ export default function PlansPage() {
 								</p>
 
 								<div className="mt-4 mb-6">
-									{(plan as any).comingSoon ? (
+									{plan.comingSoon ? (
 										<span className="text-xl font-bold text-purple-600 dark:text-purple-400">
 											Em breve
 										</span>
 									) : (
 										<>
-											{(plan as any).originalPrice && (
+											{plan.originalPrice && (
 												<div className="flex items-center gap-2 mb-1">
 													<span className="text-sm line-through text-gray-400">
-														{formatPrice((plan as any).originalPrice)}
+														{formatPrice(plan.originalPrice)}
 													</span>
 													<span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
-														{(plan as any).promoLabel}
+														{plan.promoLabel}
 													</span>
 												</div>
 											)}
@@ -224,17 +242,18 @@ export default function PlansPage() {
 								<button
 									type="button"
 									onClick={() => handleSelectPlan(planId)}
-									disabled={isCurrentPlan || (plan as any).comingSoon}
-									className={`w-full py-3 px-4 rounded-xl font-medium transition-colors ${(plan as any).comingSoon
+									disabled={isCurrentPlan || plan.comingSoon}
+									className={`w-full py-3 px-4 rounded-xl font-medium transition-colors ${
+										plan.comingSoon
 											? "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 cursor-not-allowed"
 											: isCurrentPlan
 												? "bg-gray-100 dark:bg-gray-700 text-gray-500 cursor-not-allowed"
 												: plan.popular
 													? "bg-indigo-600 hover:bg-indigo-700 text-white"
 													: "bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white"
-										}`}
+									}`}
 								>
-									{(plan as any).comingSoon
+									{plan.comingSoon
 										? "Em desenvolvimento"
 										: isCurrentPlan
 											? "Plano atual"

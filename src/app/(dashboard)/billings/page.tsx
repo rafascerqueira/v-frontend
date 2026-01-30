@@ -482,11 +482,11 @@ export default function BillingsPage() {
 										updatingBilling.id,
 										"partial",
 										updatingBilling.paid_amount +
-										Math.floor(
-											(updatingBilling.total_amount -
-												updatingBilling.paid_amount) /
-											2,
-										),
+											Math.floor(
+												(updatingBilling.total_amount -
+													updatingBilling.paid_amount) /
+													2,
+											),
 									)
 								}
 							>

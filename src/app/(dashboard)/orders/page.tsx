@@ -23,6 +23,7 @@ import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { SkeletonTable } from "@/components/ui/skeleton";
@@ -522,21 +523,15 @@ export default function OrdersPage() {
 											}
 											className="w-20 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
 										/>
-										<input
-											type="number"
-											min="0"
-											step="0.01"
-											placeholder="Preço R$"
-											value={(item.unit_price / 100).toFixed(2)}
-											onChange={(e) =>
-												updateOrderItem(
-													index,
-													"unit_price",
-													Math.round(parseFloat(e.target.value || "0") * 100),
-												)
-											}
-											className="w-32 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-										/>
+										<div className="w-36">
+											<CurrencyInput
+												value={item.unit_price}
+												onChange={(value) =>
+													updateOrderItem(index, "unit_price", value)
+												}
+												className="text-sm py-2"
+											/>
+										</div>
 										<button
 											type="button"
 											onClick={() => removeOrderItem(index)}

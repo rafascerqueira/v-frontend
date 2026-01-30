@@ -1,9 +1,20 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { CheckCircle, Database, Server, Settings, Shield } from "lucide-react";
+import {
+	Calendar,
+	CheckCircle,
+	Database,
+	Gift,
+	Save,
+	Server,
+	Settings,
+	Shield,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api";
 
 interface SystemHealth {
@@ -12,23 +23,60 @@ interface SystemHealth {
 	timestamp: string;
 }
 
+interface SystemSettings {
+	free_trial_end_date: string;
+	free_plan_products_limit: number;
+	free_plan_customers_limit: number;
+	free_plan_sales_limit: number;
+}
+
 export default function AdminSettingsPage() {
 	const [health, setHealth] = useState<SystemHealth | null>(null);
 	const [loading, setLoading] = useState(true);
+	const [settings, setSettings] = useState<SystemSettings>({
+		free_trial_end_date: "2026-02-28",
+		free_plan_products_limit: 60,
+		free_plan_customers_limit: 40,
+		free_plan_sales_limit: 30,
+	});
+	const [savingSettings, setSavingSettings] = useState(false);
 
 	useEffect(() => {
-		async function loadHealth() {
+		async function loadData() {
 			try {
-				const response = await api.get("/admin/health");
-				setHealth(response.data);
+				const [healthRes, settingsRes] = await Promise.all([
+					api.get("/admin/health").catch(() => null),
+					api.get("/admin/settings").catch(() => null),
+				]);
+				if (healthRes) setHealth(healthRes.data);
+				if (settingsRes?.data) {
+					setSettings((prev) => ({
+						free_trial_end_date: settingsRes.data.free_trial_end_date ?? prev.free_trial_end_date,
+						free_plan_products_limit: settingsRes.data.free_plan_products_limit ?? prev.free_plan_products_limit,
+						free_plan_customers_limit: settingsRes.data.free_plan_customers_limit ?? prev.free_plan_customers_limit,
+						free_plan_sales_limit: settingsRes.data.free_plan_sales_limit ?? prev.free_plan_sales_limit,
+					}));
+				}
 			} catch (_error) {
-				toast.error("Erro ao verificar saúde do sistema");
+				toast.error("Erro ao carregar dados");
 			} finally {
 				setLoading(false);
 			}
 		}
-		loadHealth();
+		loadData();
 	}, []);
+
+	const handleSaveSettings = async () => {
+		try {
+			setSavingSettings(true);
+			await api.patch("/admin/settings", settings);
+			toast.success("Configurações salvas com sucesso!");
+		} catch (_error) {
+			toast.error("Erro ao salvar configurações");
+		} finally {
+			setSavingSettings(false);
+		}
+	};
 
 	return (
 		<div className="space-y-6">
@@ -154,38 +202,126 @@ export default function AdminSettingsPage() {
 					</div>
 				</motion.div>
 
-				{/* General Settings */}
+				{/* Freemium Settings */}
 				<motion.div
 					initial={{ opacity: 0, y: 20 }}
 					animate={{ opacity: 1, y: 0 }}
 					transition={{ delay: 0.2 }}
-					className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm"
+					className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm"
 				>
 					<div className="flex items-center gap-3 mb-6">
 						<div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
-							<Settings className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+							<Gift className="w-5 h-5 text-purple-600 dark:text-purple-400" />
 						</div>
 						<div>
 							<h3 className="font-semibold text-gray-900 dark:text-white">
-								Configurações Gerais
+								Período Freemium
 							</h3>
 							<p className="text-sm text-gray-500 dark:text-gray-400">
-								Configurações administrativas do sistema
+								Configure o período de uso gratuito
 							</p>
 						</div>
 					</div>
 
-					<div className="bg-gray-50 dark:bg-gray-700/30 rounded-xl p-6 text-center">
-						<Settings className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-						<h4 className="font-medium text-gray-900 dark:text-white mb-2">
-							Em desenvolvimento
-						</h4>
-						<p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-							As configurações avançadas do sistema estarão disponíveis em uma
-							próxima atualização. Por enquanto, utilize as páginas de Usuários
-							e Logs para gerenciar o sistema.
-						</p>
+					<div className="space-y-4">
+						<div>
+							<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+								Data Limite do Período Gratuito
+							</label>
+							<div className="relative">
+								<Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+								<Input
+									type="date"
+									value={settings.free_trial_end_date}
+									onChange={(e) =>
+										setSettings({
+											...settings,
+											free_trial_end_date: e.target.value,
+										})
+									}
+									className="pl-10"
+								/>
+							</div>
+							<p className="text-xs text-gray-500 mt-1">
+								Após esta data, usuários precisarão de um plano pago
+							</p>
+						</div>
 					</div>
+				</motion.div>
+
+				{/* Plan Limits */}
+				<motion.div
+					initial={{ opacity: 0, y: 20 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ delay: 0.3 }}
+					className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm"
+				>
+					<div className="flex items-center gap-3 mb-6">
+						<div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
+							<Settings className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+						</div>
+						<div>
+							<h3 className="font-semibold text-gray-900 dark:text-white">
+								Limites do Plano Free
+							</h3>
+							<p className="text-sm text-gray-500 dark:text-gray-400">
+								Configure os limites do plano gratuito
+							</p>
+						</div>
+					</div>
+
+					<div className="space-y-4">
+						<Input
+							label="Limite de Produtos"
+							type="number"
+							value={settings.free_plan_products_limit}
+							onChange={(e) =>
+								setSettings({
+									...settings,
+									free_plan_products_limit: parseInt(e.target.value, 10) || 0,
+								})
+							}
+						/>
+						<Input
+							label="Limite de Clientes"
+							type="number"
+							value={settings.free_plan_customers_limit}
+							onChange={(e) =>
+								setSettings({
+									...settings,
+									free_plan_customers_limit: parseInt(e.target.value, 10) || 0,
+								})
+							}
+						/>
+						<Input
+							label="Limite de Vendas/Mês"
+							type="number"
+							value={settings.free_plan_sales_limit}
+							onChange={(e) =>
+								setSettings({
+									...settings,
+									free_plan_sales_limit: parseInt(e.target.value, 10) || 0,
+								})
+							}
+						/>
+					</div>
+				</motion.div>
+
+				{/* Save Button */}
+				<motion.div
+					initial={{ opacity: 0, y: 20 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ delay: 0.4 }}
+					className="lg:col-span-2"
+				>
+					<Button
+						onClick={handleSaveSettings}
+						isLoading={savingSettings}
+						className="w-full sm:w-auto"
+					>
+						<Save className="w-4 h-4 mr-2" />
+						Salvar Configurações
+					</Button>
 				</motion.div>
 			</div>
 		</div>
