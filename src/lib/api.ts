@@ -10,10 +10,28 @@ export const api = axios.create({
 	},
 });
 
+const MAX_429_RETRIES = 3;
+const BASE_RETRY_DELAY_MS = 500;
+
+function delay(ms: number) {
+	return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 api.interceptors.response.use(
 	(response) => response,
 	async (error) => {
 		const originalRequest = error.config;
+
+		// Retry on 429 (Too Many Requests) with exponential backoff
+		if (error.response?.status === 429) {
+			const retryCount = originalRequest._retryCount ?? 0;
+			if (retryCount < MAX_429_RETRIES) {
+				originalRequest._retryCount = retryCount + 1;
+				const backoff = BASE_RETRY_DELAY_MS * 2 ** retryCount;
+				await delay(backoff);
+				return api(originalRequest);
+			}
+		}
 
 		// Don't retry for auth/me (initial auth check) or if already retried
 		const isAuthCheck = originalRequest?.url?.includes("/auth/me");
