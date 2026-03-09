@@ -65,13 +65,15 @@ export default function ResetPasswordPage() {
 				<div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
 					<AlertCircle className="h-8 w-8 text-red-600" />
 				</div>
-				<h2 className="text-2xl font-bold text-gray-900 mb-2">Link Inválido</h2>
-				<p className="text-gray-600 mb-6">
+				<h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+					Link Inválido
+				</h2>
+				<p className="text-gray-600 dark:text-gray-400 mb-6">
 					O link de redefinição de senha é inválido ou está incompleto.
 				</p>
 				<Link
 					href="/forgot-password"
-					className="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-medium"
+					className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-medium"
 				>
 					Solicitar novo link
 				</Link>
@@ -89,10 +91,10 @@ export default function ResetPasswordPage() {
 				<div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
 					<CheckCircle className="h-8 w-8 text-green-600" />
 				</div>
-				<h2 className="text-2xl font-bold text-gray-900 mb-2">
+				<h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
 					Senha Redefinida!
 				</h2>
-				<p className="text-gray-600 mb-6">
+				<p className="text-gray-600 dark:text-gray-400 mb-6">
 					Sua senha foi alterada com sucesso. Você já pode fazer login.
 				</p>
 				<Link href="/login">
@@ -105,13 +107,17 @@ export default function ResetPasswordPage() {
 	return (
 		<motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
 			<div className="mb-8">
-				<h2 className="text-2xl font-bold text-gray-900">Redefinir Senha</h2>
-				<p className="text-gray-600 mt-2">Digite sua nova senha abaixo.</p>
+				<h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+					Redefinir Senha
+				</h2>
+				<p className="text-gray-600 dark:text-gray-400 mt-2">
+					Digite sua nova senha abaixo.
+				</p>
 			</div>
 
 			<form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
 				{error && (
-					<div className="p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg">
+					<div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm rounded-lg">
 						{error}
 					</div>
 				)}
@@ -145,7 +151,7 @@ export default function ResetPasswordPage() {
 				<div className="text-center">
 					<Link
 						href="/login"
-						className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-indigo-600"
+						className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-primary-600"
 					>
 						<ArrowLeft className="h-4 w-4" />
 						Voltar para o login

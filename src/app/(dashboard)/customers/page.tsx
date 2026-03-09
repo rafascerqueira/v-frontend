@@ -194,7 +194,9 @@ export default function CustomersPage() {
 		<div className="space-y-6">
 			<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 				<div>
-					<h1 className="text-2xl font-bold text-gray-900">Clientes</h1>
+					<h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+						Clientes
+					</h1>
 					<p className="text-gray-500 mt-1">Gerencie sua base de clientes</p>
 				</div>
 				<Button onClick={openCreateModal}>
@@ -207,7 +209,7 @@ export default function CustomersPage() {
 				<CardHeader>
 					<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 						<CardTitle className="flex items-center gap-2">
-							<Users className="h-5 w-5 text-indigo-500" />
+							<Users className="h-5 w-5 text-primary-500" />
 							Lista de Clientes
 						</CardTitle>
 						<div className="relative w-full sm:w-64">
@@ -217,7 +219,7 @@ export default function CustomersPage() {
 								placeholder="Buscar clientes..."
 								value={searchTerm}
 								onChange={(e) => setSearchTerm(e.target.value)}
-								className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+								className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
 							/>
 						</div>
 					</div>
@@ -255,13 +257,13 @@ export default function CustomersPage() {
 									>
 										<TableCell>
 											<div className="flex items-center gap-3">
-												<div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
-													<span className="text-indigo-600 font-medium">
+												<div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
+													<span className="text-primary-600 font-medium">
 														{customer.name.charAt(0).toUpperCase()}
 													</span>
 												</div>
 												<div>
-													<p className="font-medium text-gray-900">
+													<p className="font-medium text-gray-900 dark:text-white">
 														{customer.name}
 													</p>
 													<p className="text-sm text-gray-500">
@@ -272,18 +274,18 @@ export default function CustomersPage() {
 										</TableCell>
 										<TableCell>
 											<div className="space-y-1">
-												<div className="flex items-center gap-2 text-sm text-gray-600">
+												<div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
 													<Mail className="h-3.5 w-3.5" />
 													{customer.email}
 												</div>
-												<div className="flex items-center gap-2 text-sm text-gray-600">
+												<div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
 													<Phone className="h-3.5 w-3.5" />
 													{customer.phone}
 												</div>
 											</div>
 										</TableCell>
 										<TableCell>
-											<div className="flex items-center gap-2 text-sm text-gray-600">
+											<div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
 												<MapPin className="h-3.5 w-3.5" />
 												{customer.city}, {customer.state}
 											</div>
@@ -310,12 +312,12 @@ export default function CustomersPage() {
 													<motion.div
 														initial={{ opacity: 0, scale: 0.95 }}
 														animate={{ opacity: 1, scale: 1 }}
-														className="absolute right-0 mt-1 w-36 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10"
+														className="absolute right-0 mt-1 w-36 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10"
 													>
 														<button
 															type="button"
 															onClick={() => openEditModal(customer)}
-															className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+															className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
 														>
 															<Edit2 className="h-4 w-4" />
 															Editar
@@ -326,7 +328,7 @@ export default function CustomersPage() {
 																setDeletingCustomer(customer);
 																setActiveMenu(null);
 															}}
-															className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+															className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
 														>
 															<Trash2 className="h-4 w-4" />
 															Excluir
@@ -408,7 +410,7 @@ export default function CustomersPage() {
 							</label>
 							<select
 								{...register("billing_mode")}
-								className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+								className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
 							>
 								{billingModeOptions.map((option) => (
 									<option key={option.value} value={option.value}>
@@ -446,7 +448,7 @@ export default function CustomersPage() {
 				size="sm"
 			>
 				<div className="space-y-4">
-					<p className="text-gray-600">
+					<p className="text-gray-600 dark:text-gray-400">
 						Tem certeza que deseja excluir o cliente{" "}
 						<span className="font-semibold">{deletingCustomer?.name}</span>?
 					</p>

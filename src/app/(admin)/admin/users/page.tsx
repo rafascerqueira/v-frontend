@@ -227,7 +227,7 @@ export default function AdminUsersPage() {
 				) : (
 					<div className="overflow-x-auto">
 						<table className="w-full">
-							<thead className="bg-gray-50 dark:bg-gray-700/50">
+							<thead className="bg-gray-50 dark:bg-gray-800/50">
 								<tr>
 									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
 										Usuário
@@ -300,9 +300,9 @@ export default function AdminUsersPage() {
 												<span
 													className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full ${
 														plan.color === "indigo"
-															? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400"
+															? "bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400"
 															: plan.color === "purple"
-																? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
+																? "bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-400"
 																: "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
 													}`}
 												>

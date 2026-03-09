@@ -218,7 +218,7 @@ export default function SettingsPage() {
 
 			<div className="flex flex-col lg:flex-row gap-6">
 				{/* Sidebar */}
-				<div className="lg:w-64 flex-shrink-0">
+				<div className="lg:w-64 shrink-0">
 					<Card>
 						<CardContent className="p-2">
 							<nav className="space-y-1">
@@ -229,12 +229,12 @@ export default function SettingsPage() {
 										onClick={() => setActiveTab(tab.id)}
 										className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
 											activeTab === tab.id
-												? "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300"
+												? "bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300"
 												: "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
 										}`}
 									>
 										<tab.icon
-											className={`h-5 w-5 ${activeTab === tab.id ? "text-indigo-600" : "text-gray-400"}`}
+											className={`h-5 w-5 ${activeTab === tab.id ? "text-primary-600" : "text-gray-400"}`}
 										/>
 										{tab.label}
 									</button>
@@ -255,7 +255,7 @@ export default function SettingsPage() {
 							<Card>
 								<CardHeader>
 									<CardTitle className="flex items-center gap-2">
-										<User className="h-5 w-5 text-indigo-500" />
+										<User className="h-5 w-5 text-primary-500" />
 										Informações do Perfil
 									</CardTitle>
 									<CardDescription>
@@ -264,9 +264,9 @@ export default function SettingsPage() {
 								</CardHeader>
 								<CardContent>
 									<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-										<div className="flex items-center gap-6 pb-4 border-b border-gray-100">
+										<div className="flex items-center gap-6 pb-4 border-b border-gray-100 dark:border-gray-700">
 											<div className="relative">
-												<div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
+												<div className="w-20 h-20 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
 													{profileImage ? (
 														<img
 															src={profileImage}
@@ -277,7 +277,7 @@ export default function SettingsPage() {
 														<User className="w-8 h-8 text-gray-400" />
 													)}
 												</div>
-												<label className="absolute bottom-0 right-0 p-1.5 bg-indigo-600 rounded-full cursor-pointer hover:bg-indigo-700 transition-colors">
+												<label className="absolute bottom-0 right-0 p-1.5 bg-primary-600 rounded-full cursor-pointer hover:bg-primary-700 transition-colors">
 													<Camera className="w-3.5 h-3.5 text-white" />
 													<input
 														type="file"
@@ -289,7 +289,7 @@ export default function SettingsPage() {
 												</label>
 											</div>
 											<div>
-												<p className="font-medium text-gray-900">
+												<p className="font-medium text-gray-900 dark:text-white">
 													{user?.name}
 												</p>
 												<p className="text-sm text-gray-500">{user?.email}</p>
@@ -325,9 +325,9 @@ export default function SettingsPage() {
 											<span className="block text-sm font-medium text-gray-700 mb-1">
 												Email
 											</span>
-											<div className="flex items-center gap-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg">
+											<div className="flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 rounded-lg">
 												<Mail className="h-4 w-4 text-gray-400" />
-												<span className="text-sm text-gray-600">
+												<span className="text-sm text-gray-600 dark:text-gray-400">
 													{user?.email}
 												</span>
 											</div>
@@ -356,7 +356,7 @@ export default function SettingsPage() {
 							<Card>
 								<CardHeader>
 									<CardTitle className="flex items-center gap-2">
-										<Lock className="h-5 w-5 text-indigo-500" />
+										<Lock className="h-5 w-5 text-primary-500" />
 										Alterar Senha
 									</CardTitle>
 									<CardDescription>
@@ -446,7 +446,7 @@ export default function SettingsPage() {
 							<Card>
 								<CardHeader>
 									<CardTitle className="flex items-center gap-2">
-										<ShieldCheck className="h-5 w-5 text-indigo-500" />
+										<ShieldCheck className="h-5 w-5 text-primary-500" />
 										Autenticação em Duas Etapas (2FA)
 									</CardTitle>
 									<CardDescription>
@@ -481,8 +481,8 @@ export default function SettingsPage() {
 										</div>
 									) : twoFactorSetup ? (
 										<div className="space-y-4">
-											<div className="p-4 bg-gray-50 rounded-lg text-center">
-												<p className="text-sm text-gray-600 mb-4">
+											<div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg text-center">
+												<p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
 													Escaneie o QR Code com seu aplicativo autenticador
 												</p>
 												<img
@@ -490,7 +490,7 @@ export default function SettingsPage() {
 													alt="QR Code 2FA"
 													className="mx-auto mb-4"
 												/>
-												<div className="flex items-center justify-center gap-2 p-2 bg-gray-100 rounded">
+												<div className="flex items-center justify-center gap-2 p-2 bg-gray-100 dark:bg-gray-700 rounded">
 													<code className="text-sm font-mono">
 														{twoFactorSetup.secret}
 													</code>
@@ -531,8 +531,8 @@ export default function SettingsPage() {
 											</div>
 										</div>
 									) : (
-										<div className="p-4 bg-gray-50 rounded-lg">
-											<p className="text-sm text-gray-600 mb-4">
+										<div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+											<p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
 												A autenticação em duas etapas adiciona uma camada extra
 												de segurança exigindo um código do seu celular além da
 												senha.
@@ -559,7 +559,7 @@ export default function SettingsPage() {
 							<Card>
 								<CardHeader>
 									<CardTitle className="flex items-center gap-2">
-										<Bell className="h-5 w-5 text-indigo-500" />
+										<Bell className="h-5 w-5 text-primary-500" />
 										Notificações
 									</CardTitle>
 									<CardDescription>
@@ -589,10 +589,10 @@ export default function SettingsPage() {
 									].map((item) => (
 										<div
 											key={item.label}
-											className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+											className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg"
 										>
 											<div>
-												<h3 className="font-medium text-gray-900">
+												<h3 className="font-medium text-gray-900 dark:text-white">
 													{item.label}
 												</h3>
 												<p className="text-sm text-gray-500">
@@ -605,7 +605,7 @@ export default function SettingsPage() {
 													className="sr-only peer"
 													defaultChecked
 												/>
-												<div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+												<div className="w-11 h-6 bg-gray-200 dark:bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 dark:after:border-gray-500 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
 											</label>
 										</div>
 									))}
@@ -622,7 +622,7 @@ export default function SettingsPage() {
 							<Card>
 								<CardHeader>
 									<CardTitle className="flex items-center gap-2">
-										<Palette className="h-5 w-5 text-indigo-500" />
+										<Palette className="h-5 w-5 text-primary-500" />
 										Aparência
 									</CardTitle>
 									<CardDescription>
@@ -646,21 +646,21 @@ export default function SettingsPage() {
 													onClick={() => setTheme(t.id)}
 													className={`p-4 rounded-lg border-2 text-center transition-colors ${
 														theme === t.id
-															? "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30"
+															? "border-primary-500 bg-primary-50 dark:bg-primary-900/30"
 															: "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
 													}`}
 												>
 													<t.icon
 														className={`w-6 h-6 mx-auto mb-2 ${
 															theme === t.id
-																? "text-indigo-600 dark:text-indigo-400"
+																? "text-primary-600 dark:text-primary-400"
 																: "text-gray-500 dark:text-gray-400"
 														}`}
 													/>
 													<span
 														className={`text-sm font-medium ${
 															theme === t.id
-																? "text-indigo-600 dark:text-indigo-400"
+																? "text-primary-600 dark:text-primary-400"
 																: "text-gray-700 dark:text-gray-300"
 														}`}
 													>
@@ -670,8 +670,8 @@ export default function SettingsPage() {
 											))}
 										</div>
 									</div>
-									<div className="p-4 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800 rounded-lg">
-										<p className="text-sm text-indigo-800 dark:text-indigo-300">
+									<div className="p-4 bg-primary-50 dark:bg-primary-900/30 border border-primary-200 dark:border-primary-800 rounded-lg">
+										<p className="text-sm text-primary-800 dark:text-primary-300">
 											✓ Tema{" "}
 											{theme === "dark"
 												? "escuro"

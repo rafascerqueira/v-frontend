@@ -255,7 +255,9 @@ export default function OrdersPage() {
 		<div className="space-y-6">
 			<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 				<div>
-					<h1 className="text-2xl font-bold text-gray-900">Pedidos</h1>
+					<h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+						Pedidos
+					</h1>
 					<p className="text-gray-500 mt-1">Gerencie seus pedidos de venda</p>
 				</div>
 				<Button onClick={openCreateModal}>
@@ -268,7 +270,7 @@ export default function OrdersPage() {
 				<CardHeader>
 					<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 						<CardTitle className="flex items-center gap-2">
-							<ShoppingCart className="h-5 w-5 text-indigo-500" />
+							<ShoppingCart className="h-5 w-5 text-primary-500" />
 							Lista de Pedidos
 						</CardTitle>
 						<div className="relative w-full sm:w-64">
@@ -278,7 +280,7 @@ export default function OrdersPage() {
 								placeholder="Buscar pedidos..."
 								value={searchTerm}
 								onChange={(e) => setSearchTerm(e.target.value)}
-								className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+								className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
 							/>
 						</div>
 					</div>
@@ -320,7 +322,7 @@ export default function OrdersPage() {
 											className="hover:bg-gray-50 transition-colors"
 										>
 											<TableCell>
-												<code className="px-2 py-1 bg-gray-100 rounded text-xs font-medium">
+												<code className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-medium">
 													{order.order_number}
 												</code>
 											</TableCell>
@@ -333,13 +335,13 @@ export default function OrdersPage() {
 												</div>
 											</TableCell>
 											<TableCell>
-												<div className="flex items-center gap-2 text-sm text-gray-600">
+												<div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
 													<Calendar className="h-3.5 w-3.5" />
 													{formatDate(order.createdAt)}
 												</div>
 											</TableCell>
 											<TableCell>
-												<span className="font-medium text-gray-900">
+												<span className="font-medium text-gray-900 dark:text-white">
 													{formatCurrency(order.total)}
 												</span>
 											</TableCell>
@@ -369,7 +371,7 @@ export default function OrdersPage() {
 														<motion.div
 															initial={{ opacity: 0, scale: 0.95 }}
 															animate={{ opacity: 1, scale: 1 }}
-															className="absolute right-0 mt-1 w-44 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10"
+															className="absolute right-0 mt-1 w-44 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10"
 														>
 															<button
 																type="button"
@@ -377,12 +379,12 @@ export default function OrdersPage() {
 																	setViewingOrder(order);
 																	setActiveMenu(null);
 																}}
-																className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+																className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
 															>
 																<Eye className="h-4 w-4" />
 																Ver Detalhes
 															</button>
-															<div className="border-t border-gray-100 my-1" />
+															<div className="border-t border-gray-100 dark:border-gray-700 my-1" />
 															<p className="px-4 py-1 text-xs text-gray-500 uppercase">
 																Atualizar Status
 															</p>
@@ -394,21 +396,21 @@ export default function OrdersPage() {
 																		onClick={() =>
 																			handleUpdateStatus(order.id, key)
 																		}
-																		className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+																		className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
 																	>
 																		<config.icon className="h-4 w-4" />
 																		{config.label}
 																	</button>
 																),
 															)}
-															<div className="border-t border-gray-100 my-1" />
+															<div className="border-t border-gray-100 dark:border-gray-700 my-1" />
 															<button
 																type="button"
 																onClick={() => {
 																	setDeletingOrder(order);
 																	setActiveMenu(null);
 																}}
-																className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+																className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
 															>
 																<Trash2 className="h-4 w-4" />
 																Excluir
@@ -441,7 +443,7 @@ export default function OrdersPage() {
 							</label>
 							<select
 								{...register("customer_id")}
-								className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+								className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
 							>
 								<option value="">Selecione um cliente</option>
 								{customers.map((customer) => (
@@ -480,7 +482,7 @@ export default function OrdersPage() {
 						</div>
 
 						{orderItems.length === 0 ? (
-							<div className="text-center py-8 border-2 border-dashed border-gray-200 rounded-lg">
+							<div className="text-center py-8 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg">
 								<Package className="h-8 w-8 mx-auto text-gray-300 mb-2" />
 								<p className="text-sm text-gray-500">Nenhum item adicionado</p>
 							</div>
@@ -489,7 +491,7 @@ export default function OrdersPage() {
 								{orderItems.map((item, index) => (
 									<div
 										key={index}
-										className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg"
+										className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg"
 									>
 										<select
 											value={item.product_id}
@@ -500,7 +502,7 @@ export default function OrdersPage() {
 													Number(e.target.value),
 												)
 											}
-											className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+											className="flex-1 px-3 py-2 border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
 										>
 											<option value={0}>Selecione um produto</option>
 											{products.map((product) => (
@@ -521,7 +523,7 @@ export default function OrdersPage() {
 													Number(e.target.value),
 												)
 											}
-											className="w-20 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+											className="w-20 px-3 py-2 border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
 										/>
 										<div className="w-36">
 											<CurrencyInput
@@ -541,8 +543,8 @@ export default function OrdersPage() {
 										</button>
 									</div>
 								))}
-								<div className="flex justify-end pt-2 border-t border-gray-200">
-									<p className="text-lg font-semibold text-gray-900">
+								<div className="flex justify-end pt-2 border-t border-gray-200 dark:border-gray-700">
+									<p className="text-lg font-semibold text-gray-900 dark:text-white">
 										Total: {formatCurrency(orderTotal)}
 									</p>
 								</div>
@@ -632,7 +634,7 @@ export default function OrdersPage() {
 				size="sm"
 			>
 				<div className="space-y-4">
-					<p className="text-gray-600">
+					<p className="text-gray-600 dark:text-gray-400">
 						Tem certeza que deseja excluir o pedido{" "}
 						<span className="font-semibold">{deletingOrder?.order_number}</span>
 						?

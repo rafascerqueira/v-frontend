@@ -39,7 +39,7 @@ export function UsageCard() {
 					className={`px-2 py-1 text-xs font-medium rounded-full ${
 						isFree
 							? "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
-							: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400"
+							: "bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400"
 					}`}
 				>
 					{subscription.plan === "free"
@@ -96,7 +96,7 @@ export function UsageCard() {
 				<div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
 					<a
 						href="/plans"
-						className="block text-center text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
+						className="block text-center text-sm text-primary-600 dark:text-primary-400 hover:underline"
 					>
 						Aumentar limites →
 					</a>

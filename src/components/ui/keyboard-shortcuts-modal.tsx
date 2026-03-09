@@ -47,7 +47,7 @@ export function KeyboardShortcutsModal({
 					>
 						<div className="flex items-center justify-between mb-6">
 							<div className="flex items-center gap-2">
-								<Keyboard className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+								<Keyboard className="w-5 h-5 text-primary-600 dark:text-primary-400" />
 								<h2 className="text-lg font-semibold text-gray-900 dark:text-white">
 									Atalhos de Teclado
 								</h2>
@@ -89,7 +89,7 @@ export function KeyboardShortcutsModal({
 										{(shortcut.ctrl || shortcut.alt || shortcut.shift) && (
 											<span className="text-gray-400 mx-1">+</span>
 										)}
-										<kbd className="px-2 py-1 text-xs font-medium bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 rounded uppercase">
+										<kbd className="px-2 py-1 text-xs font-medium bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 rounded uppercase">
 											{shortcut.key}
 										</kbd>
 									</div>

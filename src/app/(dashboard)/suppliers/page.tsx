@@ -335,7 +335,7 @@ export default function SuppliersPage() {
 											<button
 												type="button"
 												onClick={() => setSelectedSupplier(supplier)}
-												className="font-medium text-gray-900 dark:text-white hover:text-indigo-600 text-left"
+												className="font-medium text-gray-900 dark:text-white hover:text-primary-600 text-left"
 											>
 												{supplier.name}
 											</button>
@@ -478,7 +478,7 @@ export default function SuppliersPage() {
 										{debts.map((debt) => (
 											<div
 												key={debt.id}
-												className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg"
+												className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg"
 											>
 												<div className="flex items-center justify-between mb-2">
 													<p className="font-medium text-gray-900 dark:text-white">
@@ -487,10 +487,10 @@ export default function SuppliersPage() {
 													<span
 														className={`px-2 py-1 text-xs font-medium rounded-full ${
 															debt.status === "paid"
-																? "bg-green-100 text-green-700"
+																? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
 																: debt.status === "partial"
-																	? "bg-yellow-100 text-yellow-700"
-																	: "bg-red-100 text-red-700"
+																	? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300"
+																	: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300"
 														}`}
 													>
 														{debt.status === "paid"
@@ -616,7 +616,7 @@ export default function SuppliersPage() {
 									<textarea
 										{...register("notes")}
 										placeholder="Notas adicionais..."
-										className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700"
+										className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 dark:bg-gray-700"
 										rows={3}
 									/>
 								</div>

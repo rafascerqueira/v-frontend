@@ -77,7 +77,7 @@ export default function ReportsPage() {
 	if (isLoading) {
 		return (
 			<div className="flex items-center justify-center h-96">
-				<Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+				<Loader2 className="h-8 w-8 animate-spin text-primary-600" />
 			</div>
 		);
 	}
@@ -254,7 +254,7 @@ export default function ReportsPage() {
 							</div>
 							<div className="flex justify-center gap-6 mt-4">
 								<div className="flex items-center gap-2">
-									<div className="w-3 h-3 bg-indigo-500 rounded" />
+									<div className="w-3 h-3 bg-primary-500 rounded" />
 									<span className="text-sm text-gray-600 dark:text-gray-400">
 										Vendas
 									</span>
@@ -279,7 +279,7 @@ export default function ReportsPage() {
 					<Card>
 						<CardHeader>
 							<CardTitle className="flex items-center gap-2">
-								<Calendar className="h-5 w-5 text-purple-500" />
+								<Calendar className="h-5 w-5 text-secondary-500" />
 								Vendas por Categoria
 							</CardTitle>
 						</CardHeader>
@@ -392,7 +392,7 @@ export default function ReportsPage() {
 								{topProducts.length > 0 ? (
 									topProducts.map((product, index) => (
 										<div key={product.name} className="flex items-center gap-4">
-											<div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/50 rounded-lg flex items-center justify-center text-sm font-bold text-indigo-600 dark:text-indigo-400">
+											<div className="w-8 h-8 bg-primary-100 dark:bg-primary-900/50 rounded-lg flex items-center justify-center text-sm font-bold text-primary-600 dark:text-primary-400">
 												{index + 1}
 											</div>
 											<div className="flex-1 min-w-0">

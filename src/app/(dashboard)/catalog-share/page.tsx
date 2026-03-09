@@ -138,8 +138,8 @@ export default function CatalogSharePage() {
 					className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm"
 				>
 					<div className="flex items-center gap-3 mb-6">
-						<div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center">
-							<LinkIcon className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+						<div className="w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-xl flex items-center justify-center">
+							<LinkIcon className="w-6 h-6 text-primary-600 dark:text-primary-400" />
 						</div>
 						<div>
 							<h2 className="font-semibold text-gray-900 dark:text-white">
@@ -164,7 +164,7 @@ export default function CatalogSharePage() {
 							className={`px-4 py-3 rounded-xl font-medium transition-all flex items-center gap-2 ${
 								copied
 									? "bg-green-500 text-white"
-									: "bg-indigo-600 hover:bg-indigo-700 text-white"
+									: "bg-primary-600 hover:bg-primary-700 text-white"
 							}`}
 						>
 							{copied ? (
@@ -186,7 +186,7 @@ export default function CatalogSharePage() {
 							href={catalogUrl}
 							target="_blank"
 							rel="noopener noreferrer"
-							className="inline-flex items-center gap-2 text-indigo-600 dark:text-indigo-400 hover:underline text-sm"
+							className="inline-flex items-center gap-2 text-primary-600 dark:text-primary-400 hover:underline text-sm"
 						>
 							<ExternalLink className="w-4 h-4" />
 							Abrir catálogo em nova aba
@@ -202,8 +202,8 @@ export default function CatalogSharePage() {
 					className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm"
 				>
 					<div className="flex items-center gap-3 mb-6">
-						<div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
-							<Share2 className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+						<div className="w-12 h-12 bg-secondary-100 dark:bg-secondary-900/30 rounded-xl flex items-center justify-center">
+							<Share2 className="w-6 h-6 text-secondary-600 dark:text-secondary-400" />
 						</div>
 						<div>
 							<h2 className="font-semibold text-gray-900 dark:text-white">
@@ -305,14 +305,14 @@ export default function CatalogSharePage() {
 						placeholder="Buscar cliente por nome, email ou telefone..."
 						value={searchTerm}
 						onChange={(e) => setSearchTerm(e.target.value)}
-						className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+						className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
 					/>
 				</div>
 
 				<div className="space-y-3 max-h-96 overflow-y-auto">
 					{loading ? (
 						<div className="text-center py-8">
-							<div className="animate-spin rounded-full h-8 w-8 border-2 border-indigo-600 border-t-transparent mx-auto" />
+							<div className="animate-spin rounded-full h-8 w-8 border-2 border-primary-600 border-t-transparent mx-auto" />
 							<p className="text-gray-500 dark:text-gray-400 mt-2 text-sm">
 								Carregando clientes...
 							</p>
@@ -330,11 +330,11 @@ export default function CatalogSharePage() {
 						filteredCustomers.slice(0, 10).map((customer) => (
 							<div
 								key={customer.id}
-								className="flex items-center justify-between gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl"
+								className="flex items-center justify-between gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl"
 							>
 								<div className="flex items-center gap-3 min-w-0">
-									<div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 rounded-full flex items-center justify-center shrink-0">
-										<User className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+									<div className="w-10 h-10 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center shrink-0">
+										<User className="w-5 h-5 text-primary-600 dark:text-primary-400" />
 									</div>
 									<div className="min-w-0">
 										<p className="font-medium text-gray-900 dark:text-white truncate">
@@ -374,7 +374,7 @@ export default function CatalogSharePage() {
 										href={getCustomerLink(customer.id)}
 										target="_blank"
 										rel="noopener noreferrer"
-										className="p-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-200 dark:hover:bg-indigo-900/50 rounded-lg transition-colors"
+										className="p-2 bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 hover:bg-primary-200 dark:hover:bg-primary-900/50 rounded-lg transition-colors"
 										title="Abrir catálogo personalizado"
 									>
 										<ExternalLink className="w-4 h-4" />
@@ -397,7 +397,7 @@ export default function CatalogSharePage() {
 				initial={{ opacity: 0, y: 20 }}
 				animate={{ opacity: 1, y: 0 }}
 				transition={{ delay: 0.4 }}
-				className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl p-6 text-white"
+				className="bg-linear-to-r from-primary-500 to-secondary-600 rounded-xl p-6 text-white"
 			>
 				<h3 className="font-semibold text-lg mb-4">Como funciona?</h3>
 				<div className="grid md:grid-cols-3 gap-6">

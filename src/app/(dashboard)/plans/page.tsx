@@ -135,7 +135,7 @@ export default function PlansPage() {
 	if (loading) {
 		return (
 			<div className="flex items-center justify-center min-h-[60vh]">
-				<div className="animate-spin rounded-full h-8 w-8 border-2 border-indigo-600 border-t-transparent" />
+				<div className="animate-spin rounded-full h-8 w-8 border-2 border-primary-600 border-t-transparent" />
 			</div>
 		);
 	}
@@ -172,12 +172,12 @@ export default function PlansPage() {
 							transition={{ delay: index * 0.1 }}
 							className={`relative bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden ${
 								plan.popular
-									? "ring-2 ring-indigo-600"
+									? "ring-2 ring-primary-600"
 									: "border border-gray-200 dark:border-gray-700"
 							}`}
 						>
 							{plan.popular && (
-								<div className="absolute top-0 right-0 bg-indigo-600 text-white text-xs font-medium px-3 py-1 rounded-bl-lg">
+								<div className="absolute top-0 right-0 bg-primary-600 text-white text-xs font-medium px-3 py-1 rounded-bl-lg">
 									Mais popular
 								</div>
 							)}
@@ -188,8 +188,8 @@ export default function PlansPage() {
 										plan.color === "gray"
 											? "bg-gray-100 dark:bg-gray-700"
 											: plan.color === "indigo"
-												? "bg-indigo-100 dark:bg-indigo-900/30"
-												: "bg-purple-100 dark:bg-purple-900/30"
+												? "bg-primary-100 dark:bg-primary-900/30"
+												: "bg-secondary-100 dark:bg-secondary-900/30"
 									}`}
 								>
 									<Icon
@@ -197,8 +197,8 @@ export default function PlansPage() {
 											plan.color === "gray"
 												? "text-gray-600 dark:text-gray-400"
 												: plan.color === "indigo"
-													? "text-indigo-600 dark:text-indigo-400"
-													: "text-purple-600 dark:text-purple-400"
+													? "text-primary-600 dark:text-primary-400"
+													: "text-secondary-600 dark:text-secondary-400"
 										}`}
 									/>
 								</div>
@@ -212,7 +212,7 @@ export default function PlansPage() {
 
 								<div className="mt-4 mb-6">
 									{plan.comingSoon ? (
-										<span className="text-xl font-bold text-purple-600 dark:text-purple-400">
+										<span className="text-xl font-bold text-secondary-600 dark:text-secondary-400">
 											Em breve
 										</span>
 									) : (
@@ -222,7 +222,7 @@ export default function PlansPage() {
 													<span className="text-sm line-through text-gray-400">
 														{formatPrice(plan.originalPrice)}
 													</span>
-													<span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
+													<span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-2 py-0.5 rounded-full font-medium">
 														{plan.promoLabel}
 													</span>
 												</div>
@@ -245,11 +245,11 @@ export default function PlansPage() {
 									disabled={isCurrentPlan || plan.comingSoon}
 									className={`w-full py-3 px-4 rounded-xl font-medium transition-colors ${
 										plan.comingSoon
-											? "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 cursor-not-allowed"
+											? "bg-secondary-100 dark:bg-secondary-900/30 text-secondary-600 dark:text-secondary-400 cursor-not-allowed"
 											: isCurrentPlan
 												? "bg-gray-100 dark:bg-gray-700 text-gray-500 cursor-not-allowed"
 												: plan.popular
-													? "bg-indigo-600 hover:bg-indigo-700 text-white"
+													? "bg-primary-600 hover:bg-primary-700 text-white"
 													: "bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white"
 									}`}
 								>
@@ -266,7 +266,7 @@ export default function PlansPage() {
 											key={highlight}
 											className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400"
 										>
-											<Sparkles className="w-4 h-4 text-indigo-500" />
+											<Sparkles className="w-4 h-4 text-primary-500" />
 											{highlight}
 										</li>
 									))}
@@ -296,7 +296,7 @@ export default function PlansPage() {
 				<div className="overflow-x-auto">
 					<table className="w-full">
 						<thead>
-							<tr className="bg-gray-50 dark:bg-gray-700/50">
+							<tr className="bg-gray-50 dark:bg-gray-800/50">
 								<th className="text-left px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-400">
 									Recurso
 								</th>
@@ -343,7 +343,7 @@ export default function PlansPage() {
 					Dúvidas? Entre em contato conosco em{" "}
 					<a
 						href="mailto:suporte@vendinhas.com"
-						className="text-indigo-600 dark:text-indigo-400 hover:underline"
+						className="text-primary-600 dark:text-primary-400 hover:underline"
 					>
 						suporte@vendinhas.com
 					</a>

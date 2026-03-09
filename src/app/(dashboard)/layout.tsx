@@ -75,7 +75,7 @@ export default function DashboardLayout({
 	if (isLoading || !isAuthenticated || isAdmin) {
 		return (
 			<div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-				<div className="animate-spin rounded-full h-8 w-8 border-2 border-indigo-600 border-t-transparent" />
+				<div className="animate-spin rounded-full h-8 w-8 border-2 border-primary-600 border-t-transparent" />
 			</div>
 		);
 	}
@@ -138,7 +138,7 @@ export default function DashboardLayout({
 									className={cn(
 										"flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
 										isActive
-											? "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300"
+											? "bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300"
 											: "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white",
 									)}
 									onClick={() => setSidebarOpen(false)}
@@ -146,14 +146,14 @@ export default function DashboardLayout({
 									<item.icon
 										className={cn(
 											"h-5 w-5",
-											isActive ? "text-indigo-600" : "text-gray-400",
+											isActive ? "text-primary-600" : "text-gray-400",
 										)}
 									/>
 									{item.name}
 									{isActive && (
 										<motion.div
 											layoutId="activeNav"
-											className="absolute left-0 w-1 h-8 bg-indigo-600 rounded-r-full"
+											className="absolute left-0 w-1 h-8 bg-primary-600 rounded-r-full"
 											initial={false}
 											transition={{
 												type: "spring",
@@ -205,7 +205,7 @@ export default function DashboardLayout({
 							onClick={() => setUserMenuOpen(!userMenuOpen)}
 							className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
 						>
-							<div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center">
+							<div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center">
 								<span className="text-sm font-medium text-white">
 									{user?.email?.charAt(0).toUpperCase()}
 								</span>
@@ -239,7 +239,7 @@ export default function DashboardLayout({
 											setUserMenuOpen(false);
 											logout();
 										}}
-										className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+										className="block w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
 									>
 										Sair
 									</button>

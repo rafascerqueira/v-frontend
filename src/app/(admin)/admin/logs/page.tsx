@@ -121,7 +121,7 @@ export default function AdminLogsPage() {
 					<select
 						value={entityFilter}
 						onChange={(e) => setEntityFilter(e.target.value)}
-						className="px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-red-500"
+						className="px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm dark:text-white focus:ring-2 focus:ring-red-500"
 					>
 						<option value="">Todas as entidades</option>
 						{entities.map((entity) => (
@@ -133,7 +133,7 @@ export default function AdminLogsPage() {
 					<select
 						value={actionFilter}
 						onChange={(e) => setActionFilter(e.target.value)}
-						className="px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-red-500"
+						className="px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm dark:text-white focus:ring-2 focus:ring-red-500"
 					>
 						<option value="">Todas as ações</option>
 						{actions.map((action) => (

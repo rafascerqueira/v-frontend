@@ -51,10 +51,17 @@ export default function AdminSettingsPage() {
 				if (healthRes) setHealth(healthRes.data);
 				if (settingsRes?.data) {
 					setSettings((prev) => ({
-						free_trial_end_date: settingsRes.data.free_trial_end_date ?? prev.free_trial_end_date,
-						free_plan_products_limit: settingsRes.data.free_plan_products_limit ?? prev.free_plan_products_limit,
-						free_plan_customers_limit: settingsRes.data.free_plan_customers_limit ?? prev.free_plan_customers_limit,
-						free_plan_sales_limit: settingsRes.data.free_plan_sales_limit ?? prev.free_plan_sales_limit,
+						free_trial_end_date:
+							settingsRes.data.free_trial_end_date ?? prev.free_trial_end_date,
+						free_plan_products_limit:
+							settingsRes.data.free_plan_products_limit ??
+							prev.free_plan_products_limit,
+						free_plan_customers_limit:
+							settingsRes.data.free_plan_customers_limit ??
+							prev.free_plan_customers_limit,
+						free_plan_sales_limit:
+							settingsRes.data.free_plan_sales_limit ??
+							prev.free_plan_sales_limit,
 					}));
 				}
 			} catch (_error) {
@@ -210,8 +217,8 @@ export default function AdminSettingsPage() {
 					className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm"
 				>
 					<div className="flex items-center gap-3 mb-6">
-						<div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
-							<Gift className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+						<div className="w-10 h-10 bg-secondary-100 dark:bg-secondary-900/30 rounded-lg flex items-center justify-center">
+							<Gift className="w-5 h-5 text-secondary-600 dark:text-secondary-400" />
 						</div>
 						<div>
 							<h3 className="font-semibold text-gray-900 dark:text-white">

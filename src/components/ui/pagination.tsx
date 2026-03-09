@@ -104,7 +104,7 @@ export function Pagination({ meta, onPageChange, className }: PaginationProps) {
 								className={cn(
 									"min-w-[32px] h-8 px-2 text-sm font-medium rounded-md transition-colors",
 									p === page
-										? "bg-indigo-600 text-white"
+										? "bg-primary-600 text-white"
 										: "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700",
 								)}
 							>

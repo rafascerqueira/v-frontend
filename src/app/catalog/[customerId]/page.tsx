@@ -88,7 +88,7 @@ function ProductCard({ product }: { product: CatalogProduct }) {
 			</div>
 
 			<div className="p-4">
-				<span className="text-xs text-indigo-600 dark:text-indigo-400 font-medium">
+				<span className="text-xs text-primary-600 dark:text-primary-400 font-medium">
 					{product.category}
 				</span>
 				<h3 className="font-semibold text-gray-900 dark:text-white mt-1 line-clamp-2">
@@ -102,7 +102,7 @@ function ProductCard({ product }: { product: CatalogProduct }) {
 				</p>
 
 				<div className="mt-3 flex items-center justify-between">
-					<span className="text-lg font-bold text-indigo-600 dark:text-indigo-400">
+					<span className="text-lg font-bold text-primary-600 dark:text-primary-400">
 						{formatCurrency(product.price)}
 					</span>
 
@@ -111,7 +111,7 @@ function ProductCard({ product }: { product: CatalogProduct }) {
 							<button
 								type="button"
 								onClick={handleAdd}
-								className="flex items-center gap-1 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
+								className="flex items-center gap-1 bg-primary-600 hover:bg-primary-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
 							>
 								<Plus className="w-4 h-4" />
 								Adicionar
@@ -174,7 +174,7 @@ function CartSidebar({
 					>
 						<div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
 							<div className="flex items-center gap-2">
-								<ShoppingCart className="w-5 h-5 text-indigo-600" />
+								<ShoppingCart className="w-5 h-5 text-primary-600" />
 								<h2 className="font-semibold text-gray-900 dark:text-white">
 									Carrinho ({itemCount})
 								</h2>
@@ -200,7 +200,7 @@ function CartSidebar({
 								items.map((item) => (
 									<div
 										key={item.product.id}
-										className="flex gap-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3"
+										className="flex gap-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3"
 									>
 										<div className="w-16 h-16 bg-gray-200 dark:bg-gray-600 rounded-lg flex items-center justify-center shrink-0">
 											{item.product.images?.[0] ? (
@@ -217,7 +217,7 @@ function CartSidebar({
 											<h4 className="font-medium text-gray-900 dark:text-white text-sm truncate">
 												{item.product.name}
 											</h4>
-											<p className="text-sm text-indigo-600 dark:text-indigo-400 font-medium">
+											<p className="text-sm text-primary-600 dark:text-primary-400 font-medium">
 												{formatCurrency(item.product.price)}
 											</p>
 											<div className="flex items-center gap-2 mt-2">
@@ -260,14 +260,14 @@ function CartSidebar({
 							<div className="p-4 border-t border-gray-200 dark:border-gray-700 space-y-4">
 								<div className="flex items-center justify-between text-lg font-semibold">
 									<span className="text-gray-900 dark:text-white">Total:</span>
-									<span className="text-indigo-600 dark:text-indigo-400">
+									<span className="text-primary-600 dark:text-primary-400">
 										{formatCurrency(total)}
 									</span>
 								</div>
 								<Link
 									href={`/catalog/${customerId}/checkout`}
 									onClick={onClose}
-									className="block w-full bg-indigo-600 hover:bg-indigo-700 text-white text-center py-3 rounded-xl font-medium transition-colors"
+									className="block w-full bg-primary-600 hover:bg-primary-700 text-white text-center py-3 rounded-xl font-medium transition-colors"
 								>
 									Finalizar Pedido
 								</Link>
@@ -327,7 +327,7 @@ export default function PersonalizedCatalogPage() {
 				<div className="max-w-7xl mx-auto px-4 py-4">
 					<div className="flex items-center justify-between gap-4">
 						<div className="flex items-center gap-3">
-							<div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center">
+							<div className="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center">
 								<Store className="w-6 h-6 text-white" />
 							</div>
 							<div>
@@ -353,7 +353,7 @@ export default function PersonalizedCatalogPage() {
 						<button
 							type="button"
 							onClick={() => setCartOpen(true)}
-							className="relative p-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-colors"
+							className="relative p-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl transition-colors"
 						>
 							<ShoppingCart className="w-5 h-5" />
 							{itemCount > 0 && (
@@ -384,7 +384,7 @@ export default function PersonalizedCatalogPage() {
 								placeholder="Buscar produtos..."
 								value={search}
 								onChange={(e) => setSearch(e.target.value)}
-								className="w-full pl-10 pr-4 py-2.5 bg-gray-100 dark:bg-gray-700 border-0 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-indigo-500"
+								className="w-full pl-10 pr-4 py-2.5 bg-gray-100 dark:bg-gray-700 border-0 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-primary-500"
 							/>
 						</div>
 						<div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0">
@@ -393,7 +393,7 @@ export default function PersonalizedCatalogPage() {
 								onClick={() => setSelectedCategory(null)}
 								className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${
 									!selectedCategory
-										? "bg-indigo-600 text-white"
+										? "bg-primary-600 text-white"
 										: "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
 								}`}
 							>
@@ -406,7 +406,7 @@ export default function PersonalizedCatalogPage() {
 									onClick={() => setSelectedCategory(category)}
 									className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${
 										selectedCategory === category
-											? "bg-indigo-600 text-white"
+											? "bg-primary-600 text-white"
 											: "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
 									}`}
 								>

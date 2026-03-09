@@ -58,7 +58,7 @@ export function Header() {
 								key={link.href}
 								href={link.href}
 								className={cn(
-									"text-sm font-medium transition-colors hover:text-indigo-600",
+									"text-sm font-medium transition-colors hover:text-primary-600",
 									isScrolled
 										? "text-gray-600 dark:text-gray-300"
 										: "text-white/90 hover:text-white",
@@ -83,7 +83,7 @@ export function Header() {
 						</Link>
 						<Link
 							href="/register"
-							className="inline-flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-all hover:scale-105"
+							className="inline-flex items-center gap-2 bg-primary-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-primary-700 transition-all hover:scale-105"
 						>
 							Começar Grátis
 							<ArrowRight className="h-4 w-4" />
@@ -125,7 +125,7 @@ export function Header() {
 							<a
 								key={link.href}
 								href={link.href}
-								className="block text-gray-600 dark:text-gray-300 hover:text-indigo-600 font-medium"
+								className="block text-gray-600 dark:text-gray-300 hover:text-primary-600 font-medium"
 								onClick={() => setIsMobileMenuOpen(false)}
 							>
 								{link.label}
@@ -140,7 +140,7 @@ export function Header() {
 							</Link>
 							<Link
 								href="/register"
-								className="flex items-center justify-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-lg font-semibold"
+								className="flex items-center justify-center gap-2 bg-primary-600 text-white px-5 py-2.5 rounded-lg font-semibold"
 							>
 								Começar Grátis
 								<ArrowRight className="h-4 w-4" />

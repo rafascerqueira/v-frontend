@@ -188,13 +188,13 @@ export default function PersonalizedCheckoutPage() {
 						<p className="text-sm text-gray-500 dark:text-gray-400">
 							Número do pedido
 						</p>
-						<p className="text-xl font-bold text-indigo-600 dark:text-indigo-400">
+						<p className="text-xl font-bold text-primary-600 dark:text-primary-400">
 							{orderNumber}
 						</p>
 					</div>
 					<Link
 						href={`/catalog/${customerId}`}
-						className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-medium transition-colors"
+						className="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-xl font-medium transition-colors"
 					>
 						<Store className="w-5 h-5" />
 						Continuar Comprando
@@ -217,7 +217,7 @@ export default function PersonalizedCheckoutPage() {
 					</p>
 					<Link
 						href={`/catalog/${customerId}`}
-						className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-medium transition-colors"
+						className="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-xl font-medium transition-colors"
 					>
 						<ArrowLeft className="w-5 h-5" />
 						Ver Catálogo
@@ -281,7 +281,7 @@ export default function PersonalizedCheckoutPage() {
 							{/* Personal Info */}
 							<div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
 								<div className="flex items-center gap-2 mb-4">
-									<User className="w-5 h-5 text-indigo-600" />
+									<User className="w-5 h-5 text-primary-600" />
 									<h2 className="font-semibold text-gray-900 dark:text-white">
 										Dados Pessoais
 									</h2>
@@ -293,7 +293,7 @@ export default function PersonalizedCheckoutPage() {
 										</label>
 										<input
 											{...register("name")}
-											className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+											className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
 										/>
 										{errors.name && (
 											<p className="text-red-500 text-sm mt-1">
@@ -308,7 +308,7 @@ export default function PersonalizedCheckoutPage() {
 										<input
 											type="email"
 											{...register("email")}
-											className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+											className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
 										/>
 										{errors.email && (
 											<p className="text-red-500 text-sm mt-1">
@@ -327,7 +327,7 @@ export default function PersonalizedCheckoutPage() {
 												setValue("phone", e.target.value.replace(/\D/g, ""))
 											}
 											maxLength={15}
-											className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+											className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
 										/>
 										{errors.phone && (
 											<p className="text-red-500 text-sm mt-1">
@@ -346,7 +346,7 @@ export default function PersonalizedCheckoutPage() {
 												setValue("document", e.target.value.replace(/\D/g, ""))
 											}
 											maxLength={18}
-											className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+											className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
 										/>
 										{errors.document && (
 											<p className="text-red-500 text-sm mt-1">
@@ -360,7 +360,7 @@ export default function PersonalizedCheckoutPage() {
 							{/* Address */}
 							<div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
 								<div className="flex items-center gap-2 mb-4">
-									<MapPin className="w-5 h-5 text-indigo-600" />
+									<MapPin className="w-5 h-5 text-primary-600" />
 									<h2 className="font-semibold text-gray-900 dark:text-white">
 										Endereço de Entrega
 									</h2>
@@ -377,7 +377,7 @@ export default function PersonalizedCheckoutPage() {
 												setValue("zip_code", e.target.value.replace(/\D/g, ""))
 											}
 											maxLength={9}
-											className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+											className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
 										/>
 										{errors.zip_code && (
 											<p className="text-red-500 text-sm mt-1">
@@ -392,7 +392,7 @@ export default function PersonalizedCheckoutPage() {
 										<input
 											{...register("state")}
 											maxLength={2}
-											className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent uppercase"
+											className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent uppercase"
 										/>
 										{errors.state && (
 											<p className="text-red-500 text-sm mt-1">
@@ -406,7 +406,7 @@ export default function PersonalizedCheckoutPage() {
 										</label>
 										<input
 											{...register("city")}
-											className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+											className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
 										/>
 										{errors.city && (
 											<p className="text-red-500 text-sm mt-1">
@@ -420,7 +420,7 @@ export default function PersonalizedCheckoutPage() {
 										</label>
 										<input
 											{...register("neighborhood")}
-											className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+											className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
 										/>
 										{errors.neighborhood && (
 											<p className="text-red-500 text-sm mt-1">
@@ -434,7 +434,7 @@ export default function PersonalizedCheckoutPage() {
 										</label>
 										<input
 											{...register("address")}
-											className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+											className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
 										/>
 										{errors.address && (
 											<p className="text-red-500 text-sm mt-1">
@@ -448,7 +448,7 @@ export default function PersonalizedCheckoutPage() {
 										</label>
 										<input
 											{...register("number")}
-											className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+											className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
 										/>
 										{errors.number && (
 											<p className="text-red-500 text-sm mt-1">
@@ -462,7 +462,7 @@ export default function PersonalizedCheckoutPage() {
 										</label>
 										<input
 											{...register("complement")}
-											className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+											className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
 										/>
 									</div>
 								</div>
@@ -471,7 +471,7 @@ export default function PersonalizedCheckoutPage() {
 							{/* Notes */}
 							<div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
 								<div className="flex items-center gap-2 mb-4">
-									<CreditCard className="w-5 h-5 text-indigo-600" />
+									<CreditCard className="w-5 h-5 text-primary-600" />
 									<h2 className="font-semibold text-gray-900 dark:text-white">
 										Observações
 									</h2>
@@ -480,7 +480,7 @@ export default function PersonalizedCheckoutPage() {
 									{...register("notes")}
 									rows={3}
 									placeholder="Instruções especiais para entrega, horário preferido, etc..."
-									className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
+									className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
 								/>
 							</div>
 						</div>
@@ -489,7 +489,7 @@ export default function PersonalizedCheckoutPage() {
 						<div className="lg:col-span-1">
 							<div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm sticky top-24">
 								<div className="flex items-center gap-2 mb-4">
-									<ShoppingCart className="w-5 h-5 text-indigo-600" />
+									<ShoppingCart className="w-5 h-5 text-primary-600" />
 									<h2 className="font-semibold text-gray-900 dark:text-white">
 										Resumo do Pedido
 									</h2>
@@ -544,7 +544,7 @@ export default function PersonalizedCheckoutPage() {
 									</div>
 									<div className="flex justify-between text-lg font-semibold pt-2 border-t border-gray-200 dark:border-gray-700">
 										<span className="text-gray-900 dark:text-white">Total</span>
-										<span className="text-indigo-600 dark:text-indigo-400">
+										<span className="text-primary-600 dark:text-primary-400">
 											{formatCurrency(total)}
 										</span>
 									</div>
@@ -553,7 +553,7 @@ export default function PersonalizedCheckoutPage() {
 								<button
 									type="submit"
 									disabled={loading}
-									className="w-full mt-6 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white py-3 rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+									className="w-full mt-6 bg-primary-600 hover:bg-primary-700 disabled:bg-primary-400 text-white py-3 rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
 								>
 									{loading ? (
 										<>

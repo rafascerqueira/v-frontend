@@ -54,7 +54,7 @@ function NotificationItem({
 		<div
 			className={cn(
 				"p-3 border-b border-gray-100 dark:border-gray-700 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer",
-				!notification.read && "bg-indigo-50/50 dark:bg-indigo-900/10",
+				!notification.read && "bg-primary-50/50 dark:bg-primary-900/10",
 			)}
 			onClick={() => !notification.read && onMarkAsRead(notification.id)}
 		>
@@ -68,7 +68,7 @@ function NotificationItem({
 							{notification.title}
 						</p>
 						{!notification.read && (
-							<span className="w-2 h-2 rounded-full bg-indigo-500 shrink-0" />
+							<span className="w-2 h-2 rounded-full bg-primary-500 shrink-0" />
 						)}
 					</div>
 					<p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">

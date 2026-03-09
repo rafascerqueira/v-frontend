@@ -58,10 +58,10 @@ export function UpgradeBanner({
 			animate={{ opacity: 1, y: 0 }}
 			className={`relative overflow-hidden rounded-xl ${
 				isAtLimit
-					? "bg-gradient-to-r from-red-600 to-orange-600"
+					? "bg-linear-to-r from-red-600 to-orange-600"
 					: isNearLimit
-						? "bg-gradient-to-r from-amber-500 to-orange-500"
-						: "bg-gradient-to-r from-indigo-600 to-purple-600"
+						? "bg-linear-to-r from-amber-500 to-orange-500"
+						: "bg-linear-to-r from-primary-600 to-secondary-600"
 			} p-4 text-white`}
 		>
 			<div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
@@ -93,7 +93,7 @@ export function UpgradeBanner({
 				<div className="flex items-center gap-2">
 					<Link
 						href="/plans"
-						className="flex items-center gap-2 px-4 py-2 bg-white text-indigo-600 font-medium rounded-lg hover:bg-white/90 transition-colors"
+						className="flex items-center gap-2 px-4 py-2 bg-white text-primary-600 font-medium rounded-lg hover:bg-white/90 transition-colors"
 					>
 						<Sparkles className="w-4 h-4" />
 						Fazer Upgrade

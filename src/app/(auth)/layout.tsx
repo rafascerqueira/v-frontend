@@ -23,19 +23,19 @@ export default function AuthLayout({
 
 	if (isLoading) {
 		return (
-			<div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50">
-				<div className="animate-spin rounded-full h-8 w-8 border-2 border-indigo-600 border-t-transparent" />
+			<div className="min-h-screen flex items-center justify-center bg-linear-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900">
+				<div className="animate-spin rounded-full h-8 w-8 border-2 border-primary-600 border-t-transparent" />
 			</div>
 		);
 	}
 
 	return (
-		<div className="min-h-screen flex bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+		<div className="min-h-screen flex bg-linear-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900">
 			{/* Left side - Branding */}
-			<div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-indigo-600 to-purple-700 p-12 flex-col justify-between relative overflow-hidden">
+			<div className="hidden lg:flex lg:w-1/2 bg-linear-to-br from-primary-600 to-secondary-700 p-12 flex-col justify-between relative overflow-hidden">
 				<div className="absolute inset-0 opacity-10">
 					<div className="absolute top-20 left-20 w-72 h-72 bg-white rounded-full blur-3xl" />
-					<div className="absolute bottom-20 right-20 w-96 h-96 bg-purple-300 rounded-full blur-3xl" />
+					<div className="absolute bottom-20 right-20 w-96 h-96 bg-secondary-300 rounded-full blur-3xl" />
 				</div>
 
 				<motion.div
@@ -66,7 +66,7 @@ export default function AuthLayout({
 					<h1 className="text-4xl font-bold text-white leading-tight">
 						Gerencie suas vendas de forma simples e eficiente
 					</h1>
-					<p className="text-indigo-100 text-lg">
+					<p className="text-primary-100 text-lg">
 						Controle de estoque, pedidos, clientes e muito mais em uma única
 						plataforma.
 					</p>
@@ -74,15 +74,15 @@ export default function AuthLayout({
 					<div className="flex gap-8 pt-4">
 						<div>
 							<div className="text-3xl font-bold text-white">500+</div>
-							<div className="text-indigo-200 text-sm">Empresas ativas</div>
+							<div className="text-primary-200 text-sm">Empresas ativas</div>
 						</div>
 						<div>
 							<div className="text-3xl font-bold text-white">50k+</div>
-							<div className="text-indigo-200 text-sm">Vendas processadas</div>
+							<div className="text-primary-200 text-sm">Vendas processadas</div>
 						</div>
 						<div>
 							<div className="text-3xl font-bold text-white">99.9%</div>
-							<div className="text-indigo-200 text-sm">Disponibilidade</div>
+							<div className="text-primary-200 text-sm">Disponibilidade</div>
 						</div>
 					</div>
 				</motion.div>
@@ -91,7 +91,7 @@ export default function AuthLayout({
 					initial={{ opacity: 0 }}
 					animate={{ opacity: 1 }}
 					transition={{ duration: 0.6, delay: 0.4 }}
-					className="relative z-10 text-indigo-200 text-sm"
+					className="relative z-10 text-primary-200 text-sm"
 				>
 					2025 Vendinhas. Todos os direitos reservados.
 				</motion.div>

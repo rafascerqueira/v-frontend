@@ -21,17 +21,17 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 		ref,
 	) => {
 		const baseStyles =
-			"inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg";
+			"inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg";
 
 		const variants = {
 			primary:
-				"bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500 active:scale-[0.98]",
+				"bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500 active:scale-[0.98]",
 			secondary:
-				"bg-gray-100 text-gray-900 hover:bg-gray-200 focus:ring-gray-500 active:scale-[0.98]",
+				"bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600 focus:ring-gray-500 active:scale-[0.98]",
 			outline:
-				"border-2 border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-gray-500 active:scale-[0.98]",
+				"border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 focus:ring-gray-500 active:scale-[0.98]",
 			ghost:
-				"text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:ring-gray-500",
+				"text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white focus:ring-gray-500",
 			danger:
 				"bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 active:scale-[0.98]",
 		};

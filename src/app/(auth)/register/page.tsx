@@ -92,10 +92,12 @@ export default function RegisterPage() {
 		<>
 			{/* Mobile Logo */}
 			<div className="lg:hidden flex items-center justify-center gap-2 mb-8">
-				<div className="p-2.5 bg-indigo-600 rounded-xl">
+				<div className="p-2.5 bg-primary-600 rounded-xl">
 					<ShoppingBag className="h-6 w-6 text-white" />
 				</div>
-				<span className="text-2xl font-bold text-gray-900">Vendinhas</span>
+				<span className="text-2xl font-bold text-gray-900 dark:text-white">
+					Vendinhas
+				</span>
 			</div>
 
 			<Card className="shadow-xl border-0">
@@ -235,20 +237,20 @@ export default function RegisterPage() {
 								<input
 									type="checkbox"
 									required
-									className="w-4 h-4 mt-0.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+									className="w-4 h-4 mt-0.5 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
 								/>
-								<span className="text-sm text-gray-600">
+								<span className="text-sm text-gray-600 dark:text-gray-400">
 									Aceito os{" "}
 									<Link
 										href="/terms"
-										className="text-indigo-600 hover:text-indigo-700 font-medium"
+										className="text-primary-600 hover:text-primary-700 font-medium"
 									>
 										Termos de Uso
 									</Link>{" "}
 									e a{" "}
 									<Link
 										href="/privacy"
-										className="text-indigo-600 hover:text-indigo-700 font-medium"
+										className="text-primary-600 hover:text-primary-700 font-medium"
 									>
 										Política de Privacidade
 									</Link>
@@ -272,20 +274,22 @@ export default function RegisterPage() {
 					<FadeIn delay={0.45}>
 						<div className="relative">
 							<div className="absolute inset-0 flex items-center">
-								<div className="w-full border-t border-gray-200" />
+								<div className="w-full border-t border-gray-200 dark:border-gray-700" />
 							</div>
 							<div className="relative flex justify-center text-sm">
-								<span className="px-4 bg-white text-gray-500">ou</span>
+								<span className="px-4 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+									ou
+								</span>
 							</div>
 						</div>
 					</FadeIn>
 
 					<FadeIn delay={0.5}>
-						<p className="text-center text-sm text-gray-600">
+						<p className="text-center text-sm text-gray-600 dark:text-gray-400">
 							Já tem uma conta?{" "}
 							<Link
 								href="/login"
-								className="text-indigo-600 hover:text-indigo-700 font-semibold transition-colors"
+								className="text-primary-600 hover:text-primary-700 font-semibold transition-colors"
 							>
 								Faça login
 							</Link>

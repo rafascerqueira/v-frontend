@@ -241,8 +241,8 @@ export default function BundlesPage() {
 				<Card>
 					<CardContent className="p-4">
 						<div className="flex items-center gap-4">
-							<div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl">
-								<Box className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+							<div className="p-3 bg-primary-100 dark:bg-primary-900/30 rounded-xl">
+								<Box className="h-6 w-6 text-primary-600 dark:text-primary-400" />
 							</div>
 							<div>
 								<p className="text-sm text-gray-500">Total de Kits</p>
@@ -428,7 +428,7 @@ export default function BundlesPage() {
 									<textarea
 										{...register("description")}
 										placeholder="Descrição do kit..."
-										className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700"
+										className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 dark:bg-gray-700"
 										rows={2}
 									/>
 								</div>
@@ -454,7 +454,7 @@ export default function BundlesPage() {
 												key={product.id}
 												type="button"
 												onClick={() => addProduct(product)}
-												className="p-2 text-left bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg hover:border-indigo-500 transition-colors"
+												className="p-2 text-left bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg hover:border-primary-500 transition-colors"
 											>
 												<p className="text-sm font-medium truncate">
 													{product.name}
@@ -527,7 +527,7 @@ export default function BundlesPage() {
 
 								{/* Price Summary */}
 								{selectedItems.length > 0 && (
-									<div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg space-y-2">
+									<div className="p-4 bg-primary-50 dark:bg-primary-900/20 rounded-lg space-y-2">
 										<div className="flex justify-between text-sm">
 											<span className="text-gray-600 dark:text-gray-400">
 												Preço Original:
@@ -545,7 +545,7 @@ export default function BundlesPage() {
 												-{formatCurrency(totalPrice - discountedPrice)}
 											</span>
 										</div>
-										<div className="flex justify-between font-bold border-t border-indigo-200 dark:border-indigo-800 pt-2">
+										<div className="flex justify-between font-bold border-t border-primary-200 dark:border-primary-800 pt-2">
 											<span>Preço do Kit:</span>
 											<span className="text-green-600">
 												{formatCurrency(discountedPrice)}

@@ -42,11 +42,11 @@ const staggerContainer = {
 
 function HeroSection() {
 	return (
-		<section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800">
+		<section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-linear-to-br from-primary-600 via-secondary-600 to-primary-800">
 			<div className="absolute inset-0 opacity-20">
 				<div className="absolute top-20 left-20 w-72 h-72 bg-white rounded-full blur-3xl" />
-				<div className="absolute bottom-20 right-20 w-96 h-96 bg-purple-300 rounded-full blur-3xl" />
-				<div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-indigo-400 rounded-full blur-3xl opacity-30" />
+				<div className="absolute bottom-20 right-20 w-96 h-96 bg-secondary-300 rounded-full blur-3xl" />
+				<div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary-400 rounded-full blur-3xl opacity-30" />
 			</div>
 
 			<div className="container mx-auto px-4 sm:px-6 lg:px-8 py-32 relative z-10">
@@ -69,14 +69,14 @@ function HeroSection() {
 						className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-6"
 					>
 						A gestão de vendas que o seu{" "}
-						<span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-orange-300">
+						<span className="text-transparent bg-clip-text bg-linear-to-r from-yellow-300 to-orange-300">
 							negócio precisa
 						</span>
 					</motion.h1>
 
 					<motion.p
 						variants={fadeInUp}
-						className="text-lg sm:text-xl text-indigo-100 mb-10 max-w-2xl mx-auto"
+						className="text-lg sm:text-xl text-primary-100 mb-10 max-w-2xl mx-auto"
 					>
 						Simplifique suas vendas, controle seu estoque e entenda seus
 						clientes com uma única ferramenta potencializada por inteligência
@@ -89,7 +89,7 @@ function HeroSection() {
 					>
 						<Link
 							href="/register"
-							className="inline-flex items-center gap-2 bg-white text-indigo-600 px-8 py-4 rounded-xl text-lg font-semibold hover:bg-indigo-50 transition-all hover:scale-105 shadow-lg shadow-indigo-900/30"
+							className="inline-flex items-center gap-2 bg-white text-primary-600 px-8 py-4 rounded-xl text-lg font-semibold hover:bg-primary-50 transition-all hover:scale-105 shadow-lg shadow-primary-900/30"
 						>
 							Começar Grátis
 							<ArrowRight className="h-5 w-5" />
@@ -111,19 +111,19 @@ function HeroSection() {
 							<div className="text-3xl sm:text-4xl font-bold text-white">
 								500+
 							</div>
-							<div className="text-indigo-200 text-sm">Empresas ativas</div>
+							<div className="text-primary-200 text-sm">Empresas ativas</div>
 						</div>
 						<div className="text-center">
 							<div className="text-3xl sm:text-4xl font-bold text-white">
 								50k+
 							</div>
-							<div className="text-indigo-200 text-sm">Vendas processadas</div>
+							<div className="text-primary-200 text-sm">Vendas processadas</div>
 						</div>
 						<div className="text-center">
 							<div className="text-3xl sm:text-4xl font-bold text-white">
 								99.9%
 							</div>
-							<div className="text-indigo-200 text-sm">Disponibilidade</div>
+							<div className="text-primary-200 text-sm">Disponibilidade</div>
 						</div>
 					</motion.div>
 				</motion.div>
@@ -188,7 +188,7 @@ function FeaturesSection() {
 				>
 					<motion.span
 						variants={fadeInUp}
-						className="inline-block text-indigo-600 dark:text-indigo-400 font-semibold text-sm uppercase tracking-wider mb-4"
+						className="inline-block text-primary-600 dark:text-primary-400 font-semibold text-sm uppercase tracking-wider mb-4"
 					>
 						Funcionalidades
 					</motion.span>
@@ -218,10 +218,10 @@ function FeaturesSection() {
 						<motion.div
 							key={feature.title}
 							variants={fadeInUp}
-							className="group p-8 rounded-2xl bg-gray-50 dark:bg-gray-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all duration-300 hover:shadow-lg"
+							className="group p-8 rounded-2xl bg-gray-50 dark:bg-gray-800 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all duration-300 hover:shadow-lg"
 						>
-							<div className="w-14 h-14 bg-indigo-100 dark:bg-indigo-900/50 rounded-xl flex items-center justify-center mb-6 group-hover:bg-indigo-600 transition-colors">
-								<feature.icon className="w-7 h-7 text-indigo-600 dark:text-indigo-400 group-hover:text-white transition-colors" />
+							<div className="w-14 h-14 bg-primary-100 dark:bg-primary-900/50 rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary-600 transition-colors">
+								<feature.icon className="w-7 h-7 text-primary-600 dark:text-primary-400 group-hover:text-white transition-colors" />
 							</div>
 							<h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
 								{feature.title}
@@ -271,7 +271,7 @@ function HowItWorksSection() {
 				>
 					<motion.span
 						variants={fadeInUp}
-						className="inline-block text-indigo-600 dark:text-indigo-400 font-semibold text-sm uppercase tracking-wider mb-4"
+						className="inline-block text-primary-600 dark:text-primary-400 font-semibold text-sm uppercase tracking-wider mb-4"
 					>
 						Como Funciona
 					</motion.span>
@@ -296,7 +296,7 @@ function HowItWorksSection() {
 					variants={staggerContainer}
 					className="grid md:grid-cols-3 gap-8 relative"
 				>
-					<div className="hidden md:block absolute top-1/2 left-1/4 right-1/4 h-0.5 bg-indigo-200 dark:bg-indigo-800 -translate-y-1/2" />
+					<div className="hidden md:block absolute top-1/2 left-1/4 right-1/4 h-0.5 bg-primary-200 dark:bg-primary-800 -translate-y-1/2" />
 
 					{steps.map((step, index) => (
 						<motion.div
@@ -304,9 +304,9 @@ function HowItWorksSection() {
 							variants={fadeInUp}
 							className="relative text-center"
 						>
-							<div className="relative z-10 w-20 h-20 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-indigo-600/30">
+							<div className="relative z-10 w-20 h-20 bg-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-primary-600/30">
 								<step.icon className="w-10 h-10 text-white" />
-								<div className="absolute -top-2 -right-2 w-8 h-8 bg-white dark:bg-gray-900 rounded-full flex items-center justify-center text-indigo-600 font-bold shadow">
+								<div className="absolute -top-2 -right-2 w-8 h-8 bg-white dark:bg-gray-900 rounded-full flex items-center justify-center text-primary-600 font-bold shadow">
 									{index + 1}
 								</div>
 							</div>
@@ -355,11 +355,11 @@ function AISection() {
 	return (
 		<section
 			id="ai"
-			className="py-24 bg-gradient-to-br from-indigo-900 via-purple-900 to-indigo-900 relative overflow-hidden"
+			className="py-24 bg-linear-to-br from-primary-900 via-secondary-900 to-primary-900 relative overflow-hidden"
 		>
 			<div className="absolute inset-0 opacity-10">
-				<div className="absolute top-20 right-20 w-96 h-96 bg-purple-300 rounded-full blur-3xl" />
-				<div className="absolute bottom-20 left-20 w-72 h-72 bg-indigo-300 rounded-full blur-3xl" />
+				<div className="absolute top-20 right-20 w-96 h-96 bg-secondary-300 rounded-full blur-3xl" />
+				<div className="absolute bottom-20 left-20 w-72 h-72 bg-primary-300 rounded-full blur-3xl" />
 			</div>
 
 			<div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -377,11 +377,11 @@ function AISection() {
 						</span>
 						<h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
 							Venda mais com o poder da{" "}
-							<span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-orange-300">
+							<span className="text-transparent bg-clip-text bg-linear-to-r from-yellow-300 to-orange-300">
 								Inteligência Artificial
 							</span>
 						</h2>
-						<p className="text-lg text-indigo-100 mb-8">
+						<p className="text-lg text-primary-100 mb-8">
 							Nossa IA trabalha 24 horas por dia analisando seus dados para
 							ajudar você a tomar as melhores decisões para o seu negócio.
 						</p>
@@ -389,14 +389,14 @@ function AISection() {
 						<div className="space-y-6">
 							{aiFeatures.map((feature) => (
 								<div key={feature.title} className="flex gap-4">
-									<div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center flex-shrink-0">
+									<div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center shrink-0">
 										<feature.icon className="w-6 h-6 text-yellow-300" />
 									</div>
 									<div>
 										<h3 className="text-lg font-semibold text-white mb-1">
 											{feature.title}
 										</h3>
-										<p className="text-indigo-200 text-sm">
+										<p className="text-primary-200 text-sm">
 											{feature.description}
 										</p>
 									</div>
@@ -411,9 +411,9 @@ function AISection() {
 					</motion.div>
 
 					<motion.div variants={fadeInUp} className="relative">
-						<div className="aspect-square bg-gradient-to-br from-white/10 to-white/5 rounded-3xl backdrop-blur-sm p-8 flex items-center justify-center">
+						<div className="aspect-square bg-linear-to-br from-white/10 to-white/5 rounded-3xl backdrop-blur-sm p-8 flex items-center justify-center">
 							<div className="relative">
-								<div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full blur-3xl opacity-30 animate-pulse" />
+								<div className="absolute inset-0 bg-linear-to-r from-yellow-400 to-orange-400 rounded-full blur-3xl opacity-30 animate-pulse" />
 								<BrainCircuit className="w-48 h-48 text-white relative z-10" />
 							</div>
 						</div>
@@ -507,7 +507,7 @@ function PricingSection() {
 				>
 					<motion.span
 						variants={fadeInUp}
-						className="inline-block text-indigo-600 dark:text-indigo-400 font-semibold text-sm uppercase tracking-wider mb-4"
+						className="inline-block text-primary-600 dark:text-primary-400 font-semibold text-sm uppercase tracking-wider mb-4"
 					>
 						Preços
 					</motion.span>
@@ -539,8 +539,8 @@ function PricingSection() {
 							className={cn(
 								"relative p-8 rounded-2xl border-2 transition-all duration-300",
 								plan.highlighted
-									? "bg-indigo-600 border-indigo-600 text-white scale-105 shadow-xl shadow-indigo-600/30"
-									: "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-indigo-300",
+									? "bg-primary-600 border-primary-600 text-white scale-105 shadow-xl shadow-primary-600/30"
+									: "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-primary-300",
 							)}
 						>
 							{plan.highlighted && (
@@ -565,7 +565,7 @@ function PricingSection() {
 										<span
 											className={cn(
 												"text-sm line-through",
-												plan.highlighted ? "text-indigo-300" : "text-gray-400",
+												plan.highlighted ? "text-primary-300" : "text-gray-400",
 											)}
 										>
 											{plan.originalPrice}
@@ -579,7 +579,7 @@ function PricingSection() {
 									className={cn(
 										"text-4xl font-bold",
 										plan.comingSoon
-											? "text-purple-600 dark:text-purple-400"
+											? "text-secondary-600 dark:text-secondary-400"
 											: plan.highlighted
 												? "text-white"
 												: "text-gray-900 dark:text-white",
@@ -590,7 +590,7 @@ function PricingSection() {
 								<span
 									className={cn(
 										"text-sm",
-										plan.highlighted ? "text-indigo-200" : "text-gray-500",
+										plan.highlighted ? "text-primary-200" : "text-gray-500",
 									)}
 								>
 									{plan.period}
@@ -600,7 +600,7 @@ function PricingSection() {
 								className={cn(
 									"text-sm mb-6",
 									plan.highlighted
-										? "text-indigo-200"
+										? "text-primary-200"
 										: "text-gray-600 dark:text-gray-400",
 								)}
 							>
@@ -612,10 +612,10 @@ function PricingSection() {
 									<li key={feature} className="flex items-center gap-3">
 										<CheckCircle2
 											className={cn(
-												"w-5 h-5 flex-shrink-0",
+												"w-5 h-5 shrink-0",
 												plan.highlighted
 													? "text-yellow-300"
-													: "text-indigo-600",
+													: "text-primary-600",
 											)}
 										/>
 										<span
@@ -633,7 +633,7 @@ function PricingSection() {
 							</ul>
 
 							{plan.comingSoon ? (
-								<div className="block w-full text-center py-3 rounded-xl font-semibold bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 cursor-not-allowed">
+								<div className="block w-full text-center py-3 rounded-xl font-semibold bg-secondary-100 dark:bg-secondary-900/30 text-secondary-600 dark:text-secondary-400 cursor-not-allowed">
 									{plan.cta}
 								</div>
 							) : (
@@ -642,8 +642,8 @@ function PricingSection() {
 									className={cn(
 										"block w-full text-center py-3 rounded-xl font-semibold transition-all",
 										plan.highlighted
-											? "bg-white text-indigo-600 hover:bg-indigo-50"
-											: "bg-indigo-600 text-white hover:bg-indigo-700",
+											? "bg-white text-primary-600 hover:bg-primary-50"
+											: "bg-primary-600 text-white hover:bg-primary-700",
 									)}
 								>
 									{plan.cta}
@@ -694,7 +694,7 @@ function TestimonialsSection() {
 				>
 					<motion.span
 						variants={fadeInUp}
-						className="inline-block text-indigo-600 dark:text-indigo-400 font-semibold text-sm uppercase tracking-wider mb-4"
+						className="inline-block text-primary-600 dark:text-primary-400 font-semibold text-sm uppercase tracking-wider mb-4"
 					>
 						Depoimentos
 					</motion.span>
@@ -792,7 +792,7 @@ function FAQSection() {
 				>
 					<motion.span
 						variants={fadeInUp}
-						className="inline-block text-indigo-600 dark:text-indigo-400 font-semibold text-sm uppercase tracking-wider mb-4"
+						className="inline-block text-primary-600 dark:text-primary-400 font-semibold text-sm uppercase tracking-wider mb-4"
 					>
 						Dúvidas Frequentes
 					</motion.span>
@@ -854,7 +854,7 @@ function FAQSection() {
 
 function CTASection() {
 	return (
-		<section className="py-24 bg-gradient-to-r from-indigo-600 to-purple-600">
+		<section className="py-24 bg-linear-to-r from-primary-600 to-secondary-600">
 			<div className="container mx-auto px-4 sm:px-6 lg:px-8">
 				<motion.div
 					initial="hidden"
@@ -871,7 +871,7 @@ function CTASection() {
 					</motion.h2>
 					<motion.p
 						variants={fadeInUp}
-						className="text-lg text-indigo-100 mb-8"
+						className="text-lg text-primary-100 mb-8"
 					>
 						Junte-se a mais de 500 empresas que já estão vendendo mais com o
 						Vendinhas.
@@ -879,7 +879,7 @@ function CTASection() {
 					<motion.div variants={fadeInUp}>
 						<Link
 							href="/register"
-							className="inline-flex items-center gap-2 bg-white text-indigo-600 px-8 py-4 rounded-xl text-lg font-semibold hover:bg-indigo-50 transition-all hover:scale-105 shadow-lg"
+							className="inline-flex items-center gap-2 bg-white text-primary-600 px-8 py-4 rounded-xl text-lg font-semibold hover:bg-primary-50 transition-all hover:scale-105 shadow-lg"
 						>
 							Começar Grátis Agora
 							<ArrowRight className="h-5 w-5" />

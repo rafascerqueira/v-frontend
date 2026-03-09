@@ -129,7 +129,7 @@ export default function AdminDashboardPage() {
 			title: "Pedidos Hoje",
 			value: stats.orders.today,
 			icon: ShoppingCart,
-			color: "bg-purple-500",
+			color: "bg-secondary-500",
 			description: `${stats.orders.pending} pendentes`,
 		},
 		{
@@ -209,8 +209,8 @@ export default function AdminDashboardPage() {
 					className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm"
 				>
 					<div className="flex items-center gap-3 mb-6">
-						<div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
-							<TrendingUp className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+						<div className="w-10 h-10 bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-center">
+							<TrendingUp className="w-5 h-5 text-primary-600 dark:text-primary-400" />
 						</div>
 						<div>
 							<h3 className="font-semibold text-gray-900 dark:text-white">
@@ -334,7 +334,7 @@ export default function AdminDashboardPage() {
 				initial={{ opacity: 0, y: 20 }}
 				animate={{ opacity: 1, y: 0 }}
 				transition={{ delay: 0.6 }}
-				className="bg-gradient-to-r from-red-600 to-orange-600 rounded-xl p-6 text-white"
+				className="bg-linear-to-r from-red-600 to-orange-600 rounded-xl p-6 text-white"
 			>
 				<div className="flex items-center gap-3 mb-4">
 					<Package className="w-8 h-8" />

@@ -18,7 +18,7 @@ export default function PrivacyPage() {
 					<button
 						type="button"
 						onClick={() => router.back()}
-						className="inline-flex items-center gap-2 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 mb-8 transition-colors"
+						className="inline-flex items-center gap-2 text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 mb-8 transition-colors"
 					>
 						<ArrowLeft className="w-4 h-4" />
 						Voltar
@@ -178,7 +178,7 @@ export default function PrivacyPage() {
 								Para exercer esses direitos, contate-nos em{" "}
 								<a
 									href="mailto:privacidade@vendinhas.app"
-									className="text-indigo-600 dark:text-indigo-400 hover:underline"
+									className="text-primary-600 dark:text-primary-400 hover:underline"
 								>
 									privacidade@vendinhas.app
 								</a>
@@ -232,7 +232,7 @@ export default function PrivacyPage() {
 								em{" "}
 								<a
 									href="mailto:privacidade@vendinhas.app"
-									className="text-indigo-600 dark:text-indigo-400 hover:underline"
+									className="text-primary-600 dark:text-primary-400 hover:underline"
 								>
 									privacidade@vendinhas.app
 								</a>

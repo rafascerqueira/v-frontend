@@ -233,8 +233,8 @@ export default function PromotionsPage() {
 				<Card>
 					<CardContent className="p-4">
 						<div className="flex items-center gap-4">
-							<div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-xl">
-								<Percent className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+							<div className="p-3 bg-secondary-100 dark:bg-secondary-900/30 rounded-xl">
+								<Percent className="h-6 w-6 text-secondary-600 dark:text-secondary-400" />
 							</div>
 							<div>
 								<p className="text-sm text-gray-500">Total</p>
@@ -291,7 +291,7 @@ export default function PromotionsPage() {
 									<TableRow key={promo.id}>
 										<TableCell>
 											<div className="flex items-center gap-3">
-												<div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+												<div className="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
 													{promo.product?.image_url ? (
 														<img
 															src={promo.product.image_url}
@@ -339,10 +339,10 @@ export default function PromotionsPage() {
 											<span
 												className={`px-2 py-1 text-xs font-medium rounded-full ${
 													promo.status === "active"
-														? "bg-green-100 text-green-700"
+														? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
 														: promo.status === "scheduled"
-															? "bg-blue-100 text-blue-700"
-															: "bg-gray-100 text-gray-700"
+															? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+															: "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
 												}`}
 											>
 												{promo.status === "active"
@@ -413,7 +413,7 @@ export default function PromotionsPage() {
 									</label>
 									<select
 										{...register("product_id")}
-										className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700"
+										className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 dark:bg-gray-700"
 									>
 										<option value="">Selecione um produto</option>
 										{products.map((product) => (
@@ -475,7 +475,7 @@ export default function PromotionsPage() {
 									<textarea
 										{...register("description")}
 										placeholder="Ex: Promoção de verão"
-										className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700"
+										className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 dark:bg-gray-700"
 										rows={2}
 									/>
 								</div>
@@ -547,16 +547,16 @@ export default function PromotionsPage() {
 										{priceHistory.map((history) => (
 											<div
 												key={history.id}
-												className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg"
+												className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg"
 											>
 												<div className="flex items-center justify-between mb-2">
 													<span
 														className={`px-2 py-1 text-xs font-medium rounded-full ${
 															history.change_type === "promotion"
-																? "bg-green-100 text-green-700"
+																? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
 																: history.change_type === "restock"
-																	? "bg-blue-100 text-blue-700"
-																	: "bg-gray-100 text-gray-700"
+																	? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+																	: "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
 														}`}
 													>
 														{history.change_type === "promotion"

@@ -18,7 +18,7 @@ export default function TermsPage() {
 					<button
 						type="button"
 						onClick={() => router.back()}
-						className="inline-flex items-center gap-2 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 mb-8 transition-colors"
+						className="inline-flex items-center gap-2 text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 mb-8 transition-colors"
 					>
 						<ArrowLeft className="w-4 h-4" />
 						Voltar
@@ -26,8 +26,8 @@ export default function TermsPage() {
 
 					<div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-8 md:p-12">
 						<div className="flex items-center gap-4 mb-8">
-							<div className="w-14 h-14 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center">
-								<FileText className="w-7 h-7 text-indigo-600 dark:text-indigo-400" />
+							<div className="w-14 h-14 bg-primary-100 dark:bg-primary-900/30 rounded-xl flex items-center justify-center">
+								<FileText className="w-7 h-7 text-primary-600 dark:text-primary-400" />
 							</div>
 							<div>
 								<h1 className="text-3xl font-bold text-gray-900 dark:text-white">
@@ -249,7 +249,7 @@ export default function TermsPage() {
 								Para dúvidas sobre estes Termos, entre em contato conosco em{" "}
 								<a
 									href="mailto:suporte@vendinhas.app"
-									className="text-indigo-600 dark:text-indigo-400 hover:underline"
+									className="text-primary-600 dark:text-primary-400 hover:underline"
 								>
 									suporte@vendinhas.app
 								</a>

@@ -211,7 +211,9 @@ export default function StockPage() {
 		<div className="space-y-6">
 			<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 				<div>
-					<h1 className="text-2xl font-bold text-gray-900">Estoque</h1>
+					<h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+						Estoque
+					</h1>
 					<p className="text-gray-500 mt-1">
 						Controle e monitoramento de estoque
 					</p>
@@ -234,7 +236,7 @@ export default function StockPage() {
 							</div>
 							<div>
 								<p className="text-sm text-gray-500">Total em Estoque</p>
-								<p className="text-2xl font-bold text-gray-900">
+								<p className="text-2xl font-bold text-gray-900 dark:text-white">
 									{totalItems.toLocaleString()}
 								</p>
 							</div>
@@ -244,12 +246,12 @@ export default function StockPage() {
 				<Card>
 					<CardContent className="p-4">
 						<div className="flex items-center gap-4">
-							<div className="p-3 bg-purple-100 rounded-lg">
-								<TrendingUp className="h-6 w-6 text-purple-600" />
+							<div className="p-3 bg-secondary-100 rounded-lg">
+								<TrendingUp className="h-6 w-6 text-secondary-600" />
 							</div>
 							<div>
 								<p className="text-sm text-gray-500">Reservado</p>
-								<p className="text-2xl font-bold text-gray-900">
+								<p className="text-2xl font-bold text-gray-900 dark:text-white">
 									{totalReserved.toLocaleString()}
 								</p>
 							</div>
@@ -264,27 +266,33 @@ export default function StockPage() {
 							</div>
 							<div>
 								<p className="text-sm text-gray-500">Disponível</p>
-								<p className="text-2xl font-bold text-gray-900">
+								<p className="text-2xl font-bold text-gray-900 dark:text-white">
 									{(totalItems - totalReserved).toLocaleString()}
 								</p>
 							</div>
 						</div>
 					</CardContent>
 				</Card>
-				<Card className={lowStockCount > 0 ? "border-red-200 bg-red-50" : ""}>
+				<Card
+					className={
+						lowStockCount > 0
+							? "border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20"
+							: ""
+					}
+				>
 					<CardContent className="p-4">
 						<div className="flex items-center gap-4">
 							<div
-								className={`p-3 rounded-lg ${lowStockCount > 0 ? "bg-red-100" : "bg-gray-100"}`}
+								className={`p-3 rounded-lg ${lowStockCount > 0 ? "bg-red-100 dark:bg-red-900/30" : "bg-gray-100 dark:bg-gray-700"}`}
 							>
 								<AlertTriangle
-									className={`h-6 w-6 ${lowStockCount > 0 ? "text-red-600" : "text-gray-600"}`}
+									className={`h-6 w-6 ${lowStockCount > 0 ? "text-red-600" : "text-gray-600 dark:text-gray-400"}`}
 								/>
 							</div>
 							<div>
 								<p className="text-sm text-gray-500">Estoque Baixo</p>
 								<p
-									className={`text-2xl font-bold ${lowStockCount > 0 ? "text-red-600" : "text-gray-900"}`}
+									className={`text-2xl font-bold ${lowStockCount > 0 ? "text-red-600" : "text-gray-900 dark:text-white"}`}
 								>
 									{lowStockCount}
 								</p>
@@ -301,7 +309,7 @@ export default function StockPage() {
 					animate={{ opacity: 1, y: 0 }}
 					className="p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3"
 				>
-					<AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0" />
+					<AlertTriangle className="h-5 w-5 text-red-600 shrink-0" />
 					<div>
 						<p className="font-medium text-red-800">
 							Atenção: {lowStockCount} produto(s) com estoque baixo
@@ -325,11 +333,11 @@ export default function StockPage() {
 				<CardHeader>
 					<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 						<CardTitle className="flex items-center gap-2">
-							<Package className="h-5 w-5 text-indigo-500" />
+							<Package className="h-5 w-5 text-primary-500" />
 							Controle de Estoque
 						</CardTitle>
 						<div className="flex gap-2">
-							<div className="flex bg-gray-100 rounded-lg p-1">
+							<div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
 								{[
 									{ id: "all", label: "Todos" },
 									{ id: "low", label: "Baixo" },
@@ -341,8 +349,8 @@ export default function StockPage() {
 										onClick={() => setFilter(f.id as "all" | "low" | "ok")}
 										className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
 											filter === f.id
-												? "bg-white text-gray-900 shadow-sm"
-												: "text-gray-600 hover:text-gray-900"
+												? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm"
+												: "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
 										}`}
 									>
 										{f.label}
@@ -356,7 +364,7 @@ export default function StockPage() {
 									placeholder="Buscar..."
 									value={searchTerm}
 									onChange={(e) => setSearchTerm(e.target.value)}
-									className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+									className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
 								/>
 							</div>
 						</div>
@@ -365,7 +373,7 @@ export default function StockPage() {
 				<CardContent className="p-0">
 					{isLoading ? (
 						<div className="flex items-center justify-center py-12">
-							<div className="animate-spin rounded-full h-8 w-8 border-2 border-indigo-600 border-t-transparent" />
+							<div className="animate-spin rounded-full h-8 w-8 border-2 border-primary-600 border-t-transparent" />
 						</div>
 					) : filteredStocks.length === 0 ? (
 						<div className="flex flex-col items-center justify-center py-12 text-gray-500">
@@ -402,10 +410,10 @@ export default function StockPage() {
 										<TableCell>
 											<div className="flex items-center gap-3">
 												{stock.isLowStock && (
-													<AlertTriangle className="h-4 w-4 text-red-500 flex-shrink-0" />
+													<AlertTriangle className="h-4 w-4 text-red-500 shrink-0" />
 												)}
 												<div>
-													<p className="font-medium text-gray-900">
+													<p className="font-medium text-gray-900 dark:text-white">
 														{stock.product?.name || "Produto não encontrado"}
 													</p>
 													<p className="text-xs text-gray-500">
@@ -415,24 +423,24 @@ export default function StockPage() {
 											</div>
 										</TableCell>
 										<TableCell>
-											<code className="px-2 py-1 bg-gray-100 rounded text-xs">
+											<code className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs">
 												{stock.product?.sku || "-"}
 											</code>
 										</TableCell>
 										<TableCell>
 											<span
-												className={`font-medium ${stock.isLowStock ? "text-red-600" : "text-gray-900"}`}
+												className={`font-medium ${stock.isLowStock ? "text-red-600" : "text-gray-900 dark:text-white"}`}
 											>
 												{stock.quantity}
 											</span>
 										</TableCell>
 										<TableCell>
-											<span className="text-gray-600">
+											<span className="text-gray-600 dark:text-gray-400">
 												{stock.reserved_quantity}
 											</span>
 										</TableCell>
 										<TableCell>
-											<span className="text-sm text-gray-600">
+											<span className="text-sm text-gray-600 dark:text-gray-400">
 												{stock.min_stock} / {stock.max_stock}
 											</span>
 										</TableCell>
@@ -458,12 +466,12 @@ export default function StockPage() {
 													<motion.div
 														initial={{ opacity: 0, scale: 0.95 }}
 														animate={{ opacity: 1, scale: 1 }}
-														className="absolute right-0 mt-1 w-36 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10"
+														className="absolute right-0 mt-1 w-36 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10"
 													>
 														<button
 															type="button"
 															onClick={() => openMovementModal(stock, "in")}
-															className="flex items-center gap-2 w-full px-4 py-2 text-sm text-green-700 hover:bg-green-50"
+															className="flex items-center gap-2 w-full px-4 py-2 text-sm text-green-700 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20"
 														>
 															<ArrowUpCircle className="h-4 w-4" />
 															Entrada
@@ -471,7 +479,7 @@ export default function StockPage() {
 														<button
 															type="button"
 															onClick={() => openMovementModal(stock, "out")}
-															className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-700 hover:bg-red-50"
+															className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
 														>
 															<ArrowDownCircle className="h-4 w-4" />
 															Saída
@@ -479,7 +487,7 @@ export default function StockPage() {
 														<button
 															type="button"
 															onClick={() => openEditModal(stock)}
-															className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+															className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
 														>
 															<Edit2 className="h-4 w-4" />
 															Editar
@@ -515,7 +523,7 @@ export default function StockPage() {
 							onChange={(e) =>
 								setEditForm({ ...editForm, quantity: Number(e.target.value) })
 							}
-							className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+							className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
 						/>
 					</div>
 					<div className="grid grid-cols-2 gap-4">
@@ -533,7 +541,7 @@ export default function StockPage() {
 										min_stock: Number(e.target.value),
 									})
 								}
-								className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+								className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
 							/>
 						</div>
 						<div>
@@ -550,7 +558,7 @@ export default function StockPage() {
 										max_stock: Number(e.target.value),
 									})
 								}
-								className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+								className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
 							/>
 						</div>
 					</div>
@@ -591,7 +599,7 @@ export default function StockPage() {
 									quantity: Number(e.target.value),
 								})
 							}
-							className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+							className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
 						/>
 					</div>
 					<div>
@@ -610,7 +618,7 @@ export default function StockPage() {
 										| "transfer",
 								})
 							}
-							className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+							className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
 						>
 							{movementModal?.type === "in" ? (
 								<>
@@ -671,7 +679,7 @@ export default function StockPage() {
 						<select
 							value={selectedProductId || ""}
 							onChange={(e) => setSelectedProductId(Number(e.target.value))}
-							className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+							className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
 						>
 							<option value="">Selecione...</option>
 							{productsWithoutStock.map((product) => (

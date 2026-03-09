@@ -30,13 +30,17 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
 						"focus:outline-none focus:ring-2 focus:ring-offset-0",
 						error
 							? "border-red-300 focus:border-red-500 focus:ring-red-500/20"
-							: "border-gray-300 dark:border-gray-600 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-indigo-500/20",
-						"disabled:bg-gray-50 dark:disabled:bg-gray-900 disabled:text-gray-500 disabled:cursor-not-allowed",
+							: "border-gray-300 dark:border-gray-600 focus:border-primary-500 dark:focus:border-primary-400 focus:ring-primary-500/20",
+						"disabled:bg-gray-50 dark:bg-gray-800/50 dark:disabled:bg-gray-900 disabled:text-gray-500 disabled:cursor-not-allowed",
 						className,
 					)}
 					{...props}
 				/>
-				{error && <p className="mt-1.5 text-sm text-red-600">{error}</p>}
+				{error && (
+					<p className="mt-1.5 text-sm text-red-600 dark:text-red-400">
+						{error}
+					</p>
+				)}
 				{hint && !error && (
 					<p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400">
 						{hint}

@@ -192,7 +192,9 @@ export default function ProductsPage() {
 		<div className="space-y-6">
 			<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 				<div>
-					<h1 className="text-2xl font-bold text-gray-900">Produtos</h1>
+					<h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+						Produtos
+					</h1>
 					<p className="text-gray-500 mt-1">
 						Gerencie seu catálogo de produtos
 					</p>
@@ -207,7 +209,7 @@ export default function ProductsPage() {
 				<CardHeader>
 					<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 						<CardTitle className="flex items-center gap-2">
-							<Package className="h-5 w-5 text-indigo-500" />
+							<Package className="h-5 w-5 text-primary-500" />
 							Lista de Produtos
 						</CardTitle>
 						<div className="relative w-full sm:w-64">
@@ -217,7 +219,7 @@ export default function ProductsPage() {
 								placeholder="Buscar produtos..."
 								value={searchTerm}
 								onChange={(e) => setSearchTerm(e.target.value)}
-								className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+								className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
 							/>
 						</div>
 					</div>
@@ -256,7 +258,7 @@ export default function ProductsPage() {
 									>
 										<TableCell>
 											<div>
-												<p className="font-medium text-gray-900">
+												<p className="font-medium text-gray-900 dark:text-white">
 													{product.name}
 												</p>
 												<p className="text-sm text-gray-500 truncate max-w-xs">
@@ -265,7 +267,7 @@ export default function ProductsPage() {
 											</div>
 										</TableCell>
 										<TableCell>
-											<code className="px-2 py-1 bg-gray-100 rounded text-xs">
+											<code className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs">
 												{product.sku || "-"}
 											</code>
 										</TableCell>
@@ -280,7 +282,7 @@ export default function ProductsPage() {
 													(product.stock?.quantity ?? 0) <=
 													(product.stock?.min_stock ?? 0)
 														? "text-red-600"
-														: "text-gray-900"
+														: "text-gray-900 dark:text-gray-100"
 												}`}
 											>
 												{product.stock?.quantity ?? 0}
@@ -308,12 +310,12 @@ export default function ProductsPage() {
 													<motion.div
 														initial={{ opacity: 0, scale: 0.95 }}
 														animate={{ opacity: 1, scale: 1 }}
-														className="absolute right-0 mt-1 w-36 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10"
+														className="absolute right-0 mt-1 w-36 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10"
 													>
 														<button
 															type="button"
 															onClick={() => openEditModal(product)}
-															className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+															className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
 														>
 															<Edit2 className="h-4 w-4" />
 															Editar
@@ -324,7 +326,7 @@ export default function ProductsPage() {
 																setDeletingProduct(product);
 																setActiveMenu(null);
 															}}
-															className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+															className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
 														>
 															<Trash2 className="h-4 w-4" />
 															Excluir
@@ -426,7 +428,7 @@ export default function ProductsPage() {
 				size="sm"
 			>
 				<div className="space-y-4">
-					<p className="text-gray-600">
+					<p className="text-gray-600 dark:text-gray-400">
 						Tem certeza que deseja excluir o produto{" "}
 						<span className="font-semibold">{deletingProduct?.name}</span>?
 					</p>
