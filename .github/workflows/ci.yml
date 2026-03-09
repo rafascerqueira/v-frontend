@@ -6,38 +6,65 @@ on:
   pull_request:
     branches: [main, develop]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  lint-test-build:
+  quality:
+    name: Lint & Format
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v3
+      - uses: pnpm/action-setup@v4
         with:
           version: 9
 
-      - name: Cache pnpm modules
-        uses: actions/cache@v4
+      - uses: actions/setup-node@v4
         with:
-          path: ~/.pnpm-store
-          key: $$   {{ runner.os }}-pnpm-   $${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: ${{ runner.os }}-pnpm-
+          node-version: "22"
+          cache: pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Lint code
+      - name: Check formatting
+        run: pnpm biome format src/ --check
+
+      - name: Lint
         run: pnpm lint
 
-      - name: Run tests
-        run: pnpm test # Adicione testes com Jest/React Testing Library se não houver
+  build:
+    name: Type-check & Build
+    runs-on: ubuntu-latest
 
-      - name: Build app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Restore Next.js build cache
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('src/**') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml') }}-
+            ${{ runner.os }}-nextjs-
+
+      - name: Build
         run: pnpm build
+        env:
+          NEXT_PUBLIC_API_URL: https://api.example.com
