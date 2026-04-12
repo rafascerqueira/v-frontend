@@ -38,14 +38,18 @@ const bundleSchema = z.object({
 type BundleFormData = z.infer<typeof bundleSchema>;
 
 interface Product {
-	id: string;
+	id: number;
 	name: string;
-	price: number;
+	prices?: { price: number }[];
 	image_url?: string;
 }
 
+function getProductPrice(product: Product): number {
+	return product.prices?.[0]?.price ?? 0;
+}
+
 interface BundleItem {
-	product_id: string;
+	product_id: number;
 	product: Product;
 	quantity: number;
 }
@@ -110,10 +114,10 @@ export default function BundlesPage() {
 	}, [fetchBundles]);
 
 	const totalPrice = selectedItems.reduce(
-		(acc, item) => acc + item.product.price * item.quantity,
+		(acc, item) => acc + getProductPrice(item.product) * item.quantity,
 		0,
 	);
-	const discountedPrice = totalPrice * (1 - discountPercent / 100);
+	const discountedPrice = Math.round(totalPrice * (1 - discountPercent / 100));
 
 	const addProduct = (product: Product) => {
 		const existing = selectedItems.find((i) => i.product.id === product.id);
@@ -128,7 +132,7 @@ export default function BundlesPage() {
 		}
 	};
 
-	const updateQuantity = (productId: string, delta: number) => {
+	const updateQuantity = (productId: number, delta: number) => {
 		setSelectedItems(
 			selectedItems
 				.map((i) =>
@@ -140,7 +144,7 @@ export default function BundlesPage() {
 		);
 	};
 
-	const removeProduct = (productId: string) => {
+	const removeProduct = (productId: number) => {
 		setSelectedItems(selectedItems.filter((i) => i.product.id !== productId));
 	};
 
@@ -460,7 +464,7 @@ export default function BundlesPage() {
 													{product.name}
 												</p>
 												<p className="text-xs text-gray-500">
-													{formatCurrency(product.price)}
+													{formatCurrency(getProductPrice(product))}
 												</p>
 											</button>
 										))}
@@ -484,10 +488,10 @@ export default function BundlesPage() {
 															{item.product.name}
 														</p>
 														<p className="text-xs text-gray-500">
-															{formatCurrency(item.product.price)} x{" "}
+															{formatCurrency(getProductPrice(item.product))} x{" "}
 															{item.quantity} ={" "}
 															{formatCurrency(
-																item.product.price * item.quantity,
+																getProductPrice(item.product) * item.quantity,
 															)}
 														</p>
 													</div>

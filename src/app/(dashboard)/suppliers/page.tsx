@@ -158,7 +158,10 @@ export default function SuppliersPage() {
 	const onDebtSubmit = async (data: DebtFormData) => {
 		if (!selectedSupplier) return;
 		try {
-			await api.post(`/suppliers/${selectedSupplier.id}/debts`, data);
+			await api.post(`/suppliers/${selectedSupplier.id}/debts`, {
+				...data,
+				amount: Math.round(data.amount * 100),
+			});
 			toast.success("Débito registrado!");
 			fetchDebts(selectedSupplier.id);
 			fetchSuppliers();
@@ -530,8 +533,8 @@ export default function SuppliersPage() {
 																	const value = parseFloat(
 																		amount.replace(",", "."),
 																	);
-																	if (value > 0 && value <= remaining) {
-																		handlePayDebt(debt.id, value * 100);
+																	if (value > 0 && value * 100 <= remaining) {
+																		handlePayDebt(debt.id, Math.round(value * 100));
 																	} else {
 																		toast.error("Valor inválido");
 																	}

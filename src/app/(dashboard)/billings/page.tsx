@@ -7,15 +7,18 @@ import {
 	CheckCircle,
 	Clock,
 	CreditCard,
+	DollarSign,
 	FileText,
 	MoreVertical,
 	Search,
+	ShoppingCart,
 	XCircle,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Modal } from "@/components/ui/modal";
 import {
 	Table,
@@ -44,6 +47,7 @@ interface Billing {
 	order?: {
 		id: number;
 		order_number: string;
+		status?: string;
 		customer?: {
 			id: string;
 			name: string;
@@ -66,6 +70,21 @@ const statusConfig: Record<
 	canceled: { label: "Cancelado", variant: "default", icon: XCircle },
 };
 
+const orderStatusConfig: Record<
+	string,
+	{
+		label: string;
+		variant: "default" | "success" | "warning" | "error" | "info";
+		icon: React.ElementType;
+	}
+> = {
+	pending: { label: "Pendente", variant: "warning", icon: Clock },
+	confirmed: { label: "Confirmado", variant: "info", icon: CheckCircle },
+	shipping: { label: "Em trânsito", variant: "info", icon: ShoppingCart },
+	delivered: { label: "Entregue", variant: "success", icon: CheckCircle },
+	canceled: { label: "Cancelado", variant: "default", icon: XCircle },
+};
+
 const paymentMethodLabels: Record<string, string> = {
 	cash: "Dinheiro",
 	credit_card: "Cartão de Crédito",
@@ -80,6 +99,7 @@ export default function BillingsPage() {
 	const [viewingBilling, setViewingBilling] = useState<Billing | null>(null);
 	const [activeMenu, setActiveMenu] = useState<number | null>(null);
 	const [updatingBilling, setUpdatingBilling] = useState<Billing | null>(null);
+	const [partialAmount, setPartialAmount] = useState(0);
 
 	const fetchBillings = useCallback(async () => {
 		try {
@@ -114,8 +134,11 @@ export default function BillingsPage() {
 			setActiveMenu(null);
 			setUpdatingBilling(null);
 		} catch (error: unknown) {
+			const axiosError = error as {
+				response?: { data?: { message?: string } };
+			};
 			const message =
-				error instanceof Error ? error.message : "Erro ao atualizar cobrança";
+				axiosError.response?.data?.message || "Erro ao atualizar cobrança";
 			toast.error(message);
 		}
 	};
@@ -143,6 +166,10 @@ export default function BillingsPage() {
 		.filter((b) => b.status === "overdue")
 		.reduce((acc, b) => acc + (b.total_amount - b.paid_amount), 0);
 
+	const totalSales = billings
+		.filter((b) => b.status !== "canceled")
+		.reduce((acc, b) => acc + b.total_amount, 0);
+
 	return (
 		<div className="space-y-6">
 			<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -157,7 +184,22 @@ export default function BillingsPage() {
 			</div>
 
 			{/* Stats Cards */}
-			<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+				<Card>
+					<CardContent className="p-4">
+						<div className="flex items-center gap-4">
+							<div className="p-3 bg-blue-100 rounded-lg">
+								<DollarSign className="h-6 w-6 text-blue-600" />
+							</div>
+							<div>
+								<p className="text-sm text-gray-500">Total de Vendas</p>
+								<p className="text-xl font-bold text-gray-900 dark:text-white">
+									{formatCurrency(totalSales)}
+								</p>
+							</div>
+						</div>
+					</CardContent>
+				</Card>
 				<Card>
 					<CardContent className="p-4">
 						<div className="flex items-center gap-4">
@@ -243,6 +285,7 @@ export default function BillingsPage() {
 								<TableRow>
 									<TableCell as="th">Cobrança</TableCell>
 									<TableCell as="th">Pedido / Cliente</TableCell>
+									<TableCell as="th">Pedido</TableCell>
 									<TableCell as="th">Vencimento</TableCell>
 									<TableCell as="th">Valor</TableCell>
 									<TableCell as="th">Pago</TableCell>
@@ -280,6 +323,25 @@ export default function BillingsPage() {
 															"Cliente não encontrado"}
 													</p>
 												</div>
+											</TableCell>
+											<TableCell>
+												{(() => {
+													const os =
+														orderStatusConfig[
+														billing.order?.status || ""
+														];
+													if (!os) return "-";
+													const OsIcon = os.icon;
+													return (
+														<Badge
+															variant={os.variant}
+															className="flex items-center gap-1 w-fit"
+														>
+															<OsIcon className="h-3 w-3" />
+															{os.label}
+														</Badge>
+													);
+												})()}
 											</TableCell>
 											<TableCell>
 												<div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
@@ -340,6 +402,9 @@ export default function BillingsPage() {
 															<button
 																type="button"
 																onClick={() => {
+																	setPartialAmount(
+																		billing.total_amount - billing.paid_amount,
+																	);
 																	setUpdatingBilling(billing);
 																	setActiveMenu(null);
 																}}
@@ -350,9 +415,18 @@ export default function BillingsPage() {
 															</button>
 															<button
 																type="button"
-																onClick={() =>
-																	handleUpdateStatus(billing.id, "canceled")
-																}
+																onClick={() => {
+																	if (
+																		confirm(
+																			"Deseja cancelar esta cobrança?",
+																		)
+																	) {
+																		handleUpdateStatus(
+																			billing.id,
+																			"canceled",
+																		);
+																	}
+																}}
 																className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
 															>
 																<XCircle className="h-4 w-4" />
@@ -419,7 +493,7 @@ export default function BillingsPage() {
 								</p>
 							</div>
 							<div>
-								<p className="text-sm text-gray-500">Status</p>
+								<p className="text-sm text-gray-500">Status Cobrança</p>
 								<Badge
 									variant={
 										statusConfig[viewingBilling.status]?.variant || "default"
@@ -427,6 +501,17 @@ export default function BillingsPage() {
 								>
 									{statusConfig[viewingBilling.status]?.label ||
 										viewingBilling.status}
+								</Badge>
+							</div>
+							<div>
+								<p className="text-sm text-gray-500">Status Pedido</p>
+								<Badge
+									variant={
+										orderStatusConfig[viewingBilling.order?.status || ""]?.variant || "default"
+									}
+								>
+									{orderStatusConfig[viewingBilling.order?.status || ""]?.label ||
+										viewingBilling.order?.status || "-"}
 								</Badge>
 							</div>
 							{viewingBilling.payment_date && (
@@ -474,25 +559,45 @@ export default function BillingsPage() {
 								)}
 							</p>
 						</div>
+						<CurrencyInput
+							label="Valor do Pagamento"
+							value={partialAmount}
+							onChange={setPartialAmount}
+						/>
+						{partialAmount >
+							updatingBilling.total_amount - updatingBilling.paid_amount && (
+								<p className="text-sm text-red-500">
+									Valor excede o pendente
+								</p>
+							)}
 						<div className="flex gap-3">
 							<Button
 								type="button"
 								variant="outline"
 								className="flex-1"
-								onClick={() =>
+								disabled={
+									partialAmount <= 0 ||
+									partialAmount >
+									updatingBilling.total_amount - updatingBilling.paid_amount
+								}
+								onClick={() => {
+									const remaining =
+										updatingBilling.total_amount - updatingBilling.paid_amount;
+									const newPaid =
+										updatingBilling.paid_amount +
+										Math.min(partialAmount, remaining);
+									const newStatus =
+										newPaid >= updatingBilling.total_amount
+											? "paid"
+											: "partial";
 									handleUpdateStatus(
 										updatingBilling.id,
-										"partial",
-										updatingBilling.paid_amount +
-											Math.floor(
-												(updatingBilling.total_amount -
-													updatingBilling.paid_amount) /
-													2,
-											),
-									)
-								}
+										newStatus,
+										newPaid,
+									);
+								}}
 							>
-								Pagamento Parcial
+								Registrar Pagamento
 							</Button>
 							<Button
 								type="button"
@@ -514,7 +619,7 @@ export default function BillingsPage() {
 								variant="ghost"
 								onClick={() => setUpdatingBilling(null)}
 							>
-								Cancelar
+								Voltar
 							</Button>
 						</div>
 					</div>
