@@ -41,6 +41,8 @@ export interface Customer {
 	state: string;
 	zip_code: string;
 	active: boolean;
+	billing_mode: "per_sale" | "weekly" | "biweekly" | "monthly" | "custom";
+	billing_day: number | null;
 	createdAt: string;
 	updatedAt: string;
 }

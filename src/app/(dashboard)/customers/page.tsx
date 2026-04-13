@@ -127,15 +127,8 @@ export default function CustomersPage() {
 			city: customer.city,
 			state: customer.state,
 			zip_code: customer.zip_code,
-			billing_mode:
-				((customer as Customer & { billing_mode?: string }).billing_mode as
-					| "per_sale"
-					| "weekly"
-					| "biweekly"
-					| "monthly"
-					| "custom") || "per_sale",
-			billing_day: (customer as Customer & { billing_day?: number })
-				.billing_day,
+			billing_mode: customer.billing_mode || "per_sale",
+			billing_day: customer.billing_day ?? undefined,
 		});
 		setIsModalOpen(true);
 		setActiveMenu(null);

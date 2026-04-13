@@ -32,7 +32,7 @@ import { formatCurrency } from "@/lib/utils";
 const bundleSchema = z.object({
 	name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
 	description: z.string().optional(),
-	discount_percent: z.number().min(0).max(99).optional(),
+	discount_percent: z.number().int("Deve ser número inteiro").min(0).max(100).optional(),
 });
 
 type BundleFormData = z.infer<typeof bundleSchema>;
