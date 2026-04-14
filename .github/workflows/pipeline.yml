@@ -121,8 +121,34 @@ jobs:
           script: |
             set -euo pipefail
             mkdir -p /var/www/vendinhas/frontend/logs
-            pm2 reload vendinhas-web --update-env \
-              || pm2 start /var/www/vendinhas/frontend/ecosystem.config.js --env production
+
+            # Write ecosystem — no secrets here, safe to manage from CI.
+            # Standalone output uses node server.js, not next start.
+            cat > /var/www/vendinhas/frontend/ecosystem.config.js << 'EOF'
+            module.exports = {
+              apps: [{
+                name: 'vendinhas-web',
+                cwd: '/var/www/vendinhas/frontend',
+                script: 'server.js',
+                instances: 2,
+                exec_mode: 'cluster',
+                env: {
+                  NODE_ENV: 'production',
+                  PORT: 3000,
+                  HOSTNAME: '0.0.0.0',
+                },
+                error_file: '/var/log/pm2/vendinhas-web-error.log',
+                out_file: '/var/log/pm2/vendinhas-web-out.log',
+                merge_logs: true,
+                max_memory_restart: '500M',
+              }],
+            }
+            EOF
+
+            pm2 reload /var/www/vendinhas/frontend/ecosystem.config.js --update-env \
+              || pm2 start /var/www/vendinhas/frontend/ecosystem.config.js
+
+            pm2 save
 
       - name: Health check
         uses: appleboy/ssh-action@v1.2.2
@@ -140,5 +166,9 @@ jobs:
               echo "Attempt $i/5 failed — retrying in 15s..."
               sleep 15
             done
+            echo "--- pm2 status ---"
+            pm2 status
+            echo "--- last 30 lines of vendinhas-web logs ---"
+            pm2 logs vendinhas-web --lines 30 --nostream
             echo "Health check failed"
             exit 1
