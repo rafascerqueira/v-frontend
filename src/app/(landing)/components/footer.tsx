@@ -173,7 +173,9 @@ export function Footer() {
 					<p className="text-sm text-gray-400">
 						&copy; {currentYear} Vendinhas. Todos os direitos reservados.
 					</p>
-					<p className="text-sm text-gray-400">Feito com 💜 por quem vende como você</p>
+					<p className="text-sm text-gray-400">
+						Feito com 💜 por quem vende como você
+					</p>
 				</div>
 			</div>
 		</footer>

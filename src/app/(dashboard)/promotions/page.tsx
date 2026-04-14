@@ -174,10 +174,14 @@ export default function PromotionsPage() {
 		(p) => p.status === "scheduled",
 	).length;
 
-	const selectedProductData = products.find((p) => String(p.id) === selectedProductId);
+	const selectedProductData = products.find(
+		(p) => String(p.id) === selectedProductId,
+	);
 	const calculatedPrice =
 		selectedProductData && discountPercent
-			? Math.round(getProductPrice(selectedProductData) * (1 - discountPercent / 100))
+			? Math.round(
+					getProductPrice(selectedProductData) * (1 - discountPercent / 100),
+				)
 			: 0;
 
 	return (
@@ -341,12 +345,13 @@ export default function PromotionsPage() {
 										</TableCell>
 										<TableCell>
 											<span
-												className={`px-2 py-1 text-xs font-medium rounded-full ${promo.status === "active"
-													? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
-													: promo.status === "scheduled"
-														? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
-														: "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
-													}`}
+												className={`px-2 py-1 text-xs font-medium rounded-full ${
+													promo.status === "active"
+														? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
+														: promo.status === "scheduled"
+															? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+															: "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+												}`}
 											>
 												{promo.status === "active"
 													? "Ativa"
@@ -421,7 +426,8 @@ export default function PromotionsPage() {
 										<option value="">Selecione um produto</option>
 										{products.map((product) => (
 											<option key={product.id} value={product.id}>
-												{product.name} - {formatCurrency(getProductPrice(product))}
+												{product.name} -{" "}
+												{formatCurrency(getProductPrice(product))}
 											</option>
 										))}
 									</select>
@@ -554,12 +560,13 @@ export default function PromotionsPage() {
 											>
 												<div className="flex items-center justify-between mb-2">
 													<span
-														className={`px-2 py-1 text-xs font-medium rounded-full ${history.change_type === "promotion"
-															? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
-															: history.change_type === "restock"
-																? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
-																: "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
-															}`}
+														className={`px-2 py-1 text-xs font-medium rounded-full ${
+															history.change_type === "promotion"
+																? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
+																: history.change_type === "restock"
+																	? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+																	: "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+														}`}
 													>
 														{history.change_type === "promotion"
 															? "Promoção"

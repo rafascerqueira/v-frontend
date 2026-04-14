@@ -54,7 +54,13 @@ interface Billing {
 	};
 }
 
-type StatusFilter = "all" | "pending" | "partial" | "paid" | "overdue" | "canceled";
+type StatusFilter =
+	| "all"
+	| "pending"
+	| "partial"
+	| "paid"
+	| "overdue"
+	| "canceled";
 
 const STATUS_TABS: { value: StatusFilter; label: string }[] = [
 	{ value: "all", label: "Todas" },
@@ -67,7 +73,11 @@ const STATUS_TABS: { value: StatusFilter; label: string }[] = [
 
 const statusConfig: Record<
 	string,
-	{ label: string; variant: "default" | "success" | "warning" | "error" | "info"; icon: React.ElementType }
+	{
+		label: string;
+		variant: "default" | "success" | "warning" | "error" | "info";
+		icon: React.ElementType;
+	}
 > = {
 	pending: { label: "Pendente", variant: "warning", icon: Clock },
 	partial: { label: "Parcial", variant: "info", icon: AlertCircle },
@@ -78,7 +88,11 @@ const statusConfig: Record<
 
 const orderStatusConfig: Record<
 	string,
-	{ label: string; variant: "default" | "success" | "warning" | "error" | "info"; icon: React.ElementType }
+	{
+		label: string;
+		variant: "default" | "success" | "warning" | "error" | "info";
+		icon: React.ElementType;
+	}
 > = {
 	pending: { label: "Pendente", variant: "warning", icon: Clock },
 	confirmed: { label: "Confirmado", variant: "info", icon: CheckCircle },
@@ -151,8 +165,8 @@ export default function BillingsPage() {
 			setUpdatingBilling(null);
 		} catch (error: unknown) {
 			const msg =
-				(error as { response?: { data?: { message?: string } } })?.response?.data?.message ??
-				"Erro ao atualizar cobrança";
+				(error as { response?: { data?: { message?: string } } })?.response
+					?.data?.message ?? "Erro ao atualizar cobrança";
 			toast.error(msg);
 		}
 	};
@@ -229,17 +243,41 @@ export default function BillingsPage() {
 	return (
 		<div className="space-y-6">
 			<div>
-				<h1 className="text-2xl font-bold text-gray-900 dark:text-white">Cobranças</h1>
-				<p className="text-gray-500 mt-1">Gerencie suas cobranças e pagamentos</p>
+				<h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+					Cobranças
+				</h1>
+				<p className="text-gray-500 mt-1">
+					Gerencie suas cobranças e pagamentos
+				</p>
 			</div>
 
 			{/* Stats */}
 			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 				{[
-					{ label: "Total de Vendas", value: totalSales, color: "blue", icon: DollarSign },
-					{ label: "Pendente", value: totalPending, color: "yellow", icon: Clock },
-					{ label: "Recebido", value: totalPaid, color: "green", icon: CheckCircle },
-					{ label: "Vencido", value: totalOverdue, color: "red", icon: AlertCircle },
+					{
+						label: "Total de Vendas",
+						value: totalSales,
+						color: "blue",
+						icon: DollarSign,
+					},
+					{
+						label: "Pendente",
+						value: totalPending,
+						color: "yellow",
+						icon: Clock,
+					},
+					{
+						label: "Recebido",
+						value: totalPaid,
+						color: "green",
+						icon: CheckCircle,
+					},
+					{
+						label: "Vencido",
+						value: totalOverdue,
+						color: "red",
+						icon: AlertCircle,
+					},
 				].map(({ label, value, color, icon: Icon }) => (
 					<Card key={label}>
 						<CardContent className="p-4">
@@ -323,7 +361,9 @@ export default function BillingsPage() {
 						<div className="flex flex-col items-center justify-center py-12 text-gray-500">
 							<FileText className="h-12 w-12 mb-4 text-gray-300" />
 							<p className="text-lg font-medium">Nenhuma cobrança encontrada</p>
-							<p className="text-sm">As cobranças são geradas a partir dos pedidos</p>
+							<p className="text-sm">
+								As cobranças são geradas a partir dos pedidos
+							</p>
 						</div>
 					) : (
 						<Table>
@@ -337,12 +377,15 @@ export default function BillingsPage() {
 									<TableCell as="th">Valor</TableCell>
 									<TableCell as="th">Pago</TableCell>
 									<TableCell as="th">Status</TableCell>
-									<TableCell as="th" className="text-right">Ações</TableCell>
+									<TableCell as="th" className="text-right">
+										Ações
+									</TableCell>
 								</TableRow>
 							</TableHeader>
 							<TableBody>
 								{filteredBillings.map((billing, index) => {
-									const status = statusConfig[billing.status] ?? statusConfig.pending;
+									const status =
+										statusConfig[billing.status] ?? statusConfig.pending;
 									const StatusIcon = status.icon;
 									return (
 										<motion.tr
@@ -363,17 +406,22 @@ export default function BillingsPage() {
 														{billing.order?.order_number ?? "-"}
 													</p>
 													<p className="text-xs text-gray-500">
-														{billing.order?.customer?.name ?? "Cliente não encontrado"}
+														{billing.order?.customer?.name ??
+															"Cliente não encontrado"}
 													</p>
 												</div>
 											</TableCell>
 											<TableCell>
 												{(() => {
-													const os = orderStatusConfig[billing.order?.status ?? ""];
+													const os =
+														orderStatusConfig[billing.order?.status ?? ""];
 													if (!os) return "-";
 													const OsIcon = os.icon;
 													return (
-														<Badge variant={os.variant} className="flex items-center gap-1 w-fit">
+														<Badge
+															variant={os.variant}
+															className="flex items-center gap-1 w-fit"
+														>
 															<OsIcon className="h-3 w-3" />
 															{os.label}
 														</Badge>
@@ -401,15 +449,22 @@ export default function BillingsPage() {
 													<span className="text-green-600 font-medium">
 														{formatCurrency(billing.paid_amount)}
 													</span>
-													{billing.paid_amount > 0 && billing.paid_amount < billing.total_amount && (
-														<p className="text-xs text-gray-400">
-															Falta {formatCurrency(billing.total_amount - billing.paid_amount)}
-														</p>
-													)}
+													{billing.paid_amount > 0 &&
+														billing.paid_amount < billing.total_amount && (
+															<p className="text-xs text-gray-400">
+																Falta{" "}
+																{formatCurrency(
+																	billing.total_amount - billing.paid_amount,
+																)}
+															</p>
+														)}
 												</div>
 											</TableCell>
 											<TableCell>
-												<Badge variant={status.variant} className="flex items-center gap-1 w-fit">
+												<Badge
+													variant={status.variant}
+													className="flex items-center gap-1 w-fit"
+												>
 													<StatusIcon className="h-3 w-3" />
 													{status.label}
 												</Badge>
@@ -419,7 +474,9 @@ export default function BillingsPage() {
 													<button
 														type="button"
 														onClick={() =>
-															setActiveMenu(activeMenu === billing.id ? null : billing.id)
+															setActiveMenu(
+																activeMenu === billing.id ? null : billing.id,
+															)
 														}
 														className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
 													>
@@ -433,45 +490,54 @@ export default function BillingsPage() {
 														>
 															<button
 																type="button"
-																onClick={() => { setViewingBilling(billing); setActiveMenu(null); }}
+																onClick={() => {
+																	setViewingBilling(billing);
+																	setActiveMenu(null);
+																}}
 																className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
 															>
 																<FileText className="h-4 w-4" />
 																Ver Detalhes
 															</button>
-															{billing.status !== "paid" && billing.status !== "canceled" && (
-																<>
-																	<div className="border-t border-gray-100 dark:border-gray-700 my-1" />
-																	<button
-																		type="button"
-																		onClick={() => openPaymentModal(billing)}
-																		className="flex items-center gap-2 w-full px-4 py-2 text-sm text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20"
-																	>
-																		<CreditCard className="h-4 w-4" />
-																		Registrar Pagamento
-																	</button>
-																	<button
-																		type="button"
-																		onClick={() => openEditModal(billing)}
-																		className="flex items-center gap-2 w-full px-4 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
-																	>
-																		<Pencil className="h-4 w-4" />
-																		Editar Cobrança
-																	</button>
-																	<button
-																		type="button"
-																		onClick={() => {
-																			if (confirm("Cancelar esta cobrança?")) {
-																				handleUpdateStatus(billing.id, "canceled");
-																			}
-																		}}
-																		className="flex items-center gap-2 w-full px-4 py-2 text-sm text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20"
-																	>
-																		<XCircle className="h-4 w-4" />
-																		Cancelar
-																	</button>
-																</>
-															)}
+															{billing.status !== "paid" &&
+																billing.status !== "canceled" && (
+																	<>
+																		<div className="border-t border-gray-100 dark:border-gray-700 my-1" />
+																		<button
+																			type="button"
+																			onClick={() => openPaymentModal(billing)}
+																			className="flex items-center gap-2 w-full px-4 py-2 text-sm text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20"
+																		>
+																			<CreditCard className="h-4 w-4" />
+																			Registrar Pagamento
+																		</button>
+																		<button
+																			type="button"
+																			onClick={() => openEditModal(billing)}
+																			className="flex items-center gap-2 w-full px-4 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+																		>
+																			<Pencil className="h-4 w-4" />
+																			Editar Cobrança
+																		</button>
+																		<button
+																			type="button"
+																			onClick={() => {
+																				if (
+																					confirm("Cancelar esta cobrança?")
+																				) {
+																					handleUpdateStatus(
+																						billing.id,
+																						"canceled",
+																					);
+																				}
+																			}}
+																			className="flex items-center gap-2 w-full px-4 py-2 text-sm text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20"
+																		>
+																			<XCircle className="h-4 w-4" />
+																			Cancelar
+																		</button>
+																	</>
+																)}
 															<div className="border-t border-gray-100 dark:border-gray-700 my-1" />
 															<button
 																type="button"
@@ -506,23 +572,33 @@ export default function BillingsPage() {
 						<div className="grid grid-cols-2 gap-4">
 							<div>
 								<p className="text-sm text-gray-500">Pedido</p>
-								<p className="font-medium">{viewingBilling.order?.order_number}</p>
+								<p className="font-medium">
+									{viewingBilling.order?.order_number}
+								</p>
 							</div>
 							<div>
 								<p className="text-sm text-gray-500">Cliente</p>
-								<p className="font-medium">{viewingBilling.order?.customer?.name ?? "-"}</p>
+								<p className="font-medium">
+									{viewingBilling.order?.customer?.name ?? "-"}
+								</p>
 							</div>
 							<div>
 								<p className="text-sm text-gray-500">Vencimento</p>
-								<p className="font-medium">{formatDate(viewingBilling.due_date)}</p>
+								<p className="font-medium">
+									{formatDate(viewingBilling.due_date)}
+								</p>
 							</div>
 							<div>
 								<p className="text-sm text-gray-500">Forma de Pagamento</p>
-								<p className="font-medium">{paymentMethodLabel(viewingBilling.payment_method)}</p>
+								<p className="font-medium">
+									{paymentMethodLabel(viewingBilling.payment_method)}
+								</p>
 							</div>
 							<div>
 								<p className="text-sm text-gray-500">Valor Total</p>
-								<p className="font-medium text-lg">{formatCurrency(viewingBilling.total_amount)}</p>
+								<p className="font-medium text-lg">
+									{formatCurrency(viewingBilling.total_amount)}
+								</p>
 							</div>
 							<div>
 								<p className="text-sm text-gray-500">Valor Pago</p>
@@ -530,35 +606,52 @@ export default function BillingsPage() {
 									{formatCurrency(viewingBilling.paid_amount)}
 								</p>
 							</div>
-							{viewingBilling.total_amount > viewingBilling.paid_amount && viewingBilling.status !== "canceled" && (
-								<div>
-									<p className="text-sm text-gray-500">Saldo Pendente</p>
-									<p className="font-medium text-orange-600">
-										{formatCurrency(viewingBilling.total_amount - viewingBilling.paid_amount)}
-									</p>
-								</div>
-							)}
+							{viewingBilling.total_amount > viewingBilling.paid_amount &&
+								viewingBilling.status !== "canceled" && (
+									<div>
+										<p className="text-sm text-gray-500">Saldo Pendente</p>
+										<p className="font-medium text-orange-600">
+											{formatCurrency(
+												viewingBilling.total_amount -
+													viewingBilling.paid_amount,
+											)}
+										</p>
+									</div>
+								)}
 							<div>
 								<p className="text-sm text-gray-500">Status</p>
-								<Badge variant={statusConfig[viewingBilling.status]?.variant ?? "default"}>
-									{statusConfig[viewingBilling.status]?.label ?? viewingBilling.status}
+								<Badge
+									variant={
+										statusConfig[viewingBilling.status]?.variant ?? "default"
+									}
+								>
+									{statusConfig[viewingBilling.status]?.label ??
+										viewingBilling.status}
 								</Badge>
 							</div>
 							{viewingBilling.payment_date && (
 								<div>
 									<p className="text-sm text-gray-500">Data do Pagamento</p>
-									<p className="font-medium">{formatDate(viewingBilling.payment_date)}</p>
+									<p className="font-medium">
+										{formatDate(viewingBilling.payment_date)}
+									</p>
 								</div>
 							)}
 						</div>
 						{viewingBilling.notes && (
 							<div>
 								<p className="text-sm text-gray-500">Observações</p>
-								<p className="text-gray-700 dark:text-gray-300">{viewingBilling.notes}</p>
+								<p className="text-gray-700 dark:text-gray-300">
+									{viewingBilling.notes}
+								</p>
 							</div>
 						)}
 						<div className="flex justify-end pt-2">
-							<Button type="button" variant="outline" onClick={() => setViewingBilling(null)}>
+							<Button
+								type="button"
+								variant="outline"
+								onClick={() => setViewingBilling(null)}
+							>
 								Fechar
 							</Button>
 						</div>
@@ -578,7 +671,9 @@ export default function BillingsPage() {
 						<div>
 							<p className="text-sm text-gray-500">Valor Pendente</p>
 							<p className="text-2xl font-bold text-gray-900 dark:text-white">
-								{formatCurrency(updatingBilling.total_amount - updatingBilling.paid_amount)}
+								{formatCurrency(
+									updatingBilling.total_amount - updatingBilling.paid_amount,
+								)}
 							</p>
 						</div>
 
@@ -598,12 +693,15 @@ export default function BillingsPage() {
 								className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
 							>
 								{PAYMENT_METHODS.map((m) => (
-									<option key={m.value} value={m.value}>{m.label}</option>
+									<option key={m.value} value={m.value}>
+										{m.label}
+									</option>
 								))}
 							</select>
 						</div>
 
-						{partialAmount > updatingBilling.total_amount - updatingBilling.paid_amount && (
+						{partialAmount >
+							updatingBilling.total_amount - updatingBilling.paid_amount && (
 							<p className="text-sm text-red-500">Valor excede o pendente</p>
 						)}
 
@@ -614,13 +712,25 @@ export default function BillingsPage() {
 								className="flex-1"
 								disabled={
 									partialAmount <= 0 ||
-									partialAmount > updatingBilling.total_amount - updatingBilling.paid_amount
+									partialAmount >
+										updatingBilling.total_amount - updatingBilling.paid_amount
 								}
 								onClick={() => {
-									const remaining = updatingBilling.total_amount - updatingBilling.paid_amount;
-									const newPaid = updatingBilling.paid_amount + Math.min(partialAmount, remaining);
-									const newStatus = newPaid >= updatingBilling.total_amount ? "paid" : "partial";
-									handleUpdateStatus(updatingBilling.id, newStatus, newPaid, paymentMethod);
+									const remaining =
+										updatingBilling.total_amount - updatingBilling.paid_amount;
+									const newPaid =
+										updatingBilling.paid_amount +
+										Math.min(partialAmount, remaining);
+									const newStatus =
+										newPaid >= updatingBilling.total_amount
+											? "paid"
+											: "partial";
+									handleUpdateStatus(
+										updatingBilling.id,
+										newStatus,
+										newPaid,
+										paymentMethod,
+									);
 								}}
 							>
 								Registrar Parcial
@@ -641,7 +751,11 @@ export default function BillingsPage() {
 							</Button>
 						</div>
 						<div className="flex justify-end">
-							<Button type="button" variant="ghost" onClick={() => setUpdatingBilling(null)}>
+							<Button
+								type="button"
+								variant="ghost"
+								onClick={() => setUpdatingBilling(null)}
+							>
 								Voltar
 							</Button>
 						</div>
@@ -680,7 +794,9 @@ export default function BillingsPage() {
 								className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
 							>
 								{PAYMENT_METHODS.map((m) => (
-									<option key={m.value} value={m.value}>{m.label}</option>
+									<option key={m.value} value={m.value}>
+										{m.label}
+									</option>
 								))}
 							</select>
 						</div>
@@ -699,7 +815,12 @@ export default function BillingsPage() {
 						</div>
 
 						<div className="flex gap-3 pt-2">
-							<Button type="button" variant="outline" className="flex-1" onClick={() => setEditingBilling(null)}>
+							<Button
+								type="button"
+								variant="outline"
+								className="flex-1"
+								onClick={() => setEditingBilling(null)}
+							>
 								Cancelar
 							</Button>
 							<Button type="button" className="flex-1" onClick={handleEdit}>

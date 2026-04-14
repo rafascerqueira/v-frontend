@@ -534,7 +534,10 @@ export default function SuppliersPage() {
 																		amount.replace(",", "."),
 																	);
 																	if (value > 0 && value * 100 <= remaining) {
-																		handlePayDebt(debt.id, Math.round(value * 100));
+																		handlePayDebt(
+																			debt.id,
+																			Math.round(value * 100),
+																		);
 																	} else {
 																		toast.error("Valor inválido");
 																	}
