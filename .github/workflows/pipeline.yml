@@ -90,9 +90,8 @@ jobs:
       # Copy static assets into the standalone tree before syncing.
       - name: Prepare standalone bundle
         run: |
-          cp -r .next/static  .next/standalone/.next/static
-          cp -r public        .next/standalone/public
-          cp ecosystem.config.js .next/standalone/ecosystem.config.js
+          cp -r .next/static .next/standalone/.next/static
+          cp -r public       .next/standalone/public
 
       - name: Set up SSH key
         run: |
