@@ -100,10 +100,14 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
 
-      # Standalone output is self-contained — no install step needed on VPS
+      # Standalone output is self-contained — no install step needed on VPS.
+      # Exclude VPS-managed files so --delete does not remove them.
       - name: Sync standalone bundle to VPS
         run: |
           rsync -az --delete \
+            --exclude=ecosystem.config.js \
+            --exclude=logs/ \
+            --exclude=.env \
             -e "ssh -i ~/.ssh/deploy_key" \
             .next/standalone/ \
             ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/vendinhas/frontend/
@@ -116,20 +120,25 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             set -euo pipefail
-            cd /var/www/vendinhas/frontend
-            mkdir -p logs
-            pm2 reload ecosystem.config.js --update-env \
-              || pm2 start ecosystem.config.js --env production
+            mkdir -p /var/www/vendinhas/frontend/logs
+            pm2 reload vendinhas-web --update-env \
+              || pm2 start /var/www/vendinhas/frontend/ecosystem.config.js --env production
 
       - name: Health check
-        run: |
-          for i in 1 2 3; do
-            if curl -sf https://vendinhas.app; then
-              echo "Health check passed (attempt $i)"
-              exit 0
-            fi
-            echo "Attempt $i/3 failed — retrying in 15s..."
-            sleep 15
-          done
-          echo "Health check failed"
-          exit 1
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            sleep 10
+            for i in 1 2 3 4 5; do
+              if curl -sf http://localhost:3000; then
+                echo "Health check passed (attempt $i)"
+                exit 0
+              fi
+              echo "Attempt $i/5 failed — retrying in 15s..."
+              sleep 15
+            done
+            echo "Health check failed"
+            exit 1
