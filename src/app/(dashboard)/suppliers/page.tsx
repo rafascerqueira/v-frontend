@@ -551,8 +551,7 @@ export default function SuppliersPage() {
 												</div>
 												{debt.due_date && (
 													<p className="text-xs text-gray-500 mt-2">
-														Vencimento:{" "}
-														{formatDate(debt.due_date)}
+														Vencimento: {formatDate(debt.due_date)}
 													</p>
 												)}
 											</div>

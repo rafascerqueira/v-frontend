@@ -332,12 +332,9 @@ export default function PromotionsPage() {
 										</TableCell>
 										<TableCell>
 											<div className="text-sm">
-												<p>
-													{formatDate(promo.start_date)}
-												</p>
+												<p>{formatDate(promo.start_date)}</p>
 												<p className="text-gray-500">
-													até{" "}
-													{formatDate(promo.end_date)}
+													até {formatDate(promo.end_date)}
 												</p>
 											</div>
 										</TableCell>

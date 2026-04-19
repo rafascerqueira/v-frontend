@@ -176,7 +176,7 @@ export default function BillingsPage() {
 		try {
 			let dueDateISO: string | undefined;
 			if (editDueDate) {
-				const [y, m, d] = editDueDate.split('-').map(Number);
+				const [y, m, d] = editDueDate.split("-").map(Number);
 				dueDateISO = new Date(y, m - 1, d).toISOString();
 			}
 			await api.patch(`/billings/${editingBilling.id}`, {

@@ -271,7 +271,9 @@ export default function PlansPage() {
 								<button
 									type="button"
 									onClick={() => handleSelectPlan(planId)}
-									disabled={isCurrentPlan || plan.comingSoon || loadingPlan !== null}
+									disabled={
+										isCurrentPlan || plan.comingSoon || loadingPlan !== null
+									}
 									className={`w-full py-3 px-4 rounded-xl font-medium transition-colors ${
 										plan.comingSoon
 											? "bg-secondary-100 dark:bg-secondary-900/30 text-secondary-600 dark:text-secondary-400 cursor-not-allowed"
@@ -298,7 +300,9 @@ export default function PlansPage() {
 										disabled={loadingPlan !== null}
 										className="w-full mt-2 py-2 px-4 rounded-xl text-sm font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors disabled:opacity-50"
 									>
-										{loadingPlan === "portal" ? "Abrindo..." : "Gerenciar assinatura"}
+										{loadingPlan === "portal"
+											? "Abrindo..."
+											: "Gerenciar assinatura"}
 									</button>
 								)}
 
