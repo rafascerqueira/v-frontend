@@ -33,7 +33,7 @@ export function useNotifications() {
 
 			const newSocket = io(`${API_URL}/notifications`, {
 				query: { userId: user.id },
-				transports: ["polling", "websocket"],
+				transports: ["websocket"],
 				withCredentials: true,
 				reconnectionAttempts: 3,
 				reconnectionDelay: 1000,
