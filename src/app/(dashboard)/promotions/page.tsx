@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/table";
 import { toast } from "@/components/ui/toast";
 import { api } from "@/lib/api";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatDate } from "@/lib/utils";
 
 const promotionSchema = z.object({
 	product_id: z.string().min(1, "Selecione um produto"),
@@ -333,13 +333,11 @@ export default function PromotionsPage() {
 										<TableCell>
 											<div className="text-sm">
 												<p>
-													{new Date(promo.start_date).toLocaleDateString(
-														"pt-BR",
-													)}
+													{formatDate(promo.start_date)}
 												</p>
 												<p className="text-gray-500">
 													até{" "}
-													{new Date(promo.end_date).toLocaleDateString("pt-BR")}
+													{formatDate(promo.end_date)}
 												</p>
 											</div>
 										</TableCell>

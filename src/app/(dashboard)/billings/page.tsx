@@ -174,8 +174,13 @@ export default function BillingsPage() {
 	const handleEdit = async () => {
 		if (!editingBilling) return;
 		try {
+			let dueDateISO: string | undefined;
+			if (editDueDate) {
+				const [y, m, d] = editDueDate.split('-').map(Number);
+				dueDateISO = new Date(y, m - 1, d).toISOString();
+			}
 			await api.patch(`/billings/${editingBilling.id}`, {
-				due_date: editDueDate ? new Date(editDueDate).toISOString() : undefined,
+				due_date: dueDateISO,
 				notes: editNotes || undefined,
 				payment_method: editPaymentMethod,
 			});

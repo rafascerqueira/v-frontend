@@ -3,8 +3,11 @@
 import { motion } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 import { Check, Crown, Sparkles, Star, X, Zap } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useSubscription } from "@/contexts/SubscriptionContext";
+import { api } from "@/lib/api";
 
 interface PlanFeature {
 	name: string;
@@ -115,21 +118,47 @@ function formatPrice(cents: number) {
 export default function PlansPage() {
 	const { subscription, loading } = useSubscription();
 	const currentPlan = subscription?.plan || "free";
+	const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+	const searchParams = useSearchParams();
 
-	const handleSelectPlan = (planId: string) => {
+	useEffect(() => {
+		const checkout = searchParams.get("checkout");
+		if (checkout === "success") {
+			toast.success("Assinatura ativada com sucesso! Bem-vindo ao plano Pro.");
+		} else if (checkout === "canceled") {
+			toast("Pagamento cancelado.", { icon: "ℹ️" });
+		}
+	}, [searchParams]);
+
+	const handleSelectPlan = async (planId: string) => {
 		if (planId === currentPlan) {
 			toast("Você já está neste plano", { icon: "ℹ️" });
 			return;
 		}
-
 		if (planId === "free") {
 			toast.error("Não é possível fazer downgrade para o plano gratuito");
 			return;
 		}
 
-		// TODO: Integrate with payment provider
-		toast.success("Redirecionando para o pagamento...");
-		// router.push(`/checkout?plan=${planId}`)
+		setLoadingPlan(planId);
+		try {
+			const { data } = await api.post("/subscriptions/checkout", { planId });
+			window.location.href = data.url;
+		} catch {
+			toast.error("Erro ao iniciar pagamento. Tente novamente.");
+			setLoadingPlan(null);
+		}
+	};
+
+	const handleManageSubscription = async () => {
+		setLoadingPlan("portal");
+		try {
+			const { data } = await api.post("/subscriptions/portal");
+			window.location.href = data.url;
+		} catch {
+			toast.error("Erro ao abrir portal de pagamentos.");
+			setLoadingPlan(null);
+		}
 	};
 
 	if (loading) {
@@ -242,7 +271,7 @@ export default function PlansPage() {
 								<button
 									type="button"
 									onClick={() => handleSelectPlan(planId)}
-									disabled={isCurrentPlan || plan.comingSoon}
+									disabled={isCurrentPlan || plan.comingSoon || loadingPlan !== null}
 									className={`w-full py-3 px-4 rounded-xl font-medium transition-colors ${
 										plan.comingSoon
 											? "bg-secondary-100 dark:bg-secondary-900/30 text-secondary-600 dark:text-secondary-400 cursor-not-allowed"
@@ -253,12 +282,25 @@ export default function PlansPage() {
 													: "bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white"
 									}`}
 								>
-									{plan.comingSoon
-										? "Em desenvolvimento"
-										: isCurrentPlan
-											? "Plano atual"
-											: "Selecionar plano"}
+									{loadingPlan === planId
+										? "Redirecionando..."
+										: plan.comingSoon
+											? "Em desenvolvimento"
+											: isCurrentPlan
+												? "Plano atual"
+												: "Selecionar plano"}
 								</button>
+
+								{isCurrentPlan && currentPlan !== "free" && (
+									<button
+										type="button"
+										onClick={handleManageSubscription}
+										disabled={loadingPlan !== null}
+										className="w-full mt-2 py-2 px-4 rounded-xl text-sm font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors disabled:opacity-50"
+									>
+										{loadingPlan === "portal" ? "Abrindo..." : "Gerenciar assinatura"}
+									</button>
+								)}
 
 								<ul className="mt-6 space-y-3">
 									{plan.highlights.map((highlight) => (

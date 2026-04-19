@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/table";
 import { toast } from "@/components/ui/toast";
 import { api } from "@/lib/api";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatDate } from "@/lib/utils";
 
 const supplierSchema = z.object({
 	name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
@@ -552,9 +552,7 @@ export default function SuppliersPage() {
 												{debt.due_date && (
 													<p className="text-xs text-gray-500 mt-2">
 														Vencimento:{" "}
-														{new Date(debt.due_date).toLocaleDateString(
-															"pt-BR",
-														)}
+														{formatDate(debt.due_date)}
 													</p>
 												)}
 											</div>
