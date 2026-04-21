@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import {
+	AlertTriangle,
 	Check,
 	Copy,
 	ExternalLink,
@@ -14,6 +15,7 @@ import {
 	User,
 	Users,
 } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { api } from "@/lib/api";
@@ -25,29 +27,42 @@ interface Customer {
 	phone: string;
 }
 
+interface StoreSettings {
+	slug: string | null;
+	catalogUrl: string | null;
+}
+
 export default function CatalogSharePage() {
 	const [copied, setCopied] = useState(false);
 	const [copiedCustomerId, setCopiedCustomerId] = useState<string | null>(null);
-	const [catalogUrl, setCatalogUrl] = useState("");
+	const [slug, setSlug] = useState<string | null>(null);
+	const [catalogUrl, setCatalogUrl] = useState<string | null>(null);
 	const [customers, setCustomers] = useState<Customer[]>([]);
 	const [searchTerm, setSearchTerm] = useState("");
 	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {
-		const baseUrl = window.location.origin;
-		setCatalogUrl(`${baseUrl}/catalog`);
-
-		async function loadCustomers() {
+		async function load() {
 			try {
-				const response = await api.get("/customers");
-				setCustomers(response.data.data || response.data);
+				const [storeRes, customersRes] = await Promise.all([
+					api.get<StoreSettings>("/store/settings"),
+					api.get("/customers"),
+				]);
+
+				setSlug(storeRes.data.slug);
+				if (storeRes.data.slug) {
+					const origin = window.location.origin;
+					setCatalogUrl(`${origin}/loja/${storeRes.data.slug}`);
+				}
+
+				setCustomers(customersRes.data.data || customersRes.data);
 			} catch (_error) {
-				toast.error("Erro ao carregar clientes");
+				toast.error("Erro ao carregar dados");
 			} finally {
 				setLoading(false);
 			}
 		}
-		loadCustomers();
+		load();
 	}, []);
 
 	const filteredCustomers = customers.filter(
@@ -58,12 +73,15 @@ export default function CatalogSharePage() {
 	);
 
 	const getCustomerLink = (customerId: string) => {
-		return `${catalogUrl}/${customerId}`;
+		if (!catalogUrl) return "";
+		return `${catalogUrl}/c/${customerId}`;
 	};
 
 	const handleCopyCustomerLink = async (customerId: string) => {
+		const link = getCustomerLink(customerId);
+		if (!link) return;
 		try {
-			await navigator.clipboard.writeText(getCustomerLink(customerId));
+			await navigator.clipboard.writeText(link);
 			setCopiedCustomerId(customerId);
 			toast.success("Link personalizado copiado!");
 			setTimeout(() => setCopiedCustomerId(null), 2000);
@@ -74,6 +92,7 @@ export default function CatalogSharePage() {
 
 	const handleShareCustomerWhatsApp = (customer: Customer) => {
 		const link = getCustomerLink(customer.id);
+		if (!link) return;
 		const text = encodeURIComponent(
 			`Olá ${customer.name.split(" ")[0]}!\n\nPreparei um catálogo especial para você. Seus dados já estarão preenchidos no checkout:\n\n${link}\n\nQualquer dúvida é só me chamar!`,
 		);
@@ -81,6 +100,7 @@ export default function CatalogSharePage() {
 	};
 
 	const handleCopy = async () => {
+		if (!catalogUrl) return;
 		try {
 			await navigator.clipboard.writeText(catalogUrl);
 			setCopied(true);
@@ -91,31 +111,76 @@ export default function CatalogSharePage() {
 		}
 	};
 
-	const shareOptions = [
-		{
-			name: "WhatsApp",
-			icon: MessageCircle,
-			color: "bg-green-500 hover:bg-green-600",
-			action: () => {
-				const text = encodeURIComponent(
-					`Confira nosso catálogo de produtos: ${catalogUrl}`,
-				);
-				window.open(`https://wa.me/?text=${text}`, "_blank");
-			},
-		},
-		{
-			name: "Email",
-			icon: Mail,
-			color: "bg-blue-500 hover:bg-blue-600",
-			action: () => {
-				const subject = encodeURIComponent("Catálogo de Produtos");
-				const body = encodeURIComponent(
-					`Olá!\n\nConfira nosso catálogo de produtos disponíveis para entrega:\n\n${catalogUrl}\n\nAtenciosamente,\nVendinhas`,
-				);
-				window.open(`mailto:?subject=${subject}&body=${body}`, "_blank");
-			},
-		},
-	];
+	const shareOptions = catalogUrl
+		? [
+				{
+					name: "WhatsApp",
+					icon: MessageCircle,
+					color: "bg-green-500 hover:bg-green-600",
+					action: () => {
+						const text = encodeURIComponent(
+							`Confira meu catálogo de produtos: ${catalogUrl}`,
+						);
+						window.open(`https://wa.me/?text=${text}`, "_blank");
+					},
+				},
+				{
+					name: "Email",
+					icon: Mail,
+					color: "bg-blue-500 hover:bg-blue-600",
+					action: () => {
+						const subject = encodeURIComponent("Catálogo de Produtos");
+						const body = encodeURIComponent(
+							`Olá!\n\nConfira meu catálogo de produtos disponíveis para entrega:\n\n${catalogUrl}\n\nAtenciosamente`,
+						);
+						window.open(`mailto:?subject=${subject}&body=${body}`, "_blank");
+					},
+				},
+			]
+		: [];
+
+	if (loading) {
+		return (
+			<div className="flex items-center justify-center py-20">
+				<div className="w-10 h-10 border-4 border-primary-500 border-t-transparent rounded-full animate-spin" />
+			</div>
+		);
+	}
+
+	if (!slug) {
+		return (
+			<div className="space-y-6">
+				<div>
+					<h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+						Compartilhar Catálogo
+					</h1>
+				</div>
+
+				<div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-6 flex gap-4">
+					<AlertTriangle className="w-6 h-6 text-yellow-600 dark:text-yellow-400 shrink-0" />
+					<div className="space-y-3">
+						<p className="text-gray-900 dark:text-white font-medium">
+							Defina o slug da sua loja para habilitar o catálogo público.
+						</p>
+						<p className="text-sm text-gray-600 dark:text-gray-300">
+							O slug é usado na URL do catálogo que você compartilha com seus
+							clientes — algo como{" "}
+							<code className="font-mono bg-gray-100 dark:bg-gray-800 px-1 rounded">
+								/loja/minha-loja
+							</code>
+							.
+						</p>
+						<Link
+							href="/settings"
+							className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg text-sm font-medium"
+						>
+							Ir para Configurações → Loja
+						</Link>
+					</div>
+				</div>
+			</div>
+		);
+	}
 
 	return (
 		<div className="space-y-6">
@@ -154,7 +219,7 @@ export default function CatalogSharePage() {
 					<div className="flex gap-2">
 						<input
 							type="text"
-							value={catalogUrl}
+							value={catalogUrl ?? ""}
 							readOnly
 							className="flex-1 px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white text-sm"
 						/>
@@ -181,17 +246,19 @@ export default function CatalogSharePage() {
 						</button>
 					</div>
 
-					<div className="mt-4">
-						<a
-							href={catalogUrl}
-							target="_blank"
-							rel="noopener noreferrer"
-							className="inline-flex items-center gap-2 text-primary-600 dark:text-primary-400 hover:underline text-sm"
-						>
-							<ExternalLink className="w-4 h-4" />
-							Abrir catálogo em nova aba
-						</a>
-					</div>
+					{catalogUrl && (
+						<div className="mt-4">
+							<a
+								href={catalogUrl}
+								target="_blank"
+								rel="noopener noreferrer"
+								className="inline-flex items-center gap-2 text-primary-600 dark:text-primary-400 hover:underline text-sm"
+							>
+								<ExternalLink className="w-4 h-4" />
+								Abrir catálogo em nova aba
+							</a>
+						</div>
+					)}
 				</motion.div>
 
 				{/* Share Options */}
@@ -310,14 +377,7 @@ export default function CatalogSharePage() {
 				</div>
 
 				<div className="space-y-3 max-h-96 overflow-y-auto">
-					{loading ? (
-						<div className="text-center py-8">
-							<div className="animate-spin rounded-full h-8 w-8 border-2 border-primary-600 border-t-transparent mx-auto" />
-							<p className="text-gray-500 dark:text-gray-400 mt-2 text-sm">
-								Carregando clientes...
-							</p>
-						</div>
-					) : filteredCustomers.length === 0 ? (
+					{filteredCustomers.length === 0 ? (
 						<div className="text-center py-8">
 							<User className="w-12 h-12 text-gray-300 mx-auto mb-2" />
 							<p className="text-gray-500 dark:text-gray-400">

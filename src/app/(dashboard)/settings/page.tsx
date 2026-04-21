@@ -7,6 +7,7 @@ import {
 	Camera,
 	Check,
 	Copy,
+	ExternalLink,
 	Eye,
 	EyeOff,
 	Key,
@@ -20,12 +21,13 @@ import {
 	Save,
 	Shield,
 	ShieldCheck,
+	Store,
 	Sun,
 	User,
 	X,
 } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -47,6 +49,41 @@ const profileSchema = z.object({
 	address: z.string().optional(),
 });
 
+const storeSchema = z.object({
+	store_name: z
+		.string()
+		.trim()
+		.max(100, "Máximo 100 caracteres")
+		.optional()
+		.or(z.literal("")),
+	store_slug: z
+		.string()
+		.trim()
+		.optional()
+		.or(z.literal(""))
+		.refine((v) => !v || /^[a-z0-9-]+$/.test(v), {
+			message: "Apenas letras minúsculas, números e hífens",
+		})
+		.refine((v) => !v || (v.length >= 3 && v.length <= 50), {
+			message: "Slug deve ter entre 3 e 50 caracteres",
+		}),
+	store_description: z
+		.string()
+		.max(500, "Máximo 500 caracteres")
+		.optional()
+		.or(z.literal("")),
+	store_phone: z
+		.string()
+		.max(20, "Máximo 20 caracteres")
+		.optional()
+		.or(z.literal("")),
+	store_whatsapp: z
+		.string()
+		.max(20, "Máximo 20 caracteres")
+		.optional()
+		.or(z.literal("")),
+});
+
 const passwordSchema = z
 	.object({
 		currentPassword: z.string().min(6, "Senha atual é obrigatória"),
@@ -62,6 +99,21 @@ const passwordSchema = z
 
 type ProfileFormData = z.infer<typeof profileSchema>;
 type PasswordFormData = z.infer<typeof passwordSchema>;
+type StoreFormData = z.infer<typeof storeSchema>;
+
+interface StoreSettings {
+	id: string;
+	sellerName: string;
+	slug: string | null;
+	name: string | null;
+	description: string | null;
+	logo: string | null;
+	banner: string | null;
+	phone: string | null;
+	whatsapp: string | null;
+	catalogUrl: string | null;
+	slugSuggestion: string | null;
+}
 
 export default function SettingsPage() {
 	const { user, refreshUser } = useAuth();
@@ -83,6 +135,9 @@ export default function SettingsPage() {
 		user?.avatar || null,
 	);
 	const [uploadingImage, setUploadingImage] = useState(false);
+	const [storeLoading, setStoreLoading] = useState(false);
+	const [catalogUrl, setCatalogUrl] = useState<string | null>(null);
+	const [slugSuggestion, setSlugSuggestion] = useState<string | null>(null);
 
 	const {
 		register,
@@ -96,6 +151,79 @@ export default function SettingsPage() {
 			address: user?.address || "",
 		},
 	});
+
+	const {
+		register: registerStore,
+		handleSubmit: handleStoreSubmit,
+		reset: resetStoreForm,
+		setValue: setStoreValue,
+		formState: { errors: storeErrors, isSubmitting: isSavingStore },
+	} = useForm<StoreFormData>({
+		resolver: zodResolver(storeSchema),
+		defaultValues: {
+			store_name: "",
+			store_slug: "",
+			store_description: "",
+			store_phone: "",
+			store_whatsapp: "",
+		},
+	});
+
+	useEffect(() => {
+		if (activeTab !== "store") return;
+		let cancelled = false;
+		setStoreLoading(true);
+		api
+			.get<StoreSettings>("/store/settings")
+			.then((res) => {
+				if (cancelled) return;
+				resetStoreForm({
+					store_name: res.data.name ?? "",
+					store_slug: res.data.slug ?? "",
+					store_description: res.data.description ?? "",
+					store_phone: res.data.phone ?? "",
+					store_whatsapp: res.data.whatsapp ?? "",
+				});
+				setCatalogUrl(res.data.catalogUrl);
+				setSlugSuggestion(res.data.slugSuggestion);
+			})
+			.catch(() => toast.error("Erro ao carregar dados da loja"))
+			.finally(() => {
+				if (!cancelled) setStoreLoading(false);
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, [activeTab, resetStoreForm]);
+
+	const onStoreSubmit = async (data: StoreFormData) => {
+		const payload: Record<string, string> = {};
+		for (const key of Object.keys(data) as (keyof StoreFormData)[]) {
+			const value = data[key]?.trim();
+			if (value) payload[key] = value;
+		}
+		try {
+			const res = await api.patch<{
+				store_slug: string | null;
+				catalogUrl: string | null;
+			}>("/store/settings", payload);
+			setCatalogUrl(res.data.catalogUrl);
+			toast.success("Loja atualizada com sucesso!");
+		} catch (error: unknown) {
+			const e = error as {
+				response?: { status?: number; data?: { message?: string } };
+			};
+			if (e.response?.status === 409) {
+				toast.error("Este slug já está em uso");
+				return;
+			}
+			if (e.response?.status === 400 && e.response.data?.message) {
+				toast.error(e.response.data.message);
+				return;
+			}
+			toast.error(e.response?.data?.message ?? "Erro ao salvar loja");
+		}
+	};
 
 	const {
 		register: registerPassword,
@@ -200,6 +328,7 @@ export default function SettingsPage() {
 
 	const tabs = [
 		{ id: "profile", label: "Perfil", icon: User },
+		{ id: "store", label: "Loja", icon: Store },
 		{ id: "security", label: "Segurança", icon: Shield },
 		{ id: "notifications", label: "Notificações", icon: Bell },
 		{ id: "appearance", label: "Aparência", icon: Palette },
@@ -344,6 +473,151 @@ export default function SettingsPage() {
 									</form>
 								</CardContent>
 							</Card>
+						</motion.div>
+					)}
+
+					{activeTab === "store" && (
+						<motion.div
+							initial={{ opacity: 0, y: 10 }}
+							animate={{ opacity: 1, y: 0 }}
+							className="space-y-6"
+						>
+							<Card>
+								<CardHeader>
+									<CardTitle className="flex items-center gap-2">
+										<Store className="h-5 w-5 text-primary-500" />
+										Dados da Loja
+									</CardTitle>
+									<CardDescription>
+										Informações exibidas no seu catálogo público
+									</CardDescription>
+								</CardHeader>
+								<CardContent>
+									{storeLoading ? (
+										<div className="py-10 text-center text-sm text-gray-500 dark:text-gray-400">
+											Carregando...
+										</div>
+									) : (
+										<form
+											onSubmit={handleStoreSubmit(onStoreSubmit)}
+											className="space-y-4"
+										>
+											<Input
+												label="Nome Fantasia"
+												placeholder="Ex: Loja dos Namorados"
+												hint="Nome que aparecerá no catálogo e no acompanhamento de pedidos. Se vazio, usaremos 'Loja de {seu nome}'."
+												error={storeErrors.store_name?.message}
+												{...registerStore("store_name")}
+											/>
+											<div>
+												<Input
+													label="Slug da Loja"
+													placeholder="minha-loja"
+													hint="Identificador usado na URL pública: /loja/{slug}. Apenas letras minúsculas, números e hífens."
+													error={storeErrors.store_slug?.message}
+													{...registerStore("store_slug")}
+												/>
+												{slugSuggestion && (
+													<button
+														type="button"
+														onClick={() =>
+															setStoreValue("store_slug", slugSuggestion, {
+																shouldDirty: true,
+																shouldValidate: true,
+															})
+														}
+														className="mt-2 inline-flex items-center gap-1 text-sm text-primary-600 dark:text-primary-400 hover:underline"
+													>
+														Usar sugestão:{" "}
+														<code className="font-mono">{slugSuggestion}</code>
+													</button>
+												)}
+											</div>
+											<div>
+												<label
+													htmlFor="store_description"
+													className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5"
+												>
+													Descrição
+												</label>
+												<textarea
+													id="store_description"
+													rows={3}
+													placeholder="Breve descrição exibida no topo do catálogo"
+													className="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 dark:focus:border-primary-400 transition-all duration-200"
+													{...registerStore("store_description")}
+												/>
+												{storeErrors.store_description && (
+													<p className="mt-1.5 text-sm text-red-600 dark:text-red-400">
+														{storeErrors.store_description.message}
+													</p>
+												)}
+											</div>
+											<div className="grid md:grid-cols-2 gap-4">
+												<Input
+													label="Telefone"
+													placeholder="(00) 00000-0000"
+													error={storeErrors.store_phone?.message}
+													{...registerStore("store_phone")}
+												/>
+												<Input
+													label="WhatsApp"
+													placeholder="(00) 00000-0000"
+													error={storeErrors.store_whatsapp?.message}
+													{...registerStore("store_whatsapp")}
+												/>
+											</div>
+											<div className="flex justify-end pt-2">
+												<Button type="submit" isLoading={isSavingStore}>
+													<Save className="h-4 w-4 mr-2" />
+													Salvar Alterações
+												</Button>
+											</div>
+										</form>
+									)}
+								</CardContent>
+							</Card>
+
+							{catalogUrl && (
+								<Card>
+									<CardHeader>
+										<CardTitle className="flex items-center gap-2">
+											<ExternalLink className="h-5 w-5 text-primary-500" />
+											Link do Catálogo
+										</CardTitle>
+										<CardDescription>
+											Compartilhe com seus clientes
+										</CardDescription>
+									</CardHeader>
+									<CardContent>
+										<div className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg">
+											<code className="flex-1 text-sm text-gray-700 dark:text-gray-300 truncate">
+												{catalogUrl}
+											</code>
+											<button
+												type="button"
+												onClick={() => {
+													navigator.clipboard.writeText(catalogUrl);
+													toast.success("Link copiado!");
+												}}
+												className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md transition-colors"
+												aria-label="Copiar link"
+											>
+												<Copy className="h-4 w-4 text-gray-500" />
+											</button>
+											<a
+												href={catalogUrl}
+												target="_blank"
+												rel="noopener noreferrer"
+												className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md transition-colors"
+												aria-label="Abrir catálogo"
+											>
+												<ExternalLink className="h-4 w-4 text-gray-500" />
+											</a>
+										</div>
+									</CardContent>
+								</Card>
+							)}
 						</motion.div>
 					)}
 

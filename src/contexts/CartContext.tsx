@@ -7,7 +7,12 @@ import {
 	useContext,
 	useState,
 } from "react";
-import type { CatalogCustomerData, CatalogProduct } from "@/lib/api-public";
+import type {
+	AuthenticatedCustomer,
+	CatalogCustomerData,
+	CatalogProduct,
+} from "@/lib/api-public";
+import { isAuthenticatedCustomer } from "@/lib/api-public";
 
 export interface CartItem {
 	product: CatalogProduct;
@@ -23,7 +28,14 @@ interface CartContextType {
 	total: number;
 	itemCount: number;
 	customer: CatalogCustomerData | null;
+	authenticatedCustomer: AuthenticatedCustomer | null;
+	customerToken: string | null;
 	setCustomer: (customer: CatalogCustomerData | null) => void;
+	setAuthenticatedCustomer: (
+		customer: AuthenticatedCustomer,
+		token: string,
+	) => void;
+	clearCustomerAuth: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -31,6 +43,10 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export function CartProvider({ children }: { children: ReactNode }) {
 	const [items, setItems] = useState<CartItem[]>([]);
 	const [customer, setCustomer] = useState<CatalogCustomerData | null>(null);
+	const [customerToken, setCustomerToken] = useState<string | null>(null);
+
+	const authenticatedCustomer =
+		customer !== null && isAuthenticatedCustomer(customer) ? customer : null;
 
 	const addItem = useCallback((product: CatalogProduct, quantity = 1) => {
 		setItems((prev) => {
@@ -66,6 +82,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
 		setItems([]);
 	}, []);
 
+	const setAuthenticatedCustomer = useCallback(
+		(c: AuthenticatedCustomer, token: string) => {
+			setCustomer(c);
+			setCustomerToken(token);
+		},
+		[],
+	);
+
+	const clearCustomerAuth = useCallback(() => {
+		setCustomer(null);
+		setCustomerToken(null);
+	}, []);
+
 	const total = items.reduce(
 		(sum, item) => sum + item.product.price * item.quantity,
 		0,
@@ -84,7 +113,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
 				total,
 				itemCount,
 				customer,
+				authenticatedCustomer,
+				customerToken,
 				setCustomer,
+				setAuthenticatedCustomer,
+				clearCustomerAuth,
 			}}
 		>
 			{children}

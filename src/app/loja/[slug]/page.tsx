@@ -4,11 +4,11 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
 	Minus,
 	Package,
+	Phone,
 	Plus,
 	Search,
 	ShoppingCart,
 	Store,
-	User,
 	X,
 } from "lucide-react";
 import Link from "next/link";
@@ -16,7 +16,11 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useCart } from "@/contexts/CartContext";
-import { type CatalogProduct, catalogApi } from "@/lib/api-public";
+import {
+	type CatalogProduct,
+	catalogApi,
+	type StoreInfo,
+} from "@/lib/api-public";
 
 function formatCurrency(value: number) {
 	return new Intl.NumberFormat("pt-BR", {
@@ -85,6 +89,11 @@ function ProductCard({ product }: { product: CatalogProduct }) {
 						Últimas {product.availableStock} unidades
 					</span>
 				)}
+				{product.originalPrice && (
+					<span className="absolute top-2 left-2 bg-red-500 text-white px-2 py-0.5 rounded text-xs font-bold">
+						PROMO
+					</span>
+				)}
 			</div>
 
 			<div className="p-4">
@@ -102,9 +111,16 @@ function ProductCard({ product }: { product: CatalogProduct }) {
 				</p>
 
 				<div className="mt-3 flex items-center justify-between">
-					<span className="text-lg font-bold text-primary-600 dark:text-primary-400">
-						{formatCurrency(product.price)}
-					</span>
+					<div>
+						<span className="text-lg font-bold text-primary-600 dark:text-primary-400">
+							{formatCurrency(product.price)}
+						</span>
+						{product.originalPrice && (
+							<span className="ml-2 text-sm text-gray-400 line-through">
+								{formatCurrency(product.originalPrice)}
+							</span>
+						)}
+					</div>
 
 					{product.availableStock > 0 &&
 						(quantity === 0 ? (
@@ -146,11 +162,11 @@ function ProductCard({ product }: { product: CatalogProduct }) {
 function CartSidebar({
 	isOpen,
 	onClose,
-	customerId,
+	slug,
 }: {
 	isOpen: boolean;
 	onClose: () => void;
-	customerId: string;
+	slug: string;
 }) {
 	const { items, total, removeItem, updateQuantity, itemCount } = useCart();
 
@@ -265,7 +281,7 @@ function CartSidebar({
 									</span>
 								</div>
 								<Link
-									href={`/catalog/${customerId}/checkout`}
+									href={`/loja/${slug}/checkout`}
 									onClick={onClose}
 									className="block w-full bg-primary-600 hover:bg-primary-700 text-white text-center py-3 rounded-xl font-medium transition-colors"
 								>
@@ -280,100 +296,136 @@ function CartSidebar({
 	);
 }
 
-export default function PersonalizedCatalogPage() {
+export default function StorePage() {
 	const params = useParams();
-	const customerId = params.customerId as string;
-	const { customer, setCustomer, itemCount } = useCart();
+	const slug = params.slug as string;
 
+	const [store, setStore] = useState<StoreInfo | null>(null);
 	const [products, setProducts] = useState<CatalogProduct[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [search, setSearch] = useState("");
 	const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 	const [cartOpen, setCartOpen] = useState(false);
+	const { itemCount } = useCart();
 
 	useEffect(() => {
-		async function loadData() {
+		async function loadStore() {
 			try {
-				const [productsRes, customerRes] = await Promise.all([
-					catalogApi.getProducts(),
-					catalogApi.getCustomer(customerId),
+				const [storeRes, productsRes] = await Promise.all([
+					catalogApi.getStore(slug),
+					catalogApi.getStoreProducts(slug),
 				]);
+				setStore(storeRes.data);
 				setProducts(productsRes.data);
-				setCustomer(customerRes.data);
-			} catch (_error) {
-				toast.error("Erro ao carregar catálogo");
+			} catch {
+				toast.error("Loja não encontrada");
 			} finally {
 				setLoading(false);
 			}
 		}
-		loadData();
-	}, [customerId, setCustomer]);
+		loadStore();
+	}, [slug]);
 
-	const categories = [...new Set(products.map((p) => p.category))];
+	const categories = [
+		...new Set(products.map((p) => p.category).filter(Boolean)),
+	];
 
 	const filteredProducts = products.filter((product) => {
 		const matchesSearch =
 			product.name.toLowerCase().includes(search.toLowerCase()) ||
-			product.description.toLowerCase().includes(search.toLowerCase());
+			(product.description ?? "").toLowerCase().includes(search.toLowerCase());
 		const matchesCategory =
 			!selectedCategory || product.category === selectedCategory;
 		return matchesSearch && matchesCategory;
 	});
 
+	if (!loading && !store) {
+		return (
+			<div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
+				<div className="text-center">
+					<Store className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+					<h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+						Loja não encontrada
+					</h1>
+					<p className="text-gray-500 dark:text-gray-400">
+						Verifique o link e tente novamente.
+					</p>
+				</div>
+			</div>
+		);
+	}
+
 	return (
 		<div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+			{/* Store banner */}
+			{store?.banner && (
+				<div className="h-40 sm:h-56 w-full overflow-hidden">
+					<img
+						src={store.banner}
+						alt={store.name}
+						className="w-full h-full object-cover"
+					/>
+				</div>
+			)}
+
 			{/* Header */}
 			<header className="sticky top-0 bg-white dark:bg-gray-800 shadow-sm z-30">
 				<div className="max-w-7xl mx-auto px-4 py-4">
 					<div className="flex items-center justify-between gap-4">
 						<div className="flex items-center gap-3">
-							<div className="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center">
-								<Store className="w-6 h-6 text-white" />
-							</div>
+							{store?.logo ? (
+								<img
+									src={store.logo}
+									alt={store.name}
+									className="w-10 h-10 rounded-xl object-cover"
+								/>
+							) : (
+								<div className="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center">
+									<Store className="w-6 h-6 text-white" />
+								</div>
+							)}
 							<div>
 								<h1 className="font-bold text-xl text-gray-900 dark:text-white">
-									Catálogo
+									{loading ? (
+										<span className="block h-5 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+									) : (
+										store?.name
+									)}
 								</h1>
-								<p className="text-xs text-gray-500 dark:text-gray-400">
-									Vendinhas
-								</p>
+								{store?.description && (
+									<p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-1">
+										{store.description}
+									</p>
+								)}
 							</div>
 						</div>
 
-						{/* Customer indicator */}
-						{customer && (
-							<div className="hidden sm:flex items-center gap-2 bg-green-50 dark:bg-green-900/20 px-3 py-1.5 rounded-lg">
-								<User className="w-4 h-4 text-green-600 dark:text-green-400" />
-								<span className="text-sm font-medium text-green-700 dark:text-green-300">
-									Olá, {customer.firstName}!
-								</span>
-							</div>
-						)}
-
-						<button
-							type="button"
-							onClick={() => setCartOpen(true)}
-							className="relative p-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl transition-colors"
-						>
-							<ShoppingCart className="w-5 h-5" />
-							{itemCount > 0 && (
-								<span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
-									{itemCount > 9 ? "9+" : itemCount}
-								</span>
+						<div className="flex items-center gap-2">
+							{store?.whatsapp && (
+								<a
+									href={`https://wa.me/${store.whatsapp.replace(/\D/g, "")}`}
+									target="_blank"
+									rel="noopener noreferrer"
+									className="hidden sm:flex items-center gap-1 px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium transition-colors"
+								>
+									<Phone className="w-4 h-4" />
+									WhatsApp
+								</a>
 							)}
-						</button>
-					</div>
-
-					{/* Customer banner on mobile */}
-					{customer && (
-						<div className="mt-3 sm:hidden flex items-center gap-2 bg-green-50 dark:bg-green-900/20 px-3 py-2 rounded-lg">
-							<User className="w-4 h-4 text-green-600 dark:text-green-400" />
-							<span className="text-sm font-medium text-green-700 dark:text-green-300">
-								Olá, {customer.firstName}! Seus dados já estão preenchidos no
-								checkout.
-							</span>
+							<button
+								type="button"
+								onClick={() => setCartOpen(true)}
+								className="relative p-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl transition-colors"
+							>
+								<ShoppingCart className="w-5 h-5" />
+								{itemCount > 0 && (
+									<span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+										{itemCount > 9 ? "9+" : itemCount}
+									</span>
+								)}
+							</button>
 						</div>
-					)}
+					</div>
 
 					{/* Search and Filters */}
 					<div className="mt-4 flex flex-col sm:flex-row gap-3">
@@ -387,33 +439,35 @@ export default function PersonalizedCatalogPage() {
 								className="w-full pl-10 pr-4 py-2.5 bg-gray-100 dark:bg-gray-700 border-0 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-primary-500"
 							/>
 						</div>
-						<div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0">
-							<button
-								type="button"
-								onClick={() => setSelectedCategory(null)}
-								className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${
-									!selectedCategory
-										? "bg-primary-600 text-white"
-										: "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-								}`}
-							>
-								Todos
-							</button>
-							{categories.map((category) => (
+						{categories.length > 0 && (
+							<div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0">
 								<button
 									type="button"
-									key={category}
-									onClick={() => setSelectedCategory(category)}
+									onClick={() => setSelectedCategory(null)}
 									className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${
-										selectedCategory === category
+										!selectedCategory
 											? "bg-primary-600 text-white"
 											: "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
 									}`}
 								>
-									{category}
+									Todos
 								</button>
-							))}
-						</div>
+								{categories.map((category) => (
+									<button
+										type="button"
+										key={category}
+										onClick={() => setSelectedCategory(category ?? null)}
+										className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${
+											selectedCategory === category
+												? "bg-primary-600 text-white"
+												: "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+										}`}
+									>
+										{category}
+									</button>
+								))}
+							</div>
+						)}
 					</div>
 				</div>
 			</header>
@@ -459,11 +513,10 @@ export default function PersonalizedCatalogPage() {
 				)}
 			</main>
 
-			{/* Cart Sidebar */}
 			<CartSidebar
 				isOpen={cartOpen}
 				onClose={() => setCartOpen(false)}
-				customerId={customerId}
+				slug={slug}
 			/>
 		</div>
 	);

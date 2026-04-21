@@ -8,7 +8,7 @@ const footerLinks = {
 		{ href: "#features", label: "Funcionalidades" },
 		{ href: "#pricing", label: "Preços" },
 		{ href: "#ai", label: "Inteligência Artificial" },
-		{ href: "/catalog", label: "Catálogo Digital" },
+		{ href: "#features", label: "Catálogo Digital" },
 	],
 	empresa: [
 		{ href: "/about", label: "Sobre Nós" },
