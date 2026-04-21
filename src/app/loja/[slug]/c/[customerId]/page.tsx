@@ -54,8 +54,7 @@ export default function PersonalizedStoreEntryPage() {
 					<AlertCircle className="w-12 h-12 text-red-500 mx-auto" />
 					<p className="text-gray-900 dark:text-white font-medium">{error}</p>
 					<p className="text-sm text-gray-500 dark:text-gray-400">
-						Você ainda pode navegar pelo catálogo e identificar-se no
-						checkout.
+						Você ainda pode navegar pelo catálogo e identificar-se no checkout.
 					</p>
 					<Link
 						href={`/loja/${slug}`}
