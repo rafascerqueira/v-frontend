@@ -30,7 +30,6 @@ import {
 	type CatalogCustomer,
 	catalogApi,
 } from "@/lib/api-public";
-import { validateCNPJ, validateCPF } from "@/lib/validators";
 
 // ─── Schemas ────────────────────────────────────────────────────────────────
 
@@ -54,26 +53,16 @@ const newPasswordSchema = z
 
 const checkoutSchema = z.object({
 	name: z.string().min(3, "Nome deve ter pelo menos 3 caracteres"),
-	email: z.string().email("Email inválido"),
 	phone: z.string().min(10, "Telefone inválido"),
-	document: z.string().refine(
-		(val) => {
-			const clean = val.replace(/\D/g, "");
-			return clean.length === 11
-				? validateCPF(clean)
-				: clean.length === 14
-					? validateCNPJ(clean)
-					: false;
-		},
-		{ message: "CPF/CNPJ inválido" },
-	),
-	address: z.string().min(3, "Endereço é obrigatório"),
-	number: z.string().min(1, "Número é obrigatório"),
+	email: z.string().optional(),
+	document: z.string().optional(),
+	address: z.string().optional(),
+	number: z.string().optional(),
 	complement: z.string().optional(),
-	neighborhood: z.string().min(2, "Bairro é obrigatório"),
-	city: z.string().min(2, "Cidade é obrigatória"),
-	state: z.string().length(2, "Estado deve ter 2 caracteres"),
-	zip_code: z.string().min(8, "CEP inválido"),
+	neighborhood: z.string().optional(),
+	city: z.string().optional(),
+	state: z.string().optional(),
+	zip_code: z.string().optional(),
 	notes: z.string().optional(),
 });
 
@@ -129,13 +118,21 @@ export default function StoreCheckoutPage() {
 		total,
 		clearCart,
 		itemCount,
+		customer,
+		customerToken,
 		authenticatedCustomer,
 		setAuthenticatedCustomer,
 	} = useCart();
 
-	const [step, setStep] = useState<Step>(
-		authenticatedCustomer ? "form" : "lookup",
-	);
+	// Customer from personalized link (set via setCustomer, no token)
+	const prefilledCustomer =
+		customer !== null && customerToken === null ? customer : null;
+
+	const [step, setStep] = useState<Step>(() => {
+		if (authenticatedCustomer) return "form";
+		if (prefilledCustomer) return "form";
+		return "lookup";
+	});
 	const [contactValue, setContactValue] = useState("");
 	const [foundFirstName, setFoundFirstName] = useState("");
 	const [hasPassword, setHasPassword] = useState(false);
@@ -160,6 +157,21 @@ export default function StoreCheckoutPage() {
 
 	const checkoutForm = useForm<CheckoutForm>({
 		resolver: zodResolver(checkoutSchema),
+		defaultValues: prefilledCustomer
+			? {
+					name: prefilledCustomer.name ?? "",
+					phone: prefilledCustomer.phone ?? "",
+					email: prefilledCustomer.email ?? "",
+					document: prefilledCustomer.document ?? "",
+					address: prefilledCustomer.address ?? "",
+					number: prefilledCustomer.number ?? "",
+					complement: prefilledCustomer.complement ?? "",
+					neighborhood: prefilledCustomer.neighborhood ?? "",
+					city: prefilledCustomer.city ?? "",
+					state: prefilledCustomer.state ?? "",
+					zip_code: prefilledCustomer.zip_code ?? "",
+				}
+			: undefined,
 	});
 
 	const phone = checkoutForm.watch("phone");
@@ -199,7 +211,13 @@ export default function StoreCheckoutPage() {
 
 			setFoundFirstName(res.data.firstName ?? "");
 			setHasPassword(res.data.hasPassword ?? false);
-			setStep("confirm-identity");
+
+			// Coming from personalized link confirm: skip re-asking identity
+			if (prefilledCustomer) {
+				setStep(res.data.hasPassword ? "enter-password" : "set-password");
+			} else {
+				setStep("confirm-identity");
+			}
 		} catch {
 			toast.error("Erro ao verificar cliente. Tente novamente.");
 		} finally {
@@ -218,7 +236,6 @@ export default function StoreCheckoutPage() {
 	}
 
 	function handleConfirmNo() {
-		// Not the same person — treat as new customer
 		setStep("form");
 	}
 
@@ -281,16 +298,16 @@ export default function StoreCheckoutPage() {
 		try {
 			const customerData: CatalogCustomer = {
 				name: data.name,
-				email: data.email,
 				phone: data.phone.replace(/\D/g, ""),
-				document: data.document.replace(/\D/g, ""),
-				address: data.address,
-				number: data.number,
-				complement: data.complement,
-				neighborhood: data.neighborhood,
-				city: data.city,
-				state: data.state.toUpperCase(),
-				zip_code: data.zip_code.replace(/\D/g, ""),
+				email: data.email || undefined,
+				document: data.document?.replace(/\D/g, "") || undefined,
+				address: data.address || undefined,
+				number: data.number || undefined,
+				complement: data.complement || undefined,
+				neighborhood: data.neighborhood || undefined,
+				city: data.city || undefined,
+				state: data.state?.toUpperCase() || undefined,
+				zip_code: data.zip_code?.replace(/\D/g, "") || undefined,
 			};
 
 			const res = await catalogApi.createOrder({
@@ -735,7 +752,7 @@ export default function StoreCheckoutPage() {
 									</div>
 									<div>
 										<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-											Email *
+											Email
 										</label>
 										<input
 											type="email"
@@ -772,7 +789,7 @@ export default function StoreCheckoutPage() {
 									</div>
 									<div className="sm:col-span-2">
 										<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-											CPF/CNPJ *
+											CPF/CNPJ (opcional)
 										</label>
 										<input
 											{...checkoutForm.register("document")}
@@ -806,7 +823,7 @@ export default function StoreCheckoutPage() {
 								<div className="grid sm:grid-cols-2 gap-4">
 									<div>
 										<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-											CEP *
+											CEP
 										</label>
 										<input
 											{...checkoutForm.register("zip_code")}
@@ -828,7 +845,7 @@ export default function StoreCheckoutPage() {
 									</div>
 									<div>
 										<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-											Estado *
+											Estado
 										</label>
 										<input
 											{...checkoutForm.register("state")}
@@ -843,7 +860,7 @@ export default function StoreCheckoutPage() {
 									</div>
 									<div className="sm:col-span-2">
 										<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-											Cidade *
+											Cidade
 										</label>
 										<input
 											{...checkoutForm.register("city")}
@@ -857,7 +874,7 @@ export default function StoreCheckoutPage() {
 									</div>
 									<div>
 										<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-											Bairro *
+											Bairro
 										</label>
 										<input
 											{...checkoutForm.register("neighborhood")}
@@ -871,7 +888,7 @@ export default function StoreCheckoutPage() {
 									</div>
 									<div>
 										<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-											Endereço *
+											Endereço
 										</label>
 										<input
 											{...checkoutForm.register("address")}
@@ -885,7 +902,7 @@ export default function StoreCheckoutPage() {
 									</div>
 									<div>
 										<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-											Número *
+											Número
 										</label>
 										<input
 											{...checkoutForm.register("number")}

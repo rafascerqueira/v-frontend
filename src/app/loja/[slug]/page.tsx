@@ -306,7 +306,7 @@ export default function StorePage() {
 	const [search, setSearch] = useState("");
 	const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 	const [cartOpen, setCartOpen] = useState(false);
-	const { itemCount } = useCart();
+	const { itemCount, customer } = useCart();
 
 	useEffect(() => {
 		async function loadStore() {
@@ -401,6 +401,11 @@ export default function StorePage() {
 						</div>
 
 						<div className="flex items-center gap-2">
+							{customer && (
+								<span className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded-lg text-sm font-medium">
+									Olá, {customer.firstName}!
+								</span>
+							)}
 							{store?.whatsapp && (
 								<a
 									href={`https://wa.me/${store.whatsapp.replace(/\D/g, "")}`}

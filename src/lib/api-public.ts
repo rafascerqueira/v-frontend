@@ -35,24 +35,33 @@ export interface CatalogProduct {
 
 export interface CatalogCustomer {
 	name: string;
-	email: string;
 	phone: string;
-	document: string;
-	address: string;
-	number: string;
+	email?: string;
+	document?: string;
+	address?: string;
+	number?: string;
 	complement?: string;
-	neighborhood: string;
-	city: string;
-	state: string;
-	zip_code: string;
+	neighborhood?: string;
+	city?: string;
+	state?: string;
+	zip_code?: string;
 }
 
-// Minimal public data returned from GET /catalog/loja/:slug/customers/:id
+// Data returned from GET /catalog/loja/:slug/customers/:id (personalized link)
 export interface CatalogCustomerPublic {
 	id: string;
 	firstName: string;
-	city?: string | null;
-	state?: string | null;
+	name: string | null;
+	phone: string | null;
+	email: string | null;
+	document: string | null;
+	address: string | null;
+	number: string | null;
+	complement: string | null;
+	neighborhood: string | null;
+	city: string | null;
+	state: string | null;
+	zip_code: string | null;
 }
 
 // Full data returned after customer authentication

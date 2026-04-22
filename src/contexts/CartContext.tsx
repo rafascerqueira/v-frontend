@@ -12,7 +12,6 @@ import type {
 	CatalogCustomerData,
 	CatalogProduct,
 } from "@/lib/api-public";
-import { isAuthenticatedCustomer } from "@/lib/api-public";
 
 export interface CartItem {
 	product: CatalogProduct;
@@ -46,7 +45,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 	const [customerToken, setCustomerToken] = useState<string | null>(null);
 
 	const authenticatedCustomer =
-		customer !== null && isAuthenticatedCustomer(customer) ? customer : null;
+		customer !== null && customerToken !== null ? (customer as AuthenticatedCustomer) : null;
 
 	const addItem = useCallback((product: CatalogProduct, quantity = 1) => {
 		setItems((prev) => {

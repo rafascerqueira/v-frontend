@@ -34,6 +34,7 @@ export default function LoginPage() {
 	const { login } = useAuth();
 	const searchParams = useSearchParams();
 	const registered = searchParams.get("registered");
+	const oauthError = searchParams.get("error") === "oauth_failed";
 
 	const {
 		register,
@@ -90,6 +91,14 @@ export default function LoginPage() {
 						<FadeIn>
 							<Alert variant="success">
 								Conta criada com sucesso! Faça login para continuar.
+							</Alert>
+						</FadeIn>
+					)}
+
+					{oauthError && (
+						<FadeIn>
+							<Alert variant="error">
+								Não foi possível autenticar com a rede social. Tente novamente ou use seu e-mail e senha.
 							</Alert>
 						</FadeIn>
 					)}
