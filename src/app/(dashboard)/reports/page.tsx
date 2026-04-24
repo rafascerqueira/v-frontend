@@ -222,7 +222,7 @@ export default function ReportsPage() {
 						<CardContent>
 							<div className="h-72">
 								{salesData.length > 0 ? (
-									<ResponsiveContainer width="100%" height="100%">
+									<ResponsiveContainer width="100%" height="100%" minWidth={0}>
 										<BarChart data={salesData}>
 											<CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
 											<XAxis dataKey="month" fontSize={12} tickLine={false} />
@@ -284,9 +284,9 @@ export default function ReportsPage() {
 							</CardTitle>
 						</CardHeader>
 						<CardContent>
-							<div className="h-72 flex items-center justify-center">
+							<div className="h-72">
 								{categoryData.length > 0 ? (
-									<ResponsiveContainer width="100%" height="100%">
+									<ResponsiveContainer width="100%" height="100%" minWidth={0}>
 										<PieChart>
 											<Pie
 												data={categoryData}
@@ -347,7 +347,7 @@ export default function ReportsPage() {
 						<CardContent>
 							<div className="h-64">
 								{weeklyData.some((d) => d.pedidos > 0) ? (
-									<ResponsiveContainer width="100%" height="100%">
+									<ResponsiveContainer width="100%" height="100%" minWidth={0}>
 										<LineChart data={weeklyData}>
 											<CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
 											<XAxis dataKey="day" fontSize={12} tickLine={false} />
