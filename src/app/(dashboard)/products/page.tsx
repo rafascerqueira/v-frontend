@@ -51,7 +51,9 @@ export default function ProductsPage() {
 	const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 	const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
 	const [activeMenu, setActiveMenu] = useState<number | null>(null);
-	const [menuPos, setMenuPos] = useState<{ top: number; right: number } | null>(null);
+	const [menuPos, setMenuPos] = useState<{ top: number; right: number } | null>(
+		null,
+	);
 	const menuButtonRefs = useRef<Record<number, HTMLButtonElement | null>>({});
 	const [priceValue, setPriceValue] = useState<number>(0);
 	const [initialStock, setInitialStock] = useState<number>(0);

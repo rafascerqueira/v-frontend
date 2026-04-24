@@ -45,7 +45,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
 	const [customerToken, setCustomerToken] = useState<string | null>(null);
 
 	const authenticatedCustomer =
-		customer !== null && customerToken !== null ? (customer as AuthenticatedCustomer) : null;
+		customer !== null && customerToken !== null
+			? (customer as AuthenticatedCustomer)
+			: null;
 
 	const addItem = useCallback((product: CatalogProduct, quantity = 1) => {
 		setItems((prev) => {

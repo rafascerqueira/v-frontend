@@ -98,7 +98,8 @@ export default function LoginPage() {
 					{oauthError && (
 						<FadeIn>
 							<Alert variant="error">
-								Não foi possível autenticar com a rede social. Tente novamente ou use seu e-mail e senha.
+								Não foi possível autenticar com a rede social. Tente novamente
+								ou use seu e-mail e senha.
 							</Alert>
 						</FadeIn>
 					)}
