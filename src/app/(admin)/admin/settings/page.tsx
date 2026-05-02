@@ -20,6 +20,7 @@ import { api } from "@/lib/api";
 interface SystemHealth {
 	status: string;
 	database: string;
+	environment: string;
 	timestamp: string;
 }
 
@@ -194,8 +195,14 @@ export default function AdminSettingsPage() {
 						</div>
 						<div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700">
 							<span className="text-gray-600 dark:text-gray-400">Ambiente</span>
-							<span className="px-2 py-1 bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 text-xs font-medium rounded">
-								Development
+							<span
+								className={`px-2 py-1 text-xs font-medium rounded ${
+									health?.environment === "production"
+										? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+										: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
+								}`}
+							>
+								{health?.environment ?? "—"}
 							</span>
 						</div>
 						<div className="flex items-center justify-between py-3">

@@ -15,6 +15,7 @@ import {
 	Package,
 	Settings,
 	Share2,
+	Shield,
 	ShoppingCart,
 	Users,
 	Warehouse,
@@ -67,12 +68,10 @@ export default function DashboardLayout({
 	useEffect(() => {
 		if (!isLoading && !isAuthenticated) {
 			router.push("/login");
-		} else if (!isLoading && isAuthenticated && isAdmin) {
-			router.push("/admin");
 		}
-	}, [isAuthenticated, isLoading, isAdmin, router]);
+	}, [isAuthenticated, isLoading, router]);
 
-	if (isLoading || !isAuthenticated || isAdmin) {
+	if (isLoading || !isAuthenticated) {
 		return (
 			<div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
 				<div className="animate-spin rounded-full h-8 w-8 border-2 border-primary-600 border-t-transparent" />
@@ -226,6 +225,16 @@ export default function DashboardLayout({
 									exit={{ opacity: 0, y: 10 }}
 									className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1"
 								>
+									{isAdmin && (
+										<Link
+											href="/admin"
+											className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+											onClick={() => setUserMenuOpen(false)}
+										>
+											<Shield className="h-4 w-4" />
+											Painel Admin
+										</Link>
+									)}
 									<Link
 										href="/settings"
 										className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
