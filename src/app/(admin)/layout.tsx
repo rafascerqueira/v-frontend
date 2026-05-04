@@ -12,6 +12,7 @@ import {
 	Menu,
 	Settings,
 	Shield,
+	ShieldAlert,
 	Users,
 	X,
 } from "lucide-react";
@@ -26,6 +27,7 @@ import { api } from "@/lib/api";
 const navigation = [
 	{ name: "Dashboard", href: "/admin", icon: LayoutDashboard },
 	{ name: "Usuários", href: "/admin/users", icon: Users },
+	{ name: "Exceções", href: "/admin/exceptions", icon: ShieldAlert },
 	{ name: "Logs", href: "/admin/logs", icon: FileText },
 	{ name: "Atividade", href: "/admin/activity", icon: Activity },
 	{ name: "Configurações", href: "/admin/settings", icon: Settings },

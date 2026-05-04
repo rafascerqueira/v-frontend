@@ -8,7 +8,9 @@ import {
 	ChevronRight,
 	Crown,
 	Edit2,
+	Gift,
 	MoreVertical,
+	RotateCcw,
 	Search,
 	Shield,
 	Star,
@@ -32,6 +34,28 @@ interface Account {
 	is_active: boolean;
 	last_login_at: string | null;
 	createdAt: string;
+}
+
+interface PlanGrantStat {
+	active: number;
+	quota: number;
+	exceeded: boolean;
+}
+
+interface PlanGrantStats {
+	pro: PlanGrantStat;
+	enterprise: PlanGrantStat;
+}
+
+interface ExceptionRecord {
+	id: string;
+	account_id: string;
+	type: string;
+	status: string;
+	effective_from: string;
+	effective_until: string | null;
+	metadata: Record<string, unknown>;
+	reason: string;
 }
 
 interface AccountsResponse {
@@ -79,6 +103,29 @@ export default function AdminUsersPage() {
 	});
 	const [saving, setSaving] = useState(false);
 
+	// Grant plan flow
+	const [grantTarget, setGrantTarget] = useState<Account | null>(null);
+	const [grantForm, setGrantForm] = useState({
+		grantedPlan: "pro" as "pro" | "enterprise",
+		effectiveUntil: "",
+		reason: "",
+	});
+	const [grantSubmitting, setGrantSubmitting] = useState(false);
+	const [planGrantStats, setPlanGrantStats] = useState<PlanGrantStats | null>(
+		null,
+	);
+
+	// Revoke plan grant flow
+	const [revokeTarget, setRevokeTarget] = useState<{
+		account: Account;
+		exception: ExceptionRecord;
+	} | null>(null);
+	const [revokeReason, setRevokeReason] = useState("");
+	const [revokeSubmitting, setRevokeSubmitting] = useState(false);
+	const [activeGrants, setActiveGrants] = useState<
+		Record<string, ExceptionRecord | undefined>
+	>({});
+
 	const loadAccounts = useCallback(async (page = 1) => {
 		setLoading(true);
 		try {
@@ -87,6 +134,24 @@ export default function AdminUsersPage() {
 			);
 			setAccounts(response.data.data);
 			setMeta(response.data.meta);
+
+			// Load active plan_grant exceptions for these accounts (best-effort)
+			const grants: Record<string, ExceptionRecord | undefined> = {};
+			await Promise.all(
+				response.data.data.map(async (acc) => {
+					try {
+						const { data } = await api.get<ExceptionRecord[]>(
+							`/admin/sellers/${acc.id}/exceptions`,
+						);
+						grants[acc.id] = data.find(
+							(ex) => ex.type === "plan_grant" && ex.status === "active",
+						);
+					} catch {
+						/* swallow per-account failures */
+					}
+				}),
+			);
+			setActiveGrants(grants);
 		} catch (_error) {
 			toast.error("Erro ao carregar usuários");
 		} finally {
@@ -94,9 +159,22 @@ export default function AdminUsersPage() {
 		}
 	}, []);
 
+	const loadGrantStats = useCallback(async () => {
+		try {
+			const { data } = await api.get<PlanGrantStats>("/admin/exceptions/stats");
+			setPlanGrantStats(data);
+		} catch {
+			/* swallow */
+		}
+	}, []);
+
 	useEffect(() => {
 		loadAccounts();
 	}, [loadAccounts]);
+
+	useEffect(() => {
+		loadGrantStats();
+	}, [loadGrantStats]);
 
 	const openEditModal = (account: Account) => {
 		setEditingUser(account);
@@ -141,15 +219,103 @@ export default function AdminUsersPage() {
 		setActiveMenu(null);
 	};
 
-	const handleChangePlan = async (account: Account, plan: string) => {
-		try {
-			await api.patch(`/admin/accounts/${account.id}`, { plan_type: plan });
-			toast.success("Plano alterado!");
-			loadAccounts(meta.page);
-		} catch (_error) {
-			toast.error("Erro ao alterar plano");
-		}
+	const openGrantModal = (account: Account, plan: "pro" | "enterprise") => {
+		setGrantTarget(account);
+		setGrantForm({ grantedPlan: plan, effectiveUntil: "", reason: "" });
 		setActiveMenu(null);
+	};
+
+	const handleSubmitGrant = async () => {
+		if (!grantTarget) return;
+		if (!grantForm.effectiveUntil) {
+			toast.error("Informe a data de expiração");
+			return;
+		}
+		if (grantForm.reason.trim().length < 3) {
+			toast.error("Informe a razão (mínimo 3 caracteres)");
+			return;
+		}
+
+		const previousPlan = (
+			activeGrants[grantTarget.id]?.metadata as { grantedPlan?: string }
+		)?.grantedPlan
+			? (activeGrants[grantTarget.id]?.metadata as { grantedPlan: string })
+					.grantedPlan
+			: grantTarget.plan_type === "pro" || grantTarget.plan_type === "free"
+				? grantTarget.plan_type
+				: "free";
+
+		const payload = {
+			type: "plan_grant",
+			effectiveFrom: new Date().toISOString(),
+			effectiveUntil: new Date(grantForm.effectiveUntil).toISOString(),
+			reason: grantForm.reason,
+			metadata: {
+				grantedPlan: grantForm.grantedPlan,
+				previousPlan,
+			},
+		};
+
+		try {
+			setGrantSubmitting(true);
+			// If there's an existing active grant, revoke it first (replacement flow)
+			const existing = activeGrants[grantTarget.id];
+			if (existing) {
+				await api.post(
+					`/admin/sellers/${grantTarget.id}/exceptions/${existing.id}/revoke`,
+					{ reason: `Substituído por nova concessão: ${grantForm.reason}` },
+				);
+			}
+			await api.post(`/admin/sellers/${grantTarget.id}/exceptions`, payload);
+			toast.success("Plano concedido!");
+			setGrantTarget(null);
+			loadAccounts(meta.page);
+			loadGrantStats();
+		} catch (error: unknown) {
+			const message =
+				(error as { response?: { data?: { message?: string } } })?.response
+					?.data?.message ?? "Erro ao conceder plano";
+			toast.error(message);
+		} finally {
+			setGrantSubmitting(false);
+		}
+	};
+
+	const openRevokeModal = (account: Account) => {
+		const grant = activeGrants[account.id];
+		if (!grant) {
+			toast.error("Este usuário não tem concessão ativa");
+			return;
+		}
+		setRevokeTarget({ account, exception: grant });
+		setRevokeReason("");
+		setActiveMenu(null);
+	};
+
+	const handleSubmitRevoke = async () => {
+		if (!revokeTarget) return;
+		if (revokeReason.trim().length < 3) {
+			toast.error("Informe a razão da revogação");
+			return;
+		}
+		try {
+			setRevokeSubmitting(true);
+			await api.post(
+				`/admin/sellers/${revokeTarget.account.id}/exceptions/${revokeTarget.exception.id}/revoke`,
+				{ reason: revokeReason },
+			);
+			toast.success("Concessão revogada");
+			setRevokeTarget(null);
+			loadAccounts(meta.page);
+			loadGrantStats();
+		} catch (error: unknown) {
+			const message =
+				(error as { response?: { data?: { message?: string } } })?.response
+					?.data?.message ?? "Erro ao revogar concessão";
+			toast.error(message);
+		} finally {
+			setRevokeSubmitting(false);
+		}
 	};
 
 	const handleChangeRole = async (account: Account, role: string) => {
@@ -297,18 +463,35 @@ export default function AdminUsersPage() {
 												</span>
 											</td>
 											<td className="px-6 py-4 whitespace-nowrap">
-												<span
-													className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full ${
-														plan.color === "indigo"
-															? "bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400"
-															: plan.color === "purple"
-																? "bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-400"
-																: "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
-													}`}
-												>
-													<PlanIcon className="w-3 h-3" />
-													{plan.label}
-												</span>
+												<div className="flex items-center gap-1.5 flex-wrap">
+													<span
+														className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full ${
+															plan.color === "indigo"
+																? "bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400"
+																: plan.color === "purple"
+																	? "bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-400"
+																	: "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+														}`}
+													>
+														<PlanIcon className="w-3 h-3" />
+														{plan.label}
+													</span>
+													{activeGrants[account.id] && (
+														<span
+															className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+															title={`Concedido até ${formatDate(activeGrants[account.id]?.effective_until ?? null)}`}
+														>
+															<Gift className="w-3 h-3" />
+															Concedido (
+															{(
+																activeGrants[account.id]?.metadata as {
+																	grantedPlan?: string;
+																}
+															)?.grantedPlan ?? ""}
+															)
+														</span>
+													)}
+												</div>
 											</td>
 											<td className="px-6 py-4 whitespace-nowrap">
 												<span
@@ -378,22 +561,36 @@ export default function AdminUsersPage() {
 																</button>
 																<div className="border-t border-gray-200 dark:border-gray-700 my-1" />
 																<div className="px-4 py-1 text-xs text-gray-500 uppercase">
-																	Alterar Plano
+																	Conceder plano (com expiração)
 																</div>
-																{planOptions.map((p) => (
+																<button
+																	type="button"
+																	onClick={() => openGrantModal(account, "pro")}
+																	className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2"
+																>
+																	<Gift className="w-4 h-4" />
+																	Conceder Profissional
+																</button>
+																<button
+																	type="button"
+																	onClick={() =>
+																		openGrantModal(account, "enterprise")
+																	}
+																	className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2"
+																>
+																	<Gift className="w-4 h-4" />
+																	Conceder Empresarial
+																</button>
+																{activeGrants[account.id] && (
 																	<button
-																		key={p.value}
 																		type="button"
-																		onClick={() =>
-																			handleChangePlan(account, p.value)
-																		}
-																		disabled={account.plan_type === p.value}
-																		className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 disabled:opacity-50"
+																		onClick={() => openRevokeModal(account)}
+																		className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 text-red-600"
 																	>
-																		<p.icon className="w-4 h-4" />
-																		{p.label}
+																		<RotateCcw className="w-4 h-4" />
+																		Revogar concessão
 																	</button>
-																))}
+																)}
 																<div className="border-t border-gray-200 dark:border-gray-700 my-1" />
 																<div className="px-4 py-1 text-xs text-gray-500 uppercase">
 																	Alterar Função
@@ -561,6 +758,238 @@ export default function AdminUsersPage() {
 										isLoading={saving}
 									>
 										Salvar
+									</Button>
+								</div>
+							</div>
+						</motion.div>
+					</motion.div>
+				)}
+			</AnimatePresence>
+
+			{/* Grant Plan Modal */}
+			<AnimatePresence>
+				{grantTarget && (
+					<motion.div
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						exit={{ opacity: 0 }}
+						className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+						onClick={() => setGrantTarget(null)}
+					>
+						<motion.div
+							initial={{ scale: 0.95 }}
+							animate={{ scale: 1 }}
+							exit={{ scale: 0.95 }}
+							className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-md"
+							onClick={(e) => e.stopPropagation()}
+						>
+							<div className="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+								<div className="flex items-center gap-2">
+									<Gift className="w-5 h-5 text-primary-600" />
+									<h2 className="text-xl font-bold text-gray-900 dark:text-white">
+										Conceder plano
+									</h2>
+								</div>
+								<button
+									type="button"
+									onClick={() => setGrantTarget(null)}
+									className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+								>
+									<X className="w-5 h-5" />
+								</button>
+							</div>
+							<div className="p-6 space-y-4">
+								<div className="text-sm">
+									<span className="text-gray-500 dark:text-gray-400">
+										Vendedor:
+									</span>{" "}
+									<span className="font-medium text-gray-900 dark:text-white">
+										{grantTarget.name}
+									</span>
+								</div>
+
+								{activeGrants[grantTarget.id] && (
+									<div className="text-xs text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900/30 rounded-lg p-3">
+										Este vendedor já tem uma concessão ativa (
+										{(
+											activeGrants[grantTarget.id]?.metadata as {
+												grantedPlan?: string;
+											}
+										)?.grantedPlan ?? ""}
+										). Ela será revogada e substituída.
+									</div>
+								)}
+
+								<div>
+									<label
+										htmlFor="grant-plan"
+										className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+									>
+										Plano
+									</label>
+									<select
+										id="grant-plan"
+										value={grantForm.grantedPlan}
+										onChange={(e) =>
+											setGrantForm({
+												...grantForm,
+												grantedPlan: e.target.value as "pro" | "enterprise",
+											})
+										}
+										className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700"
+									>
+										<option value="pro">Profissional</option>
+										<option value="enterprise">Empresarial</option>
+									</select>
+									{planGrantStats && (
+										<p
+											className={`text-xs mt-1 ${
+												planGrantStats[grantForm.grantedPlan].exceeded
+													? "text-amber-600 dark:text-amber-400"
+													: "text-gray-500 dark:text-gray-400"
+											}`}
+										>
+											{planGrantStats[grantForm.grantedPlan].active} /{" "}
+											{planGrantStats[grantForm.grantedPlan].quota === 0
+												? "∞"
+												: planGrantStats[grantForm.grantedPlan].quota}{" "}
+											concessões ativas
+											{planGrantStats[grantForm.grantedPlan].exceeded
+												? " — quota excedida (permitido, mas atenção)"
+												: ""}
+										</p>
+									)}
+								</div>
+
+								<div>
+									<label
+										htmlFor="grant-until"
+										className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+									>
+										Expira em
+									</label>
+									<Input
+										id="grant-until"
+										type="date"
+										value={grantForm.effectiveUntil}
+										onChange={(e) =>
+											setGrantForm({
+												...grantForm,
+												effectiveUntil: e.target.value,
+											})
+										}
+									/>
+								</div>
+
+								<div>
+									<label
+										htmlFor="grant-reason"
+										className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+									>
+										Razão (auditoria)
+									</label>
+									<textarea
+										id="grant-reason"
+										value={grantForm.reason}
+										onChange={(e) =>
+											setGrantForm({ ...grantForm, reason: e.target.value })
+										}
+										rows={3}
+										className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700"
+										placeholder="Ex: parceria estratégica; ticket #123…"
+									/>
+								</div>
+
+								<div className="flex gap-3 pt-2">
+									<Button
+										variant="outline"
+										className="flex-1"
+										onClick={() => setGrantTarget(null)}
+									>
+										Cancelar
+									</Button>
+									<Button
+										className="flex-1"
+										onClick={handleSubmitGrant}
+										isLoading={grantSubmitting}
+									>
+										Conceder
+									</Button>
+								</div>
+							</div>
+						</motion.div>
+					</motion.div>
+				)}
+			</AnimatePresence>
+
+			{/* Revoke Plan Grant Modal */}
+			<AnimatePresence>
+				{revokeTarget && (
+					<motion.div
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						exit={{ opacity: 0 }}
+						className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+						onClick={() => setRevokeTarget(null)}
+					>
+						<motion.div
+							initial={{ scale: 0.95 }}
+							animate={{ scale: 1 }}
+							exit={{ scale: 0.95 }}
+							className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-md"
+							onClick={(e) => e.stopPropagation()}
+						>
+							<div className="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2">
+								<RotateCcw className="w-5 h-5 text-red-600" />
+								<h2 className="text-xl font-bold text-gray-900 dark:text-white">
+									Revogar concessão
+								</h2>
+							</div>
+							<div className="p-6 space-y-4">
+								<p className="text-sm text-gray-600 dark:text-gray-400">
+									Você está revogando a concessão de{" "}
+									<strong>
+										{
+											(
+												revokeTarget.exception.metadata as {
+													grantedPlan?: string;
+												}
+											)?.grantedPlan
+										}
+									</strong>{" "}
+									para <strong>{revokeTarget.account.name}</strong>. Esta ação é
+									imutável e auditada.
+								</p>
+								<div>
+									<label
+										htmlFor="revoke-grant-reason"
+										className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+									>
+										Razão da revogação
+									</label>
+									<textarea
+										id="revoke-grant-reason"
+										value={revokeReason}
+										onChange={(e) => setRevokeReason(e.target.value)}
+										rows={3}
+										className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700"
+										placeholder="Ex: arrependimento de compra; ticket #456…"
+									/>
+								</div>
+								<div className="flex gap-3">
+									<Button
+										variant="outline"
+										className="flex-1"
+										onClick={() => setRevokeTarget(null)}
+									>
+										Cancelar
+									</Button>
+									<Button
+										className="flex-1"
+										onClick={handleSubmitRevoke}
+										isLoading={revokeSubmitting}
+									>
+										Revogar
 									</Button>
 								</div>
 							</div>

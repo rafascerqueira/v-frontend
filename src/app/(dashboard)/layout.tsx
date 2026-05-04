@@ -25,6 +25,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { UnlimitedPeriodBanner } from "@/components/subscription";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import {
 	KeyboardShortcutsModal,
@@ -261,6 +262,7 @@ export default function DashboardLayout({
 				{/* Page content */}
 				<main className="p-4 lg:p-8">
 					<Breadcrumbs className="mb-4" />
+					<UnlimitedPeriodBanner />
 					<motion.div
 						key={pathname}
 						initial={{ opacity: 0, y: 20 }}

@@ -20,6 +20,12 @@ export interface UsageInfo {
 	percentage: number;
 }
 
+export interface ActiveWindow {
+	type: "unlimited_period";
+	startDate: string | null;
+	endDate: string | null;
+}
+
 export interface SubscriptionInfo {
 	plan: PlanType;
 	subscription: {
@@ -43,6 +49,7 @@ export interface SubscriptionInfo {
 	};
 	periodStart: string;
 	periodEnd: string;
+	activeWindow: ActiveWindow | null;
 }
 
 export interface PlanInfo {
@@ -71,6 +78,7 @@ interface SubscriptionContextType {
 	isPro: boolean;
 	isEnterprise: boolean;
 	isFree: boolean;
+	isProEffective: boolean;
 }
 
 const SubscriptionContext = createContext<SubscriptionContextType | undefined>(
@@ -159,6 +167,10 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 	const isPro = subscription?.plan === "pro";
 	const isEnterprise = subscription?.plan === "enterprise";
 	const isFree = subscription?.plan === "free";
+	const isProEffective =
+		isPro ||
+		isEnterprise ||
+		(isFree && subscription?.activeWindow?.type === "unlimited_period");
 
 	return (
 		<SubscriptionContext.Provider
@@ -172,6 +184,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 				isPro,
 				isEnterprise,
 				isFree,
+				isProEffective,
 			}}
 		>
 			{children}
