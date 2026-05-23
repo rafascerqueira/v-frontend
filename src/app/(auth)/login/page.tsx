@@ -34,7 +34,9 @@ export default function LoginPage() {
 	const { login } = useAuth();
 	const searchParams = useSearchParams();
 	const registered = searchParams.get("registered");
-	const oauthError = searchParams.get("error") === "oauth_failed";
+	const errorParam = searchParams.get("error");
+	const oauthError = errorParam === "oauth_failed";
+	const oauthStateError = errorParam === "oauth_state";
 
 	const {
 		register,
@@ -100,6 +102,15 @@ export default function LoginPage() {
 							<Alert variant="error">
 								Não foi possível autenticar com a rede social. Tente novamente
 								ou use seu e-mail e senha.
+							</Alert>
+						</FadeIn>
+					)}
+
+					{oauthStateError && (
+						<FadeIn>
+							<Alert variant="error">
+								Sessão de login social expirada ou inválida. Por favor, tente
+								novamente.
 							</Alert>
 						</FadeIn>
 					)}
@@ -282,6 +293,13 @@ export default function LoginPage() {
 								className="text-xs text-gray-500 hover:text-gray-700 transition-colors"
 							>
 								Política de Privacidade
+							</Link>
+							<span className="text-gray-300">|</span>
+							<Link
+								href="/data-deletion"
+								className="text-xs text-gray-500 hover:text-gray-700 transition-colors"
+							>
+								Exclusão de Dados
 							</Link>
 						</div>
 					</FadeIn>
