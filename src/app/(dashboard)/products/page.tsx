@@ -67,10 +67,15 @@ export default function ProductsPage() {
 		resolver: zodResolver(productSchema),
 	});
 
-	const fetchProducts = useCallback(async () => {
+	const fetchProducts = useCallback(async (search?: string) => {
 		try {
 			setIsLoading(true);
-			const { data: response } = await api.get("/products");
+			const { data: response } = await api.get("/products", {
+				params: {
+					limit: 100,
+					...(search ? { search } : {}),
+				},
+			});
 			const products = response?.data ?? response;
 			setProducts(Array.isArray(products) ? products : []);
 		} catch (error) {
@@ -82,8 +87,11 @@ export default function ProductsPage() {
 	}, []);
 
 	useEffect(() => {
-		fetchProducts();
-	}, [fetchProducts]);
+		const handle = setTimeout(() => {
+			fetchProducts(searchTerm.trim() || undefined);
+		}, 300);
+		return () => clearTimeout(handle);
+	}, [fetchProducts, searchTerm]);
 
 	useEffect(() => {
 		if (activeMenu === null) return;
@@ -171,7 +179,7 @@ export default function ProductsPage() {
 			}
 
 			closeModal();
-			fetchProducts();
+			fetchProducts(searchTerm.trim() || undefined);
 		} catch (error: unknown) {
 			const message =
 				error instanceof Error ? error.message : "Erro ao salvar produto";
@@ -186,7 +194,7 @@ export default function ProductsPage() {
 			await api.delete(`/products/${deletingProduct.id}`);
 			toast.success("Produto excluído com sucesso!");
 			setDeletingProduct(null);
-			fetchProducts();
+			fetchProducts(searchTerm.trim() || undefined);
 		} catch (error: unknown) {
 			const message =
 				error instanceof Error ? error.message : "Erro ao excluir produto";
@@ -194,14 +202,7 @@ export default function ProductsPage() {
 		}
 	};
 
-	const filteredProducts = products.filter(
-		(product) =>
-			product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			(product.sku?.toLowerCase().includes(searchTerm.toLowerCase()) ??
-				false) ||
-			(product.category?.toLowerCase().includes(searchTerm.toLowerCase()) ??
-				false),
-	);
+	const filteredProducts = products;
 
 	return (
 		<div className="space-y-6">

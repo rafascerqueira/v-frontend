@@ -121,12 +121,12 @@ export default function CustomersPage() {
 		setEditingCustomer(customer);
 		reset({
 			name: customer.name,
-			email: customer.email,
+			email: customer.email ?? "",
 			phone: customer.phone,
-			document: customer.document,
+			document: customer.document ?? "",
 			city: customer.city,
 			state: customer.state,
-			zip_code: customer.zip_code,
+			zip_code: customer.zip_code ?? "",
 			billing_mode: customer.billing_mode || "per_sale",
 			billing_day: customer.billing_day ?? undefined,
 		});
