@@ -9,7 +9,6 @@ import {
 	Crown,
 	Edit2,
 	Gift,
-	MoreVertical,
 	RotateCcw,
 	Search,
 	Shield,
@@ -21,6 +20,12 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
+import {
+	ActionMenu,
+	ActionMenuDivider,
+	ActionMenuItem,
+	ActionMenuLabel,
+} from "@/components/ui/action-menu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api";
@@ -94,7 +99,6 @@ export default function AdminUsersPage() {
 	const [meta, setMeta] = useState({ total: 0, page: 1, totalPages: 1 });
 	const [loading, setLoading] = useState(true);
 	const [search, setSearch] = useState("");
-	const [activeMenu, setActiveMenu] = useState<string | null>(null);
 	const [editingUser, setEditingUser] = useState<Account | null>(null);
 	const [showEditModal, setShowEditModal] = useState(false);
 	const [editForm, setEditForm] = useState({
@@ -179,7 +183,6 @@ export default function AdminUsersPage() {
 			plan_type: account.plan_type || "free",
 		});
 		setShowEditModal(true);
-		setActiveMenu(null);
 	};
 
 	const handleSaveUser = async () => {
@@ -202,7 +205,6 @@ export default function AdminUsersPage() {
 	};
 
 	const handleToggleActive = async (account: Account) => {
-		setActiveMenu(null);
 		try {
 			await api.patch(`/admin/accounts/${account.id}`, {
 				is_active: !account.is_active,
@@ -223,7 +225,6 @@ export default function AdminUsersPage() {
 	const openGrantModal = (account: Account, plan: "pro" | "enterprise") => {
 		setGrantTarget(account);
 		setGrantForm({ grantedPlan: plan, effectiveUntil: "", reason: "" });
-		setActiveMenu(null);
 	};
 
 	const handleSubmitGrant = async () => {
@@ -290,7 +291,6 @@ export default function AdminUsersPage() {
 		}
 		setRevokeTarget({ account, exception: grant });
 		setRevokeReason("");
-		setActiveMenu(null);
 	};
 
 	const handleSubmitRevoke = async () => {
@@ -320,7 +320,6 @@ export default function AdminUsersPage() {
 	};
 
 	const handleChangeRole = async (account: Account, role: string) => {
-		setActiveMenu(null);
 		try {
 			await api.patch(`/admin/accounts/${account.id}`, { role });
 			toast.success("Função alterada!");
@@ -522,107 +521,70 @@ export default function AdminUsersPage() {
 												{formatDate(account.last_login_at)}
 											</td>
 											<td className="px-6 py-4 whitespace-nowrap text-right">
-												<div className="relative">
-													<button
-														type="button"
-														onClick={() =>
-															setActiveMenu(
-																activeMenu === account.id ? null : account.id,
-															)
-														}
-														className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+												<ActionMenu className="w-48 rounded-xl">
+													<ActionMenuItem
+														onClick={() => openEditModal(account)}
 													>
-														<MoreVertical className="w-4 h-4 text-gray-500" />
-													</button>
-													<AnimatePresence>
-														{activeMenu === account.id && (
-															<motion.div
-																initial={{ opacity: 0, scale: 0.95 }}
-																animate={{ opacity: 1, scale: 1 }}
-																exit={{ opacity: 0, scale: 0.95 }}
-																className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 z-50 py-1"
-															>
-																<button
-																	type="button"
-																	onClick={() => openEditModal(account)}
-																	className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2"
-																>
-																	<Edit2 className="w-4 h-4" />
-																	Editar
-																</button>
-																<button
-																	type="button"
-																	onClick={() => handleToggleActive(account)}
-																	className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2"
-																>
-																	{account.is_active !== false ? (
-																		<>
-																			<Ban className="w-4 h-4" /> Desativar
-																		</>
-																	) : (
-																		<>
-																			<Check className="w-4 h-4" /> Ativar
-																		</>
-																	)}
-																</button>
-																<div className="border-t border-gray-200 dark:border-gray-700 my-1" />
-																<div className="px-4 py-1 text-xs text-gray-500 uppercase">
-																	Conceder plano (com expiração)
-																</div>
-																<button
-																	type="button"
-																	onClick={() => openGrantModal(account, "pro")}
-																	className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2"
-																>
-																	<Gift className="w-4 h-4" />
-																	Conceder Profissional
-																</button>
-																<button
-																	type="button"
-																	onClick={() =>
-																		openGrantModal(account, "enterprise")
-																	}
-																	className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2"
-																>
-																	<Gift className="w-4 h-4" />
-																	Conceder Empresarial
-																</button>
-																{activeGrants[account.id] && (
-																	<button
-																		type="button"
-																		onClick={() => openRevokeModal(account)}
-																		className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 text-red-600"
-																	>
-																		<RotateCcw className="w-4 h-4" />
-																		Revogar concessão
-																	</button>
-																)}
-																<div className="border-t border-gray-200 dark:border-gray-700 my-1" />
-																<div className="px-4 py-1 text-xs text-gray-500 uppercase">
-																	Alterar Função
-																</div>
-																{roleOptions.map((r) => (
-																	<button
-																		key={r.value}
-																		type="button"
-																		onClick={() =>
-																			handleChangeRole(account, r.value)
-																		}
-																		disabled={account.role === r.value}
-																		className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 disabled:opacity-50"
-																	>
-																		{r.value === "admin" ? (
-																			<Shield className="w-4 h-4" />
-																		) : (
-																			<User className="w-4 h-4" />
-																		)}
-																		{r.label}
-																	</button>
-																))}
-															</motion.div>
+														<Edit2 className="w-4 h-4" />
+														Editar
+													</ActionMenuItem>
+													<ActionMenuItem
+														onClick={() => handleToggleActive(account)}
+													>
+														{account.is_active !== false ? (
+															<>
+																<Ban className="w-4 h-4" /> Desativar
+															</>
+														) : (
+															<>
+																<Check className="w-4 h-4" /> Ativar
+															</>
 														)}
-													</AnimatePresence>
-												</div>
+													</ActionMenuItem>
+													<ActionMenuDivider />
+													<ActionMenuLabel>
+														Conceder plano (com expiração)
+													</ActionMenuLabel>
+													<ActionMenuItem
+														onClick={() => openGrantModal(account, "pro")}
+													>
+														<Gift className="w-4 h-4" />
+														Conceder Profissional
+													</ActionMenuItem>
+													<ActionMenuItem
+														onClick={() =>
+															openGrantModal(account, "enterprise")
+														}
+													>
+														<Gift className="w-4 h-4" />
+														Conceder Empresarial
+													</ActionMenuItem>
+													{activeGrants[account.id] && (
+														<ActionMenuItem
+															variant="danger"
+															onClick={() => openRevokeModal(account)}
+														>
+															<RotateCcw className="w-4 h-4" />
+															Revogar concessão
+														</ActionMenuItem>
+													)}
+													<ActionMenuDivider />
+													<ActionMenuLabel>Alterar Função</ActionMenuLabel>
+													{roleOptions.map((r) => (
+														<ActionMenuItem
+															key={r.value}
+															onClick={() => handleChangeRole(account, r.value)}
+															disabled={account.role === r.value}
+														>
+															{r.value === "admin" ? (
+																<Shield className="w-4 h-4" />
+															) : (
+																<User className="w-4 h-4" />
+															)}
+															{r.label}
+														</ActionMenuItem>
+													))}
+												</ActionMenu>
 											</td>
 										</tr>
 									);

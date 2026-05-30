@@ -2,18 +2,11 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
-import {
-	Edit2,
-	MoreVertical,
-	Package,
-	Plus,
-	Search,
-	Trash2,
-} from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import { Edit2, Package, Plus, Search, Trash2 } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { ActionMenu, ActionMenuItem } from "@/components/ui/action-menu";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -50,11 +43,6 @@ export default function ProductsPage() {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 	const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
-	const [activeMenu, setActiveMenu] = useState<number | null>(null);
-	const [menuPos, setMenuPos] = useState<{ top: number; right: number } | null>(
-		null,
-	);
-	const menuButtonRefs = useRef<Record<number, HTMLButtonElement | null>>({});
 	const [priceValue, setPriceValue] = useState<number>(0);
 	const [initialStock, setInitialStock] = useState<number>(0);
 
@@ -93,16 +81,6 @@ export default function ProductsPage() {
 		return () => clearTimeout(handle);
 	}, [fetchProducts, searchTerm]);
 
-	useEffect(() => {
-		if (activeMenu === null) return;
-		const close = () => {
-			setActiveMenu(null);
-			setMenuPos(null);
-		};
-		window.addEventListener("scroll", close, true);
-		return () => window.removeEventListener("scroll", close, true);
-	}, [activeMenu]);
-
 	const openCreateModal = () => {
 		setEditingProduct(null);
 		setPriceValue(0);
@@ -131,7 +109,6 @@ export default function ProductsPage() {
 			unit: product.unit,
 		});
 		setIsModalOpen(true);
-		setActiveMenu(null);
 	};
 
 	const closeModal = () => {
@@ -310,70 +287,19 @@ export default function ProductsPage() {
 											</Badge>
 										</TableCell>
 										<TableCell className="text-right">
-											<div className="inline-block">
-												<button
-													type="button"
-													ref={(el) => {
-														menuButtonRefs.current[product.id] = el;
-													}}
-													onClick={() => {
-														if (activeMenu === product.id) {
-															setActiveMenu(null);
-															setMenuPos(null);
-														} else {
-															const el = menuButtonRefs.current[product.id];
-															if (el) {
-																const r = el.getBoundingClientRect();
-																setMenuPos({
-																	top: r.bottom + 4,
-																	right: window.innerWidth - r.right,
-																});
-															}
-															setActiveMenu(product.id);
-														}
-													}}
-													className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+											<ActionMenu className="w-36">
+												<ActionMenuItem onClick={() => openEditModal(product)}>
+													<Edit2 className="h-4 w-4" />
+													Editar
+												</ActionMenuItem>
+												<ActionMenuItem
+													variant="danger"
+													onClick={() => setDeletingProduct(product)}
 												>
-													<MoreVertical className="h-4 w-4 text-gray-500" />
-												</button>
-												{activeMenu === product.id &&
-													menuPos &&
-													createPortal(
-														<motion.div
-															initial={{ opacity: 0, scale: 0.95 }}
-															animate={{ opacity: 1, scale: 1 }}
-															style={{
-																position: "fixed",
-																top: menuPos.top,
-																right: menuPos.right,
-																zIndex: 50,
-															}}
-															className="w-36 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1"
-														>
-															<button
-																type="button"
-																onClick={() => openEditModal(product)}
-																className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-															>
-																<Edit2 className="h-4 w-4" />
-																Editar
-															</button>
-															<button
-																type="button"
-																onClick={() => {
-																	setDeletingProduct(product);
-																	setActiveMenu(null);
-																	setMenuPos(null);
-																}}
-																className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-															>
-																<Trash2 className="h-4 w-4" />
-																Excluir
-															</button>
-														</motion.div>,
-														document.body,
-													)}
-											</div>
+													<Trash2 className="h-4 w-4" />
+													Excluir
+												</ActionMenuItem>
+											</ActionMenu>
 										</TableCell>
 									</motion.tr>
 								))}

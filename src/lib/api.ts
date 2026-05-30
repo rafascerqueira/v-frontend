@@ -61,3 +61,32 @@ api.interceptors.response.use(
 		return Promise.reject(error);
 	},
 );
+
+// Fetch every page of a list endpoint so dropdowns show ALL records, not just
+// the API's default first page. Works whether the endpoint returns a plain
+// array or a paginated { data, totalPages } payload.
+export async function fetchAllRecords<T>(endpoint: string): Promise<T[]> {
+	const limit = 100;
+	let page = 1;
+	const all: T[] = [];
+
+	while (true) {
+		const { data: response } = await api.get(endpoint, {
+			params: { page, limit },
+		});
+
+		if (Array.isArray(response)) {
+			all.push(...(response as T[]));
+			break;
+		}
+
+		const items: T[] = response?.data ?? [];
+		all.push(...items);
+
+		const totalPages = response?.totalPages ?? 1;
+		if (page >= totalPages || items.length < limit) break;
+		page += 1;
+	}
+
+	return all;
+}

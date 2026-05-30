@@ -9,7 +9,6 @@ import {
 	KeyRound,
 	Mail,
 	MapPin,
-	MoreVertical,
 	Phone,
 	Plus,
 	Search,
@@ -19,6 +18,7 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { ActionMenu, ActionMenuItem } from "@/components/ui/action-menu";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -75,7 +75,6 @@ export default function CustomersPage() {
 	const [deletingCustomer, setDeletingCustomer] = useState<Customer | null>(
 		null,
 	);
-	const [activeMenu, setActiveMenu] = useState<string | null>(null);
 	const [inviteCustomer, setInviteCustomer] = useState<Customer | null>(null);
 	const [inviteLoading, setInviteLoading] = useState(false);
 	const [inviteData, setInviteData] = useState<{
@@ -142,7 +141,6 @@ export default function CustomersPage() {
 			billing_day: customer.billing_day ?? undefined,
 		});
 		setIsModalOpen(true);
-		setActiveMenu(null);
 	};
 
 	const closeModal = () => {
@@ -188,7 +186,6 @@ export default function CustomersPage() {
 	};
 
 	const handleGenerateInvite = async (customer: Customer) => {
-		setActiveMenu(null);
 		setInviteCustomer(customer);
 		setInviteData(null);
 		setCopied(false);
@@ -336,54 +333,25 @@ export default function CustomersPage() {
 											</Badge>
 										</TableCell>
 										<TableCell className="text-right">
-											<div className="relative inline-block">
-												<button
-													type="button"
-													onClick={() =>
-														setActiveMenu(
-															activeMenu === customer.id ? null : customer.id,
-														)
-													}
-													className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+											<ActionMenu>
+												<ActionMenuItem onClick={() => openEditModal(customer)}>
+													<Edit2 className="h-4 w-4" />
+													Editar
+												</ActionMenuItem>
+												<ActionMenuItem
+													onClick={() => handleGenerateInvite(customer)}
 												>
-													<MoreVertical className="h-4 w-4 text-gray-500" />
-												</button>
-												{activeMenu === customer.id && (
-													<motion.div
-														initial={{ opacity: 0, scale: 0.95 }}
-														animate={{ opacity: 1, scale: 1 }}
-														className="absolute right-0 mt-1 w-44 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10"
-													>
-														<button
-															type="button"
-															onClick={() => openEditModal(customer)}
-															className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-														>
-															<Edit2 className="h-4 w-4" />
-															Editar
-														</button>
-														<button
-															type="button"
-															onClick={() => handleGenerateInvite(customer)}
-															className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-														>
-															<KeyRound className="h-4 w-4" />
-															Link de senha
-														</button>
-														<button
-															type="button"
-															onClick={() => {
-																setDeletingCustomer(customer);
-																setActiveMenu(null);
-															}}
-															className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-														>
-															<Trash2 className="h-4 w-4" />
-															Excluir
-														</button>
-													</motion.div>
-												)}
-											</div>
+													<KeyRound className="h-4 w-4" />
+													Link de senha
+												</ActionMenuItem>
+												<ActionMenuItem
+													variant="danger"
+													onClick={() => setDeletingCustomer(customer)}
+												>
+													<Trash2 className="h-4 w-4" />
+													Excluir
+												</ActionMenuItem>
+											</ActionMenu>
 										</TableCell>
 									</motion.tr>
 								))}

@@ -7,7 +7,6 @@ import {
 	DollarSign,
 	Edit,
 	Mail,
-	MoreVertical,
 	Phone,
 	Plus,
 	Search,
@@ -19,6 +18,7 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { ActionMenu, ActionMenuItem } from "@/components/ui/action-menu";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -84,7 +84,6 @@ export default function SuppliersPage() {
 	const [showModal, setShowModal] = useState(false);
 	const [showDebtModal, setShowDebtModal] = useState(false);
 	const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
-	const [activeMenu, setActiveMenu] = useState<string | null>(null);
 
 	const {
 		register,
@@ -195,7 +194,6 @@ export default function SuppliersPage() {
 			await api.delete(`/suppliers/${id}`);
 			toast.success("Fornecedor excluído!");
 			fetchSuppliers();
-			setActiveMenu(null);
 		} catch (error: unknown) {
 			const message =
 				error instanceof Error ? error.message : "Erro ao excluir fornecedor";
@@ -213,7 +211,6 @@ export default function SuppliersPage() {
 			notes: supplier.notes || "",
 		});
 		setShowModal(true);
-		setActiveMenu(null);
 	};
 
 	const filteredSuppliers = suppliers.filter((s) =>
@@ -370,55 +367,28 @@ export default function SuppliersPage() {
 											</span>
 										</TableCell>
 										<TableCell>
-											<div className="relative">
-												<button
-													type="button"
-													onClick={() =>
-														setActiveMenu(
-															activeMenu === supplier.id ? null : supplier.id,
-														)
-													}
-													className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+											<ActionMenu>
+												<ActionMenuItem onClick={() => openEditModal(supplier)}>
+													<Edit className="h-4 w-4" />
+													Editar
+												</ActionMenuItem>
+												<ActionMenuItem
+													onClick={() => {
+														setSelectedSupplier(supplier);
+														setShowDebtModal(true);
+													}}
 												>
-													<MoreVertical className="h-4 w-4 text-gray-500" />
-												</button>
-												{activeMenu === supplier.id && (
-													<motion.div
-														initial={{ opacity: 0, scale: 0.95 }}
-														animate={{ opacity: 1, scale: 1 }}
-														className="absolute right-0 mt-1 w-44 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50"
-													>
-														<button
-															type="button"
-															onClick={() => openEditModal(supplier)}
-															className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-														>
-															<Edit className="h-4 w-4" />
-															Editar
-														</button>
-														<button
-															type="button"
-															onClick={() => {
-																setSelectedSupplier(supplier);
-																setShowDebtModal(true);
-																setActiveMenu(null);
-															}}
-															className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-														>
-															<DollarSign className="h-4 w-4" />
-															Registrar Débito
-														</button>
-														<button
-															type="button"
-															onClick={() => handleDelete(supplier.id)}
-															className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
-														>
-															<Trash2 className="h-4 w-4" />
-															Excluir
-														</button>
-													</motion.div>
-												)}
-											</div>
+													<DollarSign className="h-4 w-4" />
+													Registrar Débito
+												</ActionMenuItem>
+												<ActionMenuItem
+													variant="danger"
+													onClick={() => handleDelete(supplier.id)}
+												>
+													<Trash2 className="h-4 w-4" />
+													Excluir
+												</ActionMenuItem>
+											</ActionMenu>
 										</TableCell>
 									</TableRow>
 								))}

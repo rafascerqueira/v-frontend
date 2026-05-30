@@ -130,6 +130,7 @@ export default function SettingsPage() {
 		secret: string;
 	} | null>(null);
 	const [verificationCode, setVerificationCode] = useState("");
+	// biome-ignore lint/correctness/noUnusedVariables: kept for the upcoming 2FA feature (button temporarily disabled)
 	const [isEnabling2FA, setIsEnabling2FA] = useState(false);
 	const [profileImage, setProfileImage] = useState<string | null>(
 		user?.avatar || null,
@@ -261,6 +262,7 @@ export default function SettingsPage() {
 		}
 	};
 
+	// biome-ignore lint/correctness/noUnusedVariables: kept for the upcoming 2FA feature (button temporarily disabled)
 	const handleEnable2FA = async () => {
 		try {
 			setIsEnabling2FA(true);
@@ -356,11 +358,10 @@ export default function SettingsPage() {
 										key={tab.id}
 										type="button"
 										onClick={() => setActiveTab(tab.id)}
-										className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-											activeTab === tab.id
-												? "bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300"
-												: "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-										}`}
+										className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${activeTab === tab.id
+											? "bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300"
+											: "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+											}`}
 									>
 										<tab.icon
 											className={`h-5 w-5 ${activeTab === tab.id ? "text-primary-600" : "text-gray-400"}`}
@@ -811,13 +812,15 @@ export default function SettingsPage() {
 												de segurança exigindo um código do seu celular além da
 												senha.
 											</p>
-											<Button
-												onClick={handleEnable2FA}
-												isLoading={isEnabling2FA}
-											>
-												<ShieldCheck className="h-4 w-4 mr-2" />
-												Configurar 2FA
-											</Button>
+											<div className="flex items-center gap-3">
+												<Button disabled>
+													<ShieldCheck className="h-4 w-4 mr-2" />
+													Configurar 2FA
+												</Button>
+												<span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+													Em breve
+												</span>
+											</div>
 										</div>
 									)}
 								</CardContent>
@@ -918,25 +921,22 @@ export default function SettingsPage() {
 													key={t.id}
 													type="button"
 													onClick={() => setTheme(t.id)}
-													className={`p-4 rounded-lg border-2 text-center transition-colors ${
-														theme === t.id
-															? "border-primary-500 bg-primary-50 dark:bg-primary-900/30"
-															: "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
-													}`}
+													className={`p-4 rounded-lg border-2 text-center transition-colors ${theme === t.id
+														? "border-primary-500 bg-primary-50 dark:bg-primary-900/30"
+														: "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+														}`}
 												>
 													<t.icon
-														className={`w-6 h-6 mx-auto mb-2 ${
-															theme === t.id
-																? "text-primary-600 dark:text-primary-400"
-																: "text-gray-500 dark:text-gray-400"
-														}`}
+														className={`w-6 h-6 mx-auto mb-2 ${theme === t.id
+															? "text-primary-600 dark:text-primary-400"
+															: "text-gray-500 dark:text-gray-400"
+															}`}
 													/>
 													<span
-														className={`text-sm font-medium ${
-															theme === t.id
-																? "text-primary-600 dark:text-primary-400"
-																: "text-gray-700 dark:text-gray-300"
-														}`}
+														className={`text-sm font-medium ${theme === t.id
+															? "text-primary-600 dark:text-primary-400"
+															: "text-gray-700 dark:text-gray-300"
+															}`}
 													>
 														{t.label}
 													</span>

@@ -19,6 +19,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { ProductCombobox } from "@/components/ui/product-combobox";
 import {
 	Table,
 	TableBody,
@@ -27,7 +28,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { toast } from "@/components/ui/toast";
-import { api } from "@/lib/api";
+import { api, fetchAllRecords } from "@/lib/api";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
 const promotionSchema = z.object({
@@ -92,6 +93,7 @@ export default function PromotionsPage() {
 		handleSubmit,
 		reset,
 		watch,
+		setValue,
 		formState: { errors, isSubmitting },
 	} = useForm<PromotionFormData>({
 		resolver: zodResolver(promotionSchema),
@@ -103,13 +105,15 @@ export default function PromotionsPage() {
 	const fetchPromotions = useCallback(async () => {
 		try {
 			setLoading(true);
-			const [promoRes, productsRes] = await Promise.all([
-				api.get("/promotions").catch(() => ({ data: [] })),
-				api.get("/products").catch(() => ({ data: { data: [] } })),
-			]);
+			const promoRes = await api.get("/promotions").catch(() => ({ data: [] }));
 			setPromotions(promoRes.data?.data || promoRes.data || []);
-			const prods = productsRes.data?.data || productsRes.data || [];
-			setProducts(Array.isArray(prods) ? prods : []);
+
+			// Load every page so the product picker lists ALL products, not just
+			// the API's default first page.
+			const prods = await fetchAllRecords<Product>("/products").catch(
+				() => [] as Product[],
+			);
+			setProducts(prods);
 		} catch (_error) {
 			toast.error("Erro ao carregar promoções");
 		} finally {
@@ -414,18 +418,15 @@ export default function PromotionsPage() {
 									<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
 										Produto *
 									</label>
-									<select
-										{...register("product_id")}
-										className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 dark:bg-gray-700"
-									>
-										<option value="">Selecione um produto</option>
-										{products.map((product) => (
-											<option key={product.id} value={product.id}>
-												{product.name} -{" "}
-												{formatCurrency(getProductPrice(product))}
-											</option>
-										))}
-									</select>
+									<ProductCombobox
+										products={products}
+										value={Number(selectedProductId) || 0}
+										onSelect={(productId) =>
+											setValue("product_id", String(productId), {
+												shouldValidate: true,
+											})
+										}
+									/>
 									{errors.product_id && (
 										<p className="text-red-500 text-xs mt-1">
 											{errors.product_id.message}

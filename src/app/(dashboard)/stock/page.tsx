@@ -6,7 +6,6 @@ import {
 	ArrowDownCircle,
 	ArrowUpCircle,
 	Edit2,
-	MoreVertical,
 	Package,
 	Plus,
 	Search,
@@ -14,6 +13,7 @@ import {
 	TrendingUp,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { ActionMenu, ActionMenuItem } from "@/components/ui/action-menu";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -55,7 +55,6 @@ export default function StockPage() {
 		max_stock: 0,
 		quantity: 0,
 	});
-	const [activeMenu, setActiveMenu] = useState<number | null>(null);
 	const [movementModal, setMovementModal] = useState<{
 		stock: StockItem;
 		type: "in" | "out";
@@ -99,7 +98,6 @@ export default function StockPage() {
 			max_stock: stock.max_stock,
 			quantity: stock.quantity,
 		});
-		setActiveMenu(null);
 	};
 
 	const handleUpdateStock = async () => {
@@ -134,7 +132,6 @@ export default function StockPage() {
 	const openMovementModal = (stock: StockItem, type: "in" | "out") => {
 		setMovementModal({ stock, type });
 		setMovementForm({ quantity: 1, reference_type: "adjustment", notes: "" });
-		setActiveMenu(null);
 	};
 
 	const handleMovement = async () => {
@@ -450,51 +447,26 @@ export default function StockPage() {
 											</Badge>
 										</TableCell>
 										<TableCell className="text-right">
-											<div className="relative inline-block">
-												<button
-													type="button"
-													onClick={() =>
-														setActiveMenu(
-															activeMenu === stock.id ? null : stock.id,
-														)
-													}
-													className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+											<ActionMenu className="w-36">
+												<ActionMenuItem
+													variant="success"
+													onClick={() => openMovementModal(stock, "in")}
 												>
-													<MoreVertical className="h-4 w-4 text-gray-500" />
-												</button>
-												{activeMenu === stock.id && (
-													<motion.div
-														initial={{ opacity: 0, scale: 0.95 }}
-														animate={{ opacity: 1, scale: 1 }}
-														className="absolute right-0 mt-1 w-36 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10"
-													>
-														<button
-															type="button"
-															onClick={() => openMovementModal(stock, "in")}
-															className="flex items-center gap-2 w-full px-4 py-2 text-sm text-green-700 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20"
-														>
-															<ArrowUpCircle className="h-4 w-4" />
-															Entrada
-														</button>
-														<button
-															type="button"
-															onClick={() => openMovementModal(stock, "out")}
-															className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-														>
-															<ArrowDownCircle className="h-4 w-4" />
-															Saída
-														</button>
-														<button
-															type="button"
-															onClick={() => openEditModal(stock)}
-															className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-														>
-															<Edit2 className="h-4 w-4" />
-															Editar
-														</button>
-													</motion.div>
-												)}
-											</div>
+													<ArrowUpCircle className="h-4 w-4" />
+													Entrada
+												</ActionMenuItem>
+												<ActionMenuItem
+													variant="danger"
+													onClick={() => openMovementModal(stock, "out")}
+												>
+													<ArrowDownCircle className="h-4 w-4" />
+													Saída
+												</ActionMenuItem>
+												<ActionMenuItem onClick={() => openEditModal(stock)}>
+													<Edit2 className="h-4 w-4" />
+													Editar
+												</ActionMenuItem>
+											</ActionMenu>
 										</TableCell>
 									</motion.tr>
 								))}

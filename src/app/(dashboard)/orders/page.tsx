@@ -7,7 +7,6 @@ import {
 	CheckCircle,
 	Clock,
 	Eye,
-	MoreVertical,
 	Package,
 	Plus,
 	Search,
@@ -20,12 +19,19 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import {
+	ActionMenu,
+	ActionMenuDivider,
+	ActionMenuItem,
+	ActionMenuLabel,
+} from "@/components/ui/action-menu";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
+import { ProductCombobox } from "@/components/ui/product-combobox";
 import { SkeletonTable } from "@/components/ui/skeleton";
 import {
 	Table,
@@ -35,7 +41,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { toast } from "@/components/ui/toast";
-import { api } from "@/lib/api";
+import { api, fetchAllRecords } from "@/lib/api";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { Customer, Order, Product } from "@/types";
 
@@ -71,7 +77,6 @@ export default function OrdersPage() {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
 	const [deletingOrder, setDeletingOrder] = useState<Order | null>(null);
-	const [activeMenu, setActiveMenu] = useState<number | null>(null);
 	const [orderItems, setOrderItems] = useState<
 		{ product_id: number; quantity: number; unit_price: number }[]
 	>([]);
@@ -100,9 +105,7 @@ export default function OrdersPage() {
 
 	const fetchCustomers = useCallback(async () => {
 		try {
-			const { data: response } = await api.get("/customers");
-			const customers = response?.data ?? response;
-			setCustomers(Array.isArray(customers) ? customers : []);
+			setCustomers(await fetchAllRecords<Customer>("/customers"));
 		} catch (error) {
 			console.error(error);
 		}
@@ -110,9 +113,7 @@ export default function OrdersPage() {
 
 	const fetchProducts = useCallback(async () => {
 		try {
-			const { data: response } = await api.get("/products");
-			const products = response?.data ?? response;
-			setProducts(Array.isArray(products) ? products : []);
+			setProducts(await fetchAllRecords<Product>("/products"));
 		} catch (error) {
 			console.error(error);
 		}
@@ -140,7 +141,7 @@ export default function OrdersPage() {
 			order_number: generateOrderNumber(),
 			notes: "",
 		});
-		setOrderItems([]);
+		setOrderItems([{ product_id: 0, quantity: 1, unit_price: 0 }]);
 		setIsModalOpen(true);
 	};
 
@@ -216,7 +217,6 @@ export default function OrdersPage() {
 			await api.patch(`/orders/${orderId}/status`, { status });
 			toast.success("Status atualizado!");
 			fetchOrders();
-			setActiveMenu(null);
 		} catch (error: unknown) {
 			const message =
 				error instanceof Error ? error.message : "Erro ao atualizar status";
@@ -250,6 +250,10 @@ export default function OrdersPage() {
 		(acc, item) => acc + item.quantity * item.unit_price,
 		0,
 	);
+
+	const takenProductIds = orderItems
+		.map((item) => item.product_id)
+		.filter((id) => id > 0);
 
 	return (
 		<div className="space-y-6">
@@ -355,69 +359,33 @@ export default function OrdersPage() {
 												</Badge>
 											</TableCell>
 											<TableCell className="text-right">
-												<div className="relative inline-block">
-													<button
-														type="button"
-														onClick={() =>
-															setActiveMenu(
-																activeMenu === order.id ? null : order.id,
-															)
-														}
-														className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+												<ActionMenu>
+													<ActionMenuItem
+														onClick={() => setViewingOrder(order)}
 													>
-														<MoreVertical className="h-4 w-4 text-gray-500" />
-													</button>
-													{activeMenu === order.id && (
-														<motion.div
-															initial={{ opacity: 0, scale: 0.95 }}
-															animate={{ opacity: 1, scale: 1 }}
-															className="absolute right-0 mt-1 w-44 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10"
+														<Eye className="h-4 w-4" />
+														Ver Detalhes
+													</ActionMenuItem>
+													<ActionMenuDivider />
+													<ActionMenuLabel>Atualizar Status</ActionMenuLabel>
+													{Object.entries(statusConfig).map(([key, config]) => (
+														<ActionMenuItem
+															key={key}
+															onClick={() => handleUpdateStatus(order.id, key)}
 														>
-															<button
-																type="button"
-																onClick={() => {
-																	setViewingOrder(order);
-																	setActiveMenu(null);
-																}}
-																className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-															>
-																<Eye className="h-4 w-4" />
-																Ver Detalhes
-															</button>
-															<div className="border-t border-gray-100 dark:border-gray-700 my-1" />
-															<p className="px-4 py-1 text-xs text-gray-500 uppercase">
-																Atualizar Status
-															</p>
-															{Object.entries(statusConfig).map(
-																([key, config]) => (
-																	<button
-																		key={key}
-																		type="button"
-																		onClick={() =>
-																			handleUpdateStatus(order.id, key)
-																		}
-																		className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-																	>
-																		<config.icon className="h-4 w-4" />
-																		{config.label}
-																	</button>
-																),
-															)}
-															<div className="border-t border-gray-100 dark:border-gray-700 my-1" />
-															<button
-																type="button"
-																onClick={() => {
-																	setDeletingOrder(order);
-																	setActiveMenu(null);
-																}}
-																className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-															>
-																<Trash2 className="h-4 w-4" />
-																Excluir
-															</button>
-														</motion.div>
-													)}
-												</div>
+															<config.icon className="h-4 w-4" />
+															{config.label}
+														</ActionMenuItem>
+													))}
+													<ActionMenuDivider />
+													<ActionMenuItem
+														variant="danger"
+														onClick={() => setDeletingOrder(order)}
+													>
+														<Trash2 className="h-4 w-4" />
+														Excluir
+													</ActionMenuItem>
+												</ActionMenu>
 											</TableCell>
 										</motion.tr>
 									);
@@ -493,24 +461,14 @@ export default function OrdersPage() {
 										key={index}
 										className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg"
 									>
-										<select
+										<ProductCombobox
+											products={products}
 											value={item.product_id}
-											onChange={(e) =>
-												updateOrderItem(
-													index,
-													"product_id",
-													Number(e.target.value),
-												)
+											takenIds={takenProductIds}
+											onSelect={(productId) =>
+												updateOrderItem(index, "product_id", productId)
 											}
-											className="flex-1 px-3 py-2 border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-										>
-											<option value={0}>Selecione um produto</option>
-											{products.map((product) => (
-												<option key={product.id} value={product.id}>
-													{product.name}
-												</option>
-											))}
-										</select>
+										/>
 										<input
 											type="number"
 											min="1"
@@ -533,6 +491,9 @@ export default function OrdersPage() {
 												}
 												className="text-sm py-2"
 											/>
+										</div>
+										<div className="w-24 text-right text-sm font-semibold text-gray-900 dark:text-white">
+											{formatCurrency(item.quantity * item.unit_price)}
 										</div>
 										<button
 											type="button"

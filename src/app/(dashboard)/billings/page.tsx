@@ -9,7 +9,6 @@ import {
 	CreditCard,
 	DollarSign,
 	FileText,
-	MoreVertical,
 	Pencil,
 	Search,
 	ShoppingCart,
@@ -17,6 +16,11 @@ import {
 	XCircle,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import {
+	ActionMenu,
+	ActionMenuDivider,
+	ActionMenuItem,
+} from "@/components/ui/action-menu";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -116,7 +120,6 @@ export default function BillingsPage() {
 	const [isLoading, setIsLoading] = useState(true);
 	const [searchTerm, setSearchTerm] = useState("");
 	const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-	const [activeMenu, setActiveMenu] = useState<number | null>(null);
 
 	// modals
 	const [viewingBilling, setViewingBilling] = useState<Billing | null>(null);
@@ -161,7 +164,6 @@ export default function BillingsPage() {
 			});
 			toast.success("Cobrança atualizada!");
 			fetchBillings();
-			setActiveMenu(null);
 			setUpdatingBilling(null);
 		} catch (error: unknown) {
 			const msg =
@@ -198,7 +200,6 @@ export default function BillingsPage() {
 			await api.delete(`/billings/${billingId}`);
 			toast.success("Cobrança excluída!");
 			fetchBillings();
-			setActiveMenu(null);
 		} catch {
 			toast.error("Erro ao excluir cobrança");
 		}
@@ -209,14 +210,12 @@ export default function BillingsPage() {
 		setEditDueDate(billing.due_date ? billing.due_date.slice(0, 10) : "");
 		setEditNotes(billing.notes ?? "");
 		setEditPaymentMethod(billing.payment_method || "cash");
-		setActiveMenu(null);
 	};
 
 	const openPaymentModal = (billing: Billing) => {
 		setUpdatingBilling(billing);
 		setPartialAmount(billing.total_amount - billing.paid_amount);
 		setPaymentMethod(billing.payment_method || "cash");
-		setActiveMenu(null);
 	};
 
 	// Filtering
@@ -475,86 +474,56 @@ export default function BillingsPage() {
 												</Badge>
 											</TableCell>
 											<TableCell className="text-right">
-												<div className="relative inline-block">
-													<button
-														type="button"
-														onClick={() =>
-															setActiveMenu(
-																activeMenu === billing.id ? null : billing.id,
-															)
-														}
-														className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+												<ActionMenu className="w-48">
+													<ActionMenuItem
+														onClick={() => setViewingBilling(billing)}
 													>
-														<MoreVertical className="h-4 w-4 text-gray-500" />
-													</button>
-													{activeMenu === billing.id && (
-														<motion.div
-															initial={{ opacity: 0, scale: 0.95 }}
-															animate={{ opacity: 1, scale: 1 }}
-															className="absolute right-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10"
-														>
-															<button
-																type="button"
-																onClick={() => {
-																	setViewingBilling(billing);
-																	setActiveMenu(null);
-																}}
-																className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-															>
-																<FileText className="h-4 w-4" />
-																Ver Detalhes
-															</button>
-															{billing.status !== "paid" &&
-																billing.status !== "canceled" && (
-																	<>
-																		<div className="border-t border-gray-100 dark:border-gray-700 my-1" />
-																		<button
-																			type="button"
-																			onClick={() => openPaymentModal(billing)}
-																			className="flex items-center gap-2 w-full px-4 py-2 text-sm text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20"
-																		>
-																			<CreditCard className="h-4 w-4" />
-																			Registrar Pagamento
-																		</button>
-																		<button
-																			type="button"
-																			onClick={() => openEditModal(billing)}
-																			className="flex items-center gap-2 w-full px-4 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
-																		>
-																			<Pencil className="h-4 w-4" />
-																			Editar Cobrança
-																		</button>
-																		<button
-																			type="button"
-																			onClick={() => {
-																				if (
-																					confirm("Cancelar esta cobrança?")
-																				) {
-																					handleUpdateStatus(
-																						billing.id,
-																						"canceled",
-																					);
-																				}
-																			}}
-																			className="flex items-center gap-2 w-full px-4 py-2 text-sm text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20"
-																		>
-																			<XCircle className="h-4 w-4" />
-																			Cancelar
-																		</button>
-																	</>
-																)}
-															<div className="border-t border-gray-100 dark:border-gray-700 my-1" />
-															<button
-																type="button"
-																onClick={() => handleDelete(billing.id)}
-																className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-															>
-																<Trash2 className="h-4 w-4" />
-																Excluir
-															</button>
-														</motion.div>
-													)}
-												</div>
+														<FileText className="h-4 w-4" />
+														Ver Detalhes
+													</ActionMenuItem>
+													{billing.status !== "paid" &&
+														billing.status !== "canceled" && (
+															<>
+																<ActionMenuDivider />
+																<ActionMenuItem
+																	variant="success"
+																	onClick={() => openPaymentModal(billing)}
+																>
+																	<CreditCard className="h-4 w-4" />
+																	Registrar Pagamento
+																</ActionMenuItem>
+																<ActionMenuItem
+																	variant="info"
+																	onClick={() => openEditModal(billing)}
+																>
+																	<Pencil className="h-4 w-4" />
+																	Editar Cobrança
+																</ActionMenuItem>
+																<ActionMenuItem
+																	variant="warning"
+																	onClick={() => {
+																		if (confirm("Cancelar esta cobrança?")) {
+																			handleUpdateStatus(
+																				billing.id,
+																				"canceled",
+																			);
+																		}
+																	}}
+																>
+																	<XCircle className="h-4 w-4" />
+																	Cancelar
+																</ActionMenuItem>
+															</>
+														)}
+													<ActionMenuDivider />
+													<ActionMenuItem
+														variant="danger"
+														onClick={() => handleDelete(billing.id)}
+													>
+														<Trash2 className="h-4 w-4" />
+														Excluir
+													</ActionMenuItem>
+												</ActionMenu>
 											</TableCell>
 										</motion.tr>
 									);
