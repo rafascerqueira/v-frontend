@@ -151,6 +151,8 @@ export default function AdminExceptionsPage() {
 	const [filterType, setFilterType] = useState<ExceptionType | "">("");
 	const [filterStatus, setFilterStatus] = useState<ExceptionStatus | "">("");
 	const [accountSearch, setAccountSearch] = useState("");
+	// Debounced copy of accountSearch so typing an ID doesn't fire a request per keystroke.
+	const [debouncedAccount, setDebouncedAccount] = useState("");
 
 	const [createOpen, setCreateOpen] = useState(false);
 	const [createForm, setCreateForm] = useState<CreateForm>(emptyCreateForm);
@@ -167,31 +169,40 @@ export default function AdminExceptionsPage() {
 
 	const totalPages = Math.max(1, Math.ceil(total / limit));
 
-	const load = useCallback(async () => {
-		setLoading(true);
-		try {
-			const params = new URLSearchParams();
-			params.set("page", String(page));
-			params.set("limit", String(limit));
-			if (filterType) params.set("type", filterType);
-			if (filterStatus) params.set("status", filterStatus);
-			if (accountSearch) params.set("account_id", accountSearch);
+	// `silent` skips the spinner so post-mutation refreshes don't blank the table.
+	const load = useCallback(
+		async (silent = false) => {
+			if (!silent) setLoading(true);
+			try {
+				const params = new URLSearchParams();
+				params.set("page", String(page));
+				params.set("limit", String(limit));
+				if (filterType) params.set("type", filterType);
+				if (filterStatus) params.set("status", filterStatus);
+				if (debouncedAccount) params.set("account_id", debouncedAccount);
 
-			const { data } = await api.get<ListResponse>(
-				`/admin/exceptions?${params.toString()}`,
-			);
-			setItems(data.data);
-			setTotal(data.total);
-		} catch (_error) {
-			toast.error("Erro ao carregar exceções");
-		} finally {
-			setLoading(false);
-		}
-	}, [page, limit, filterType, filterStatus, accountSearch]);
+				const { data } = await api.get<ListResponse>(
+					`/admin/exceptions?${params.toString()}`,
+				);
+				setItems(data.data);
+				setTotal(data.total);
+			} catch (_error) {
+				toast.error("Erro ao carregar exceções");
+			} finally {
+				if (!silent) setLoading(false);
+			}
+		},
+		[page, limit, filterType, filterStatus, debouncedAccount],
+	);
 
 	useEffect(() => {
 		load();
 	}, [load]);
+
+	useEffect(() => {
+		const t = setTimeout(() => setDebouncedAccount(accountSearch), 400);
+		return () => clearTimeout(t);
+	}, [accountSearch]);
 
 	useEffect(() => {
 		async function loadAccounts() {
@@ -277,7 +288,7 @@ export default function AdminExceptionsPage() {
 			setCreateOpen(false);
 			setCreateForm(emptyCreateForm);
 			setPage(1);
-			load();
+			load(true);
 		} catch (error: unknown) {
 			const message =
 				(error as { response?: { data?: { message?: string } } })?.response
@@ -303,7 +314,7 @@ export default function AdminExceptionsPage() {
 			toast.success("Exceção revogada");
 			setRevokeTarget(null);
 			setRevokeReason("");
-			load();
+			load(true);
 		} catch (error: unknown) {
 			const message =
 				(error as { response?: { data?: { message?: string } } })?.response

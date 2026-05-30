@@ -19,7 +19,7 @@ import {
 	X,
 	Zap,
 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,6 +34,8 @@ interface Account {
 	is_active: boolean;
 	last_login_at: string | null;
 	createdAt: string;
+	// Active plan_grant exception, included inline by the accounts endpoint.
+	activeGrant?: ExceptionRecord | null;
 }
 
 interface PlanGrantStat {
@@ -126,8 +128,10 @@ export default function AdminUsersPage() {
 		Record<string, ExceptionRecord | undefined>
 	>({});
 
-	const loadAccounts = useCallback(async (page = 1) => {
-		setLoading(true);
+	// `silent` refreshes data in the background without blanking the table to a spinner
+	// (used after mutations so the list doesn't flash on every action).
+	const loadAccounts = useCallback(async (page = 1, silent = false) => {
+		if (!silent) setLoading(true);
 		try {
 			const response = await api.get<AccountsResponse>(
 				`/admin/accounts?page=${page}&limit=20`,
@@ -135,27 +139,17 @@ export default function AdminUsersPage() {
 			setAccounts(response.data.data);
 			setMeta(response.data.meta);
 
-			// Load active plan_grant exceptions for these accounts (best-effort)
+			// Active plan_grant now arrives inline with each account — no per-account
+			// requests (previously an N+1 that made the list slow to load).
 			const grants: Record<string, ExceptionRecord | undefined> = {};
-			await Promise.all(
-				response.data.data.map(async (acc) => {
-					try {
-						const { data } = await api.get<ExceptionRecord[]>(
-							`/admin/sellers/${acc.id}/exceptions`,
-						);
-						grants[acc.id] = data.find(
-							(ex) => ex.type === "plan_grant" && ex.status === "active",
-						);
-					} catch {
-						/* swallow per-account failures */
-					}
-				}),
-			);
+			for (const acc of response.data.data) {
+				if (acc.activeGrant) grants[acc.id] = acc.activeGrant;
+			}
 			setActiveGrants(grants);
 		} catch (_error) {
 			toast.error("Erro ao carregar usuários");
 		} finally {
-			setLoading(false);
+			if (!silent) setLoading(false);
 		}
 	}, []);
 
@@ -194,9 +188,12 @@ export default function AdminUsersPage() {
 			setSaving(true);
 			await api.patch(`/admin/accounts/${editingUser.id}`, editForm);
 			toast.success("Usuário atualizado!");
+			// Optimistic local update — avoids a full refetch (and its N+1 grant calls).
+			setAccounts((prev) =>
+				prev.map((a) => (a.id === editingUser.id ? { ...a, ...editForm } : a)),
+			);
 			setShowEditModal(false);
 			setEditingUser(null);
-			loadAccounts(meta.page);
 		} catch (_error) {
 			toast.error("Erro ao atualizar usuário");
 		} finally {
@@ -205,6 +202,7 @@ export default function AdminUsersPage() {
 	};
 
 	const handleToggleActive = async (account: Account) => {
+		setActiveMenu(null);
 		try {
 			await api.patch(`/admin/accounts/${account.id}`, {
 				is_active: !account.is_active,
@@ -212,11 +210,14 @@ export default function AdminUsersPage() {
 			toast.success(
 				account.is_active ? "Usuário desativado" : "Usuário ativado",
 			);
-			loadAccounts(meta.page);
+			setAccounts((prev) =>
+				prev.map((a) =>
+					a.id === account.id ? { ...a, is_active: !account.is_active } : a,
+				),
+			);
 		} catch (_error) {
 			toast.error("Erro ao alterar status");
 		}
-		setActiveMenu(null);
 	};
 
 	const openGrantModal = (account: Account, plan: "pro" | "enterprise") => {
@@ -269,7 +270,7 @@ export default function AdminUsersPage() {
 			await api.post(`/admin/sellers/${grantTarget.id}/exceptions`, payload);
 			toast.success("Plano concedido!");
 			setGrantTarget(null);
-			loadAccounts(meta.page);
+			loadAccounts(meta.page, true);
 			loadGrantStats();
 		} catch (error: unknown) {
 			const message =
@@ -306,7 +307,7 @@ export default function AdminUsersPage() {
 			);
 			toast.success("Concessão revogada");
 			setRevokeTarget(null);
-			loadAccounts(meta.page);
+			loadAccounts(meta.page, true);
 			loadGrantStats();
 		} catch (error: unknown) {
 			const message =
@@ -319,21 +320,26 @@ export default function AdminUsersPage() {
 	};
 
 	const handleChangeRole = async (account: Account, role: string) => {
+		setActiveMenu(null);
 		try {
 			await api.patch(`/admin/accounts/${account.id}`, { role });
 			toast.success("Função alterada!");
-			loadAccounts(meta.page);
+			setAccounts((prev) =>
+				prev.map((a) => (a.id === account.id ? { ...a, role } : a)),
+			);
 		} catch (_error) {
 			toast.error("Erro ao alterar função");
 		}
-		setActiveMenu(null);
 	};
 
-	const filteredAccounts = accounts.filter(
-		(account) =>
-			account.name?.toLowerCase().includes(search.toLowerCase()) ||
-			account.email?.toLowerCase().includes(search.toLowerCase()),
-	);
+	const filteredAccounts = useMemo(() => {
+		const term = search.toLowerCase();
+		return accounts.filter(
+			(account) =>
+				account.name?.toLowerCase().includes(term) ||
+				account.email?.toLowerCase().includes(term),
+		);
+	}, [accounts, search]);
 
 	const getPlanInfo = (planType: string) => {
 		return planOptions.find((p) => p.value === planType) || planOptions[0];

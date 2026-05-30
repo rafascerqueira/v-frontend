@@ -7,6 +7,7 @@ import {
 	useCallback,
 	useContext,
 	useEffect,
+	useMemo,
 	useState,
 } from "react";
 import { api } from "@/lib/api";
@@ -97,22 +98,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		router.push("/login");
 	}, [router]);
 
-	return (
-		<AuthContext.Provider
-			value={{
-				user,
-				isLoading,
-				isAuthenticated,
-				isAdmin,
-				login,
-				register,
-				logout,
-				refreshUser: fetchUser,
-			}}
-		>
-			{children}
-		</AuthContext.Provider>
+	const value = useMemo(
+		() => ({
+			user,
+			isLoading,
+			isAuthenticated,
+			isAdmin,
+			login,
+			register,
+			logout,
+			refreshUser: fetchUser,
+		}),
+		[
+			user,
+			isLoading,
+			isAuthenticated,
+			isAdmin,
+			login,
+			register,
+			logout,
+			fetchUser,
+		],
 	);
+
+	return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

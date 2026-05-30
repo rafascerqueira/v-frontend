@@ -178,10 +178,28 @@ export const catalogApi = {
 			`/catalog/loja/${slug}/customer/auth`,
 			{ contact, password },
 		),
-	setCustomerPassword: (slug: string, contact: string, password: string) =>
+	// Step 1: email a one-time code to the customer's registered email.
+	requestCustomerOtp: (slug: string, contact: string) =>
+		apiPublic.post<{ message: string }>(
+			`/catalog/loja/${slug}/customer/password/request`,
+			{ contact },
+		),
+	// Step 2: verify the code and set the first password.
+	setCustomerPassword: (
+		slug: string,
+		contact: string,
+		otp: string,
+		password: string,
+	) =>
 		apiPublic.post<CustomerAuthResponse>(
 			`/catalog/loja/${slug}/customer/password`,
-			{ contact, password },
+			{ contact, otp, password },
+		),
+	// Seller-issued invite: set or reset a password using a one-time token.
+	redeemInvite: (slug: string, token: string, password: string) =>
+		apiPublic.post<CustomerAuthResponse>(
+			`/catalog/loja/${slug}/customer/password/invite`,
+			{ token, password },
 		),
 
 	// Orders

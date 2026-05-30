@@ -3,7 +3,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
 import {
+	Check,
+	Copy,
 	Edit2,
+	KeyRound,
 	Mail,
 	MapPin,
 	MoreVertical,
@@ -73,6 +76,14 @@ export default function CustomersPage() {
 		null,
 	);
 	const [activeMenu, setActiveMenu] = useState<string | null>(null);
+	const [inviteCustomer, setInviteCustomer] = useState<Customer | null>(null);
+	const [inviteLoading, setInviteLoading] = useState(false);
+	const [inviteData, setInviteData] = useState<{
+		link: string | null;
+		expiresInHours: number;
+		isReset: boolean;
+	} | null>(null);
+	const [copied, setCopied] = useState(false);
 
 	const {
 		register,
@@ -173,6 +184,42 @@ export default function CustomersPage() {
 			const message =
 				error instanceof Error ? error.message : "Erro ao excluir cliente";
 			toast.error(message);
+		}
+	};
+
+	const handleGenerateInvite = async (customer: Customer) => {
+		setActiveMenu(null);
+		setInviteCustomer(customer);
+		setInviteData(null);
+		setCopied(false);
+		setInviteLoading(true);
+		try {
+			const { data } = await api.post(
+				`/store/customers/${customer.id}/password-invite`,
+			);
+			setInviteData({
+				link: data.link ?? null,
+				expiresInHours: data.expiresInHours,
+				isReset: data.isReset,
+			});
+		} catch (error: unknown) {
+			const message =
+				error instanceof Error ? error.message : "Erro ao gerar o link";
+			toast.error(message);
+			setInviteCustomer(null);
+		} finally {
+			setInviteLoading(false);
+		}
+	};
+
+	const handleCopyInviteLink = async () => {
+		if (!inviteData?.link) return;
+		try {
+			await navigator.clipboard.writeText(inviteData.link);
+			setCopied(true);
+			setTimeout(() => setCopied(false), 2000);
+		} catch {
+			toast.error("Não foi possível copiar. Copie manualmente.");
 		}
 	};
 
@@ -305,7 +352,7 @@ export default function CustomersPage() {
 													<motion.div
 														initial={{ opacity: 0, scale: 0.95 }}
 														animate={{ opacity: 1, scale: 1 }}
-														className="absolute right-0 mt-1 w-36 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10"
+														className="absolute right-0 mt-1 w-44 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10"
 													>
 														<button
 															type="button"
@@ -314,6 +361,14 @@ export default function CustomersPage() {
 														>
 															<Edit2 className="h-4 w-4" />
 															Editar
+														</button>
+														<button
+															type="button"
+															onClick={() => handleGenerateInvite(customer)}
+															className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+														>
+															<KeyRound className="h-4 w-4" />
+															Link de senha
 														</button>
 														<button
 															type="button"
@@ -458,6 +513,74 @@ export default function CustomersPage() {
 						</Button>
 						<Button type="button" variant="danger" onClick={handleDelete}>
 							Excluir
+						</Button>
+					</div>
+				</div>
+			</Modal>
+
+			{/* Password invite link Modal */}
+			<Modal
+				isOpen={!!inviteCustomer}
+				onClose={() => setInviteCustomer(null)}
+				title={
+					inviteData?.isReset
+						? "Redefinir senha do cliente"
+						: "Definir senha do cliente"
+				}
+				size="md"
+			>
+				<div className="space-y-4">
+					{inviteLoading ? (
+						<p className="text-gray-500 dark:text-gray-400 text-sm">
+							Gerando link...
+						</p>
+					) : inviteData ? (
+						<>
+							<p className="text-gray-600 dark:text-gray-400 text-sm">
+								Envie este link para{" "}
+								<span className="font-semibold">{inviteCustomer?.name}</span>{" "}
+								{inviteData.isReset ? "redefinir a senha" : "definir a senha"}{" "}
+								da conta. O link expira em{" "}
+								{Math.round(inviteData.expiresInHours / 24)} dias e só pode ser
+								usado uma vez.
+							</p>
+							{inviteData.link ? (
+								<div className="flex items-center gap-2">
+									<input
+										readOnly
+										value={inviteData.link}
+										className="flex-1 px-3 py-2 text-sm bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white truncate"
+									/>
+									<Button
+										type="button"
+										variant="outline"
+										onClick={handleCopyInviteLink}
+									>
+										{copied ? (
+											<Check className="h-4 w-4" />
+										) : (
+											<Copy className="h-4 w-4" />
+										)}
+									</Button>
+								</div>
+							) : (
+								<p className="text-sm text-amber-600 dark:text-amber-400">
+									Configure o slug da sua loja em Configurações para gerar o
+									link compartilhável.
+								</p>
+							)}
+							<p className="text-xs text-gray-400">
+								Compartilhe por WhatsApp ou outro canal de sua confiança.
+							</p>
+						</>
+					) : null}
+					<div className="flex justify-end pt-2">
+						<Button
+							type="button"
+							variant="outline"
+							onClick={() => setInviteCustomer(null)}
+						>
+							Fechar
 						</Button>
 					</div>
 				</div>

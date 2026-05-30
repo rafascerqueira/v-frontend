@@ -43,7 +43,8 @@ const passwordSchema = z.object({
 
 const newPasswordSchema = z
 	.object({
-		password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres"),
+		otp: z.string().regex(/^\d{6}$/, "Código de 6 dígitos"),
+		password: z.string().min(8, "Senha deve ter pelo menos 8 caracteres"),
 		confirmPassword: z.string(),
 	})
 	.refine((d) => d.password === d.confirmPassword, {
@@ -214,7 +215,11 @@ export default function StoreCheckoutPage() {
 
 			// Coming from personalized link confirm: skip re-asking identity
 			if (prefilledCustomer) {
-				setStep(res.data.hasPassword ? "enter-password" : "set-password");
+				if (res.data.hasPassword) {
+					setStep("enter-password");
+				} else {
+					await startSetPassword(data.contact);
+				}
 			} else {
 				setStep("confirm-identity");
 			}
@@ -227,11 +232,30 @@ export default function StoreCheckoutPage() {
 
 	// ─── Step: confirm-identity ──────────────────────────────────────────────
 
-	function handleConfirmYes() {
+	async function handleConfirmYes() {
 		if (hasPassword) {
 			setStep("enter-password");
 		} else {
-			setStep("set-password");
+			await startSetPassword(contactValue);
+		}
+	}
+
+	// Email a verification code, then move to the set-password step.
+	async function startSetPassword(contact: string) {
+		try {
+			await catalogApi.requestCustomerOtp(slug, contact);
+		} catch {
+			// Uniform response on the backend; surface a soft warning only.
+		}
+		setStep("set-password");
+	}
+
+	async function handleResendOtp() {
+		try {
+			await catalogApi.requestCustomerOtp(slug, contactValue);
+			toast.success("Enviamos um novo código para seu email.");
+		} catch {
+			toast.error("Não foi possível reenviar o código.");
 		}
 	}
 
@@ -273,14 +297,20 @@ export default function StoreCheckoutPage() {
 			const res = await catalogApi.setCustomerPassword(
 				slug,
 				contactValue,
+				data.otp,
 				data.password,
 			);
 			setAuthenticatedCustomer(res.data.customer, res.data.token);
 			prefillCheckout(res.data.customer);
 			setStep("form");
 			toast.success("Senha criada! Seus dados foram preenchidos.");
-		} catch {
-			toast.error("Erro ao salvar senha. Tente novamente.");
+		} catch (err: unknown) {
+			const e = err as { response?: { status?: number } };
+			if (e.response?.status === 401) {
+				toast.error("Código inválido ou expirado. Solicite um novo código.");
+			} else {
+				toast.error("Erro ao salvar senha. Tente novamente.");
+			}
 		} finally {
 			setAuthLoading(false);
 		}
@@ -639,8 +669,8 @@ export default function StoreCheckoutPage() {
 							Crie uma senha
 						</h2>
 						<p className="text-gray-500 dark:text-gray-400 text-center text-sm mb-6">
-							Olá, {foundFirstName}! Crie uma senha para agilizar seus próximos
-							pedidos.
+							Olá, {foundFirstName}! Enviamos um código de verificação para seu
+							email. Informe-o abaixo para criar sua senha.
 						</p>
 
 						<form
@@ -649,9 +679,32 @@ export default function StoreCheckoutPage() {
 						>
 							<div>
 								<input
+									type="text"
+									inputMode="numeric"
+									maxLength={6}
+									autoComplete="one-time-code"
+									{...newPasswordForm.register("otp")}
+									placeholder="Código de 6 dígitos"
+									className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white tracking-widest text-center focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+								/>
+								{newPasswordForm.formState.errors.otp && (
+									<p className="text-red-500 text-sm mt-1">
+										{newPasswordForm.formState.errors.otp.message}
+									</p>
+								)}
+								<button
+									type="button"
+									onClick={handleResendOtp}
+									className="text-xs text-primary-600 dark:text-primary-400 hover:underline mt-2"
+								>
+									Reenviar código
+								</button>
+							</div>
+							<div>
+								<input
 									type="password"
 									{...newPasswordForm.register("password")}
-									placeholder="Nova senha"
+									placeholder="Nova senha (mín. 8 caracteres)"
 									className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
 								/>
 								{newPasswordForm.formState.errors.password && (
