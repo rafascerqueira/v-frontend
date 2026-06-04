@@ -2,7 +2,15 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
-import { Edit2, Package, Plus, Search, Trash2 } from "lucide-react";
+import {
+	Edit2,
+	ImagePlus,
+	Package,
+	Plus,
+	Search,
+	Trash2,
+	X,
+} from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -45,6 +53,8 @@ export default function ProductsPage() {
 	const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
 	const [priceValue, setPriceValue] = useState<number>(0);
 	const [initialStock, setInitialStock] = useState<number>(0);
+	const [productImages, setProductImages] = useState<string[]>([]);
+	const [uploadingImage, setUploadingImage] = useState(false);
 
 	const {
 		register,
@@ -85,6 +95,7 @@ export default function ProductsPage() {
 		setEditingProduct(null);
 		setPriceValue(0);
 		setInitialStock(0);
+		setProductImages([]);
 		reset({
 			name: "",
 			description: "",
@@ -100,6 +111,7 @@ export default function ProductsPage() {
 		setEditingProduct(product);
 		const currentPrice = product.prices?.[0]?.price ?? 0;
 		setPriceValue(currentPrice);
+		setProductImages(product.images ?? []);
 		reset({
 			name: product.name,
 			description: product.description ?? "",
@@ -114,7 +126,43 @@ export default function ProductsPage() {
 	const closeModal = () => {
 		setIsModalOpen(false);
 		setEditingProduct(null);
+		setProductImages([]);
 		reset();
+	};
+
+	const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		const files = e.target.files;
+		if (!files || files.length === 0) return;
+
+		try {
+			setUploadingImage(true);
+			const uploaded: string[] = [];
+			for (const file of Array.from(files)) {
+				const formData = new FormData();
+				formData.append("file", file);
+				const response = await api.post("/upload/product", formData, {
+					headers: { "Content-Type": "multipart/form-data" },
+				});
+				uploaded.push(response.data.url);
+			}
+			setProductImages((prev) => [...prev, ...uploaded]);
+			toast.success(
+				uploaded.length === 1
+					? "Imagem enviada!"
+					: `${uploaded.length} imagens enviadas!`,
+			);
+		} catch (error: unknown) {
+			const e = error as { response?: { data?: { message?: string } } };
+			toast.error(e.response?.data?.message ?? "Erro ao enviar imagem");
+		} finally {
+			setUploadingImage(false);
+			// Reset input so the same file can be re-selected
+			e.target.value = "";
+		}
+	};
+
+	const removeImage = (url: string) => {
+		setProductImages((prev) => prev.filter((u) => u !== url));
 	};
 
 	const onSubmit = async (data: ProductFormData) => {
@@ -123,14 +171,17 @@ export default function ProductsPage() {
 			let productId: number;
 
 			if (editingProduct) {
-				await api.patch(`/products/${editingProduct.id}`, productData);
+				await api.patch(`/products/${editingProduct.id}`, {
+					...productData,
+					images: productImages,
+				});
 				productId = editingProduct.id;
 				toast.success("Produto atualizado com sucesso!");
 			} else {
 				const { data: newProduct } = await api.post("/products", {
 					...productData,
 					specifications: {},
-					images: [],
+					images: productImages,
 				});
 				productId = newProduct.id;
 				toast.success("Produto criado com sucesso!");
@@ -250,13 +301,26 @@ export default function ProductsPage() {
 										className="hover:bg-gray-50 transition-colors"
 									>
 										<TableCell>
-											<div>
-												<p className="font-medium text-gray-900 dark:text-white">
-													{product.name}
-												</p>
-												<p className="text-sm text-gray-500 truncate max-w-xs">
-													{product.description}
-												</p>
+											<div className="flex items-center gap-3">
+												<div className="w-10 h-10 shrink-0 rounded-md overflow-hidden bg-gray-100 dark:bg-gray-700 flex items-center justify-center border border-gray-200 dark:border-gray-600">
+													{product.images?.[0] ? (
+														<img
+															src={product.images[0]}
+															alt={product.name}
+															className="w-full h-full object-cover"
+														/>
+													) : (
+														<Package className="w-5 h-5 text-gray-400" />
+													)}
+												</div>
+												<div className="min-w-0">
+													<p className="font-medium text-gray-900 dark:text-white truncate">
+														{product.name}
+													</p>
+													<p className="text-sm text-gray-500 truncate max-w-xs">
+														{product.description}
+													</p>
+												</div>
 											</div>
 										</TableCell>
 										<TableCell>
@@ -317,6 +381,47 @@ export default function ProductsPage() {
 				size="lg"
 			>
 				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+					<div>
+						<span className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+							Imagens do Produto
+						</span>
+						<div className="flex flex-wrap gap-3">
+							{productImages.map((url) => (
+								<div
+									key={url}
+									className="relative w-20 h-20 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800"
+								>
+									<img
+										src={url}
+										alt="Produto"
+										className="w-full h-full object-cover"
+									/>
+									<button
+										type="button"
+										onClick={() => removeImage(url)}
+										className="absolute top-1 right-1 p-0.5 bg-red-600 hover:bg-red-700 text-white rounded-full transition-colors"
+										aria-label="Remover imagem"
+									>
+										<X className="w-3 h-3" />
+									</button>
+								</div>
+							))}
+							<label className="w-20 h-20 flex flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 cursor-pointer hover:border-primary-500 hover:text-primary-600 transition-colors">
+								<ImagePlus className="w-5 h-5" />
+								<span className="text-xs">
+									{uploadingImage ? "Enviando..." : "Adicionar"}
+								</span>
+								<input
+									type="file"
+									accept="image/*"
+									multiple
+									className="hidden"
+									onChange={handleImageUpload}
+									disabled={uploadingImage}
+								/>
+							</label>
+						</div>
+					</div>
 					<Input
 						label="Nome do Produto *"
 						placeholder="Ex: Camiseta Básica"

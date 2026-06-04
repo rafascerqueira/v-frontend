@@ -205,15 +205,28 @@ export default function DashboardLayout({
 							onClick={() => setUserMenuOpen(!userMenuOpen)}
 							className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
 						>
-							<div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center">
-								<span className="text-sm font-medium text-white">
-									{user?.email?.charAt(0).toUpperCase()}
-								</span>
+							<div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center overflow-hidden">
+								{user?.avatar ? (
+									<img
+										src={user.avatar}
+										alt={user.name ?? user.email}
+										className="w-full h-full object-cover"
+									/>
+								) : (
+									<span className="text-sm font-medium text-white">
+										{user?.email?.charAt(0).toUpperCase()}
+									</span>
+								)}
 							</div>
-							<div className="hidden md:block text-left">
-								<p className="text-sm font-medium text-gray-900 dark:text-white">
-									{user?.email}
+							<div className="hidden md:block text-left leading-tight">
+								<p className="text-sm font-semibold text-gray-900 dark:text-white">
+									{user?.name ?? user?.email}
 								</p>
+								{user?.name && (
+									<p className="text-xs text-gray-500 dark:text-gray-400">
+										{user.email}
+									</p>
+								)}
 							</div>
 							<ChevronDown className="h-4 w-4 text-gray-400" />
 						</button>
