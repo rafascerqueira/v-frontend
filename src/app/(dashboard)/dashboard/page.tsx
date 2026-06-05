@@ -109,10 +109,8 @@ export default function DashboardPage() {
 		<div className="space-y-8">
 			{/* Header */}
 			<div>
-				<h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-					Dashboard
-				</h1>
-				<p className="text-gray-500 mt-1">Visão geral do seu negócio</p>
+				<h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
+				<p className="text-muted-foreground mt-1">Visão geral do seu negócio</p>
 			</div>
 
 			{/* Stats Grid */}
@@ -131,17 +129,19 @@ export default function DashboardPage() {
 										<stat.icon className="h-6 w-6 text-white" />
 									</div>
 									{stat.subtitle && (
-										<div className="flex items-center gap-1 text-sm text-gray-500">
+										<div className="flex items-center gap-1 text-sm text-muted-foreground">
 											<Clock className="h-4 w-4" />
 											{stat.subtitle}
 										</div>
 									)}
 								</div>
 								<div className="mt-4">
-									<p className="text-2xl font-bold text-gray-900 dark:text-white">
+									<p className="text-2xl font-bold text-foreground">
 										{stat.value}
 									</p>
-									<p className="text-sm text-gray-500 mt-1">{stat.name}</p>
+									<p className="text-sm text-muted-foreground mt-1">
+										{stat.name}
+									</p>
 								</div>
 							</CardContent>
 						</Card>
@@ -166,8 +166,10 @@ export default function DashboardPage() {
 							</CardTitle>
 						</CardHeader>
 						<CardContent>
-							<div className="h-64 flex items-center justify-center bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-								<p className="text-gray-400">Gráfico de vendas em breve</p>
+							<div className="h-64 flex items-center justify-center bg-surface-muted rounded-lg">
+								<p className="text-subtle-foreground">
+									Gráfico de vendas em breve
+								</p>
 							</div>
 						</CardContent>
 					</Card>
@@ -191,21 +193,21 @@ export default function DashboardPage() {
 								{(stats?.topProducts || []).length > 0 ? (
 									stats?.topProducts.map((product, index) => (
 										<div key={product.name} className="flex items-center gap-3">
-											<div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center text-sm font-medium text-gray-600 dark:text-gray-300">
+											<div className="w-8 h-8 bg-surface-muted rounded-lg flex items-center justify-center text-sm font-medium text-muted-foreground">
 												{index + 1}
 											</div>
 											<div className="flex-1">
-												<p className="text-sm font-medium text-gray-900 dark:text-white">
+												<p className="text-sm font-medium text-foreground">
 													{product.name}
 												</p>
-												<p className="text-xs text-gray-500">
+												<p className="text-xs text-muted-foreground">
 													{product.sales} vendas
 												</p>
 											</div>
 										</div>
 									))
 								) : (
-									<p className="text-sm text-gray-500 text-center py-4">
+									<p className="text-sm text-muted-foreground text-center py-4">
 										Nenhum produto vendido ainda
 									</p>
 								)}
@@ -240,17 +242,17 @@ export default function DashboardPage() {
 						<div className="overflow-x-auto">
 							<table className="w-full">
 								<thead>
-									<tr className="border-b border-gray-200 dark:border-gray-700">
-										<th className="text-left py-3 px-4 text-sm font-medium text-gray-500">
+									<tr className="border-b border-border">
+										<th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
 											Pedido
 										</th>
-										<th className="text-left py-3 px-4 text-sm font-medium text-gray-500">
+										<th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
 											Cliente
 										</th>
-										<th className="text-left py-3 px-4 text-sm font-medium text-gray-500">
+										<th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
 											Total
 										</th>
-										<th className="text-left py-3 px-4 text-sm font-medium text-gray-500">
+										<th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
 											Status
 										</th>
 									</tr>
@@ -260,15 +262,15 @@ export default function DashboardPage() {
 										stats?.recentOrders.map((order) => (
 											<tr
 												key={order.id}
-												className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+												className="border-b border-border hover:bg-surface-muted transition-colors"
 											>
-												<td className="py-3 px-4 text-sm font-medium text-gray-900 dark:text-white">
+												<td className="py-3 px-4 text-sm font-medium text-foreground">
 													{order.orderNumber}
 												</td>
-												<td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">
+												<td className="py-3 px-4 text-sm text-muted-foreground">
 													{order.customer}
 												</td>
-												<td className="py-3 px-4 text-sm font-medium text-gray-900 dark:text-white">
+												<td className="py-3 px-4 text-sm font-medium text-foreground">
 													{formatCurrency(order.total)}
 												</td>
 												<td className="py-3 px-4">
@@ -276,7 +278,7 @@ export default function DashboardPage() {
 														className={cn(
 															"inline-flex px-2 py-1 text-xs font-medium rounded-full",
 															statusColors[order.status] ||
-																"bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200",
+																"bg-surface-muted text-foreground",
 														)}
 													>
 														{statusLabels[order.status] || order.status}
@@ -288,7 +290,7 @@ export default function DashboardPage() {
 										<tr>
 											<td
 												colSpan={4}
-												className="py-8 text-center text-gray-500"
+												className="py-8 text-center text-muted-foreground"
 											>
 												Nenhum pedido recente
 											</td>

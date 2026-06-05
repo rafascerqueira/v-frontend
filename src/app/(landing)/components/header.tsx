@@ -5,6 +5,7 @@ import { ArrowRight, Menu, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
@@ -58,7 +59,7 @@ export function Header() {
 								key={link.href}
 								href={link.href}
 								className={cn(
-									"text-sm font-medium transition-colors hover:text-primary-600",
+									"text-sm font-medium transition-colors hover:text-primary-600 dark:hover:text-primary-400",
 									isScrolled
 										? "text-gray-600 dark:text-gray-300"
 										: "text-white/90 hover:text-white",
@@ -67,15 +68,27 @@ export function Header() {
 								{link.label}
 							</a>
 						))}
+						<Link
+							href="/releases"
+							className={cn(
+								"text-sm font-medium transition-colors hover:text-primary-600 dark:hover:text-primary-400",
+								isScrolled
+									? "text-gray-600 dark:text-gray-300"
+									: "text-white/90 hover:text-white",
+							)}
+						>
+							Novidades
+						</Link>
 					</div>
 
-					<div className="hidden lg:flex items-center gap-4">
+					<div className="hidden lg:flex items-center gap-3">
+						<ThemeToggle />
 						<Link
 							href="/login"
 							className={cn(
 								"text-sm font-medium transition-colors",
 								isScrolled
-									? "text-gray-600 hover:text-gray-900 dark:text-gray-300"
+									? "text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
 									: "text-white/90 hover:text-white",
 							)}
 						>
@@ -125,13 +138,23 @@ export function Header() {
 							<a
 								key={link.href}
 								href={link.href}
-								className="block text-gray-600 dark:text-gray-300 hover:text-primary-600 font-medium"
+								className="block text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 font-medium"
 								onClick={() => setIsMobileMenuOpen(false)}
 							>
 								{link.label}
 							</a>
 						))}
+						<Link
+							href="/releases"
+							className="block text-gray-600 dark:text-gray-300 hover:text-primary-600 font-medium"
+							onClick={() => setIsMobileMenuOpen(false)}
+						>
+							Novidades
+						</Link>
 						<div className="pt-4 border-t border-gray-100 dark:border-gray-800 space-y-3">
+							<div className="flex justify-center">
+								<ThemeToggle />
+							</div>
 							<Link
 								href="/login"
 								className="block text-center text-gray-600 dark:text-gray-300 font-medium"

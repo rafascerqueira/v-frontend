@@ -40,7 +40,22 @@ function ProductCard({ product }: { product: CatalogProduct }) {
 			return;
 		}
 		addItem(product, 1);
-		toast.success(`${product.name} adicionado ao carrinho`);
+		toast.success(
+			(t) => (
+				<span className="flex items-center gap-2">
+					<span>{product.name} adicionado ao carrinho</span>
+					<button
+						type="button"
+						onClick={() => toast.dismiss(t.id)}
+						aria-label="Fechar"
+						className="ml-1 shrink-0 rounded-md p-0.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 transition-colors"
+					>
+						<X className="w-4 h-4" />
+					</button>
+				</span>
+			),
+			{ duration: 4000 },
+		);
 	};
 
 	const handleIncrease = () => {

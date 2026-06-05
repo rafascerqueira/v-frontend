@@ -366,7 +366,7 @@ export default function PromotionsPage() {
 													onClick={() =>
 														promo.product && openHistoryModal(promo.product)
 													}
-													className="p-2 hover:bg-gray-100 rounded-lg text-gray-500"
+													className="p-2 hover:bg-surface-hover rounded-lg text-muted-foreground"
 													title="Histórico de preços"
 												>
 													<History className="h-4 w-4" />

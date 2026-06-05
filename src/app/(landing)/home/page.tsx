@@ -10,13 +10,15 @@ import {
 	Clock,
 	CreditCard,
 	Globe,
+	Heart,
 	Layers,
 	MessageSquare,
 	Package,
 	Rocket,
+	ShieldCheck,
 	ShoppingCart,
+	Smartphone,
 	Sparkles,
-	Star,
 	TrendingUp,
 	Users,
 	Zap,
@@ -109,21 +111,21 @@ function HeroSection() {
 					>
 						<div className="text-center">
 							<div className="text-3xl sm:text-4xl font-bold text-white">
-								500+
+								Grátis
 							</div>
-							<div className="text-primary-200 text-sm">Empresas ativas</div>
+							<div className="text-primary-200 text-sm">para começar</div>
 						</div>
 						<div className="text-center">
 							<div className="text-3xl sm:text-4xl font-bold text-white">
-								50k+
+								2 min
 							</div>
-							<div className="text-primary-200 text-sm">Vendas processadas</div>
+							<div className="text-primary-200 text-sm">para configurar</div>
 						</div>
 						<div className="text-center">
 							<div className="text-3xl sm:text-4xl font-bold text-white">
-								99.9%
+								LGPD
 							</div>
-							<div className="text-primary-200 text-sm">Disponibilidade</div>
+							<div className="text-primary-200 text-sm">dados protegidos</div>
 						</div>
 					</motion.div>
 				</motion.div>
@@ -177,7 +179,7 @@ const features = [
 
 function FeaturesSection() {
 	return (
-		<section id="features" className="py-24 bg-white dark:bg-gray-900">
+		<section id="features" className="py-24 bg-transparent">
 			<div className="container mx-auto px-4 sm:px-6 lg:px-8">
 				<motion.div
 					initial="hidden"
@@ -194,13 +196,13 @@ function FeaturesSection() {
 					</motion.span>
 					<motion.h2
 						variants={fadeInUp}
-						className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4"
+						className="text-3xl sm:text-4xl font-bold text-foreground mb-4"
 					>
 						Tudo que você precisa em um só lugar
 					</motion.h2>
 					<motion.p
 						variants={fadeInUp}
-						className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto"
+						className="text-lg text-muted-foreground max-w-2xl mx-auto"
 					>
 						Ferramentas poderosas e fáceis de usar para gerenciar todo o seu
 						negócio
@@ -218,17 +220,15 @@ function FeaturesSection() {
 						<motion.div
 							key={feature.title}
 							variants={fadeInUp}
-							className="group p-8 rounded-2xl bg-gray-50 dark:bg-gray-800 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all duration-300 hover:shadow-lg"
+							className="group p-8 rounded-2xl bg-surface-muted border border-border hover:border-primary-300 dark:hover:border-primary-700 transition-all duration-300 hover:shadow-lg"
 						>
 							<div className="w-14 h-14 bg-primary-100 dark:bg-primary-900/50 rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary-600 transition-colors">
 								<feature.icon className="w-7 h-7 text-primary-600 dark:text-primary-400 group-hover:text-white transition-colors" />
 							</div>
-							<h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+							<h3 className="text-xl font-semibold text-foreground mb-3">
 								{feature.title}
 							</h3>
-							<p className="text-gray-600 dark:text-gray-400">
-								{feature.description}
-							</p>
+							<p className="text-muted-foreground">{feature.description}</p>
 						</motion.div>
 					))}
 				</motion.div>
@@ -260,7 +260,7 @@ const steps = [
 
 function HowItWorksSection() {
 	return (
-		<section id="how-it-works" className="py-24 bg-gray-50 dark:bg-gray-800">
+		<section id="how-it-works" className="py-24 bg-surface-muted/70">
 			<div className="container mx-auto px-4 sm:px-6 lg:px-8">
 				<motion.div
 					initial="hidden"
@@ -277,13 +277,13 @@ function HowItWorksSection() {
 					</motion.span>
 					<motion.h2
 						variants={fadeInUp}
-						className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4"
+						className="text-3xl sm:text-4xl font-bold text-foreground mb-4"
 					>
 						Simples de começar, fácil de usar
 					</motion.h2>
 					<motion.p
 						variants={fadeInUp}
-						className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto"
+						className="text-lg text-muted-foreground max-w-2xl mx-auto"
 					>
 						Em apenas 3 passos você está pronto para transformar seu negócio
 					</motion.p>
@@ -306,16 +306,14 @@ function HowItWorksSection() {
 						>
 							<div className="relative z-10 w-20 h-20 bg-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-primary-600/30">
 								<step.icon className="w-10 h-10 text-white" />
-								<div className="absolute -top-2 -right-2 w-8 h-8 bg-white dark:bg-gray-900 rounded-full flex items-center justify-center text-primary-600 font-bold shadow">
+								<div className="absolute -top-2 -right-2 w-8 h-8 bg-surface rounded-full flex items-center justify-center text-primary-600 font-bold shadow">
 									{index + 1}
 								</div>
 							</div>
-							<h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+							<h3 className="text-xl font-semibold text-foreground mb-3">
 								{step.title}
 							</h3>
-							<p className="text-gray-600 dark:text-gray-400">
-								{step.description}
-							</p>
+							<p className="text-muted-foreground">{step.description}</p>
 						</motion.div>
 					))}
 				</motion.div>
@@ -496,7 +494,7 @@ const plans: Plan[] = [
 
 function PricingSection() {
 	return (
-		<section id="pricing" className="py-24 bg-white dark:bg-gray-900">
+		<section id="pricing" className="py-24 bg-transparent">
 			<div className="container mx-auto px-4 sm:px-6 lg:px-8">
 				<motion.div
 					initial="hidden"
@@ -513,13 +511,13 @@ function PricingSection() {
 					</motion.span>
 					<motion.h2
 						variants={fadeInUp}
-						className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4"
+						className="text-3xl sm:text-4xl font-bold text-foreground mb-4"
 					>
 						Planos que cabem no seu bolso
 					</motion.h2>
 					<motion.p
 						variants={fadeInUp}
-						className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto"
+						className="text-lg text-muted-foreground max-w-2xl mx-auto"
 					>
 						Comece gratuitamente e evolua conforme seu negócio cresce
 					</motion.p>
@@ -540,7 +538,7 @@ function PricingSection() {
 								"relative p-8 rounded-2xl border-2 transition-all duration-300",
 								plan.highlighted
 									? "bg-primary-600 border-primary-600 text-white scale-105 shadow-xl shadow-primary-600/30"
-									: "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-primary-300",
+									: "bg-surface border-border hover:border-primary-300",
 							)}
 						>
 							{plan.highlighted && (
@@ -552,9 +550,7 @@ function PricingSection() {
 							<h3
 								className={cn(
 									"text-xl font-semibold mb-2",
-									plan.highlighted
-										? "text-white"
-										: "text-gray-900 dark:text-white",
+									plan.highlighted ? "text-white" : "text-foreground",
 								)}
 							>
 								{plan.name}
@@ -565,7 +561,9 @@ function PricingSection() {
 										<span
 											className={cn(
 												"text-sm line-through",
-												plan.highlighted ? "text-primary-300" : "text-gray-400",
+												plan.highlighted
+													? "text-primary-300"
+													: "text-subtle-foreground",
 											)}
 										>
 											{plan.originalPrice}
@@ -582,7 +580,7 @@ function PricingSection() {
 											? "text-secondary-600 dark:text-secondary-400"
 											: plan.highlighted
 												? "text-white"
-												: "text-gray-900 dark:text-white",
+												: "text-foreground",
 									)}
 								>
 									{plan.price}
@@ -590,7 +588,9 @@ function PricingSection() {
 								<span
 									className={cn(
 										"text-sm",
-										plan.highlighted ? "text-primary-200" : "text-gray-500",
+										plan.highlighted
+											? "text-primary-200"
+											: "text-subtle-foreground",
 									)}
 								>
 									{plan.period}
@@ -601,7 +601,7 @@ function PricingSection() {
 									"text-sm mb-6",
 									plan.highlighted
 										? "text-primary-200"
-										: "text-gray-600 dark:text-gray-400",
+										: "text-muted-foreground",
 								)}
 							>
 								{plan.description}
@@ -623,7 +623,7 @@ function PricingSection() {
 												"text-sm",
 												plan.highlighted
 													? "text-white"
-													: "text-gray-600 dark:text-gray-400",
+													: "text-muted-foreground",
 											)}
 										>
 											{feature}
@@ -657,33 +657,50 @@ function PricingSection() {
 	);
 }
 
-const testimonials = [
+const differentiators = [
 	{
-		name: "Maria Silva",
-		role: "Dona de Boutique",
-		content:
-			"O Vendinhas transformou minha loja! Agora tenho controle total do estoque e das vendas. Recomendo demais!",
-		rating: 5,
+		icon: ShieldCheck,
+		title: "Seguro e em conformidade com a LGPD",
+		description:
+			"Criptografia, verificação em duas etapas e seus dados sempre protegidos, seguindo as normas brasileiras.",
+		accent: "accent" as const,
 	},
 	{
-		name: "João Santos",
-		role: "Dono de Restaurante",
-		content:
-			"Antes eu perdia muito tempo com planilhas. Com o Vendinhas, tudo ficou mais simples e organizado.",
-		rating: 5,
+		icon: Smartphone,
+		title: "Funciona em qualquer tela",
+		description:
+			"Use no computador, tablet ou celular pelo navegador. Não precisa instalar nada.",
+		accent: "primary" as const,
 	},
 	{
-		name: "Ana Costa",
-		role: "Empreendedora",
-		content:
-			"O catálogo digital é incrível! Meus clientes adoram e minhas vendas pelo WhatsApp aumentaram 40%.",
-		rating: 5,
+		icon: Heart,
+		title: "Comece de graça, sem cartão",
+		description:
+			"O plano grátis é para sempre. Você evolui de plano só quando o seu negócio crescer.",
+		accent: "brand" as const,
+	},
+	{
+		icon: Zap,
+		title: "Pronto para usar em minutos",
+		description:
+			"Cadastro rápido e interface simples: configure seu negócio e registre sua primeira venda no mesmo dia.",
+		accent: "secondary" as const,
 	},
 ];
 
-function TestimonialsSection() {
+const accentClasses = {
+	primary:
+		"bg-primary-100 text-primary-600 dark:bg-primary-900/40 dark:text-primary-400",
+	secondary:
+		"bg-secondary-100 text-secondary-600 dark:bg-secondary-900/40 dark:text-secondary-400",
+	accent:
+		"bg-accent-100 text-accent-600 dark:bg-accent-900/40 dark:text-accent-300",
+	brand: "bg-brand-100 text-brand-600 dark:bg-brand-900/40 dark:text-brand-400",
+};
+
+function DifferentiatorsSection() {
 	return (
-		<section className="py-24 bg-gray-50 dark:bg-gray-800">
+		<section className="py-24 bg-surface-muted/70">
 			<div className="container mx-auto px-4 sm:px-6 lg:px-8">
 				<motion.div
 					initial="hidden"
@@ -696,14 +713,21 @@ function TestimonialsSection() {
 						variants={fadeInUp}
 						className="inline-block text-primary-600 dark:text-primary-400 font-semibold text-sm uppercase tracking-wider mb-4"
 					>
-						Depoimentos
+						Por que Vendinhas
 					</motion.span>
 					<motion.h2
 						variants={fadeInUp}
-						className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4"
+						className="text-3xl sm:text-4xl font-bold text-foreground mb-4"
 					>
-						O que nossos clientes dizem
+						Feito para quem vende de verdade
 					</motion.h2>
+					<motion.p
+						variants={fadeInUp}
+						className="text-lg text-muted-foreground max-w-2xl mx-auto"
+					>
+						Sem promessas vazias: o que entregamos para o dia a dia do seu
+						negócio
+					</motion.p>
 				</motion.div>
 
 				<motion.div
@@ -711,30 +735,29 @@ function TestimonialsSection() {
 					whileInView="visible"
 					viewport={{ once: true, margin: "-100px" }}
 					variants={staggerContainer}
-					className="grid md:grid-cols-3 gap-8"
+					className="grid sm:grid-cols-2 gap-6 max-w-4xl mx-auto"
 				>
-					{testimonials.map((testimonial) => (
+					{differentiators.map((item) => (
 						<motion.div
-							key={testimonial.name}
+							key={item.title}
 							variants={fadeInUp}
-							className="bg-white dark:bg-gray-900 p-8 rounded-2xl shadow-sm"
+							className="flex gap-5 bg-surface border border-border p-6 rounded-2xl shadow-sm"
 						>
-							<div className="flex gap-1 mb-4">
-								{Array.from({ length: testimonial.rating }).map((_, i) => (
-									<Star
-										key={`star-${testimonial.name}-${i}`}
-										className="w-5 h-5 text-yellow-400 fill-yellow-400"
-									/>
-								))}
+							<div
+								className={cn(
+									"w-12 h-12 rounded-xl flex items-center justify-center shrink-0",
+									accentClasses[item.accent],
+								)}
+							>
+								<item.icon className="w-6 h-6" />
 							</div>
-							<p className="text-gray-600 dark:text-gray-400 mb-6">
-								&quot;{testimonial.content}&quot;
-							</p>
 							<div>
-								<div className="font-semibold text-gray-900 dark:text-white">
-									{testimonial.name}
-								</div>
-								<div className="text-sm text-gray-500">{testimonial.role}</div>
+								<h3 className="text-lg font-semibold text-foreground mb-1.5">
+									{item.title}
+								</h3>
+								<p className="text-sm text-muted-foreground">
+									{item.description}
+								</p>
 							</div>
 						</motion.div>
 					))}
@@ -748,7 +771,7 @@ const faqs = [
 	{
 		question: "O Vendinhas é realmente gratuito?",
 		answer:
-			"Sim! O plano gratuito é para sempre e inclui até 50 produtos e 100 vendas por mês. Perfeito para quem está começando.",
+			"Sim! O plano gratuito é para sempre e inclui até 50 produtos, 100 clientes e 30 vendas por mês. Perfeito para quem está começando.",
 	},
 	{
 		question: "Posso usar no celular?",
@@ -781,7 +804,7 @@ function FAQSection() {
 	const [openIndex, setOpenIndex] = useState<number | null>(null);
 
 	return (
-		<section id="faq" className="py-24 bg-white dark:bg-gray-900">
+		<section id="faq" className="py-24 bg-transparent">
 			<div className="container mx-auto px-4 sm:px-6 lg:px-8">
 				<motion.div
 					initial="hidden"
@@ -798,7 +821,7 @@ function FAQSection() {
 					</motion.span>
 					<motion.h2
 						variants={fadeInUp}
-						className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4"
+						className="text-3xl sm:text-4xl font-bold text-foreground mb-4"
 					>
 						Perguntas e Respostas
 					</motion.h2>
@@ -815,19 +838,19 @@ function FAQSection() {
 						<motion.div
 							key={faq.question}
 							variants={fadeInUp}
-							className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden"
+							className="border border-border rounded-xl overflow-hidden"
 						>
 							<button
 								type="button"
 								onClick={() => setOpenIndex(openIndex === index ? null : index)}
-								className="w-full flex items-center justify-between p-6 text-left bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+								className="w-full flex items-center justify-between p-6 text-left bg-surface-muted hover:bg-surface-hover transition-colors"
 							>
-								<span className="font-semibold text-gray-900 dark:text-white">
+								<span className="font-semibold text-foreground">
 									{faq.question}
 								</span>
 								<ChevronDown
 									className={cn(
-										"w-5 h-5 text-gray-500 transition-transform",
+										"w-5 h-5 text-subtle-foreground transition-transform",
 										openIndex === index && "rotate-180",
 									)}
 								/>
@@ -837,11 +860,9 @@ function FAQSection() {
 									initial={{ height: 0, opacity: 0 }}
 									animate={{ height: "auto", opacity: 1 }}
 									exit={{ height: 0, opacity: 0 }}
-									className="p-6 bg-white dark:bg-gray-900"
+									className="p-6 bg-surface"
 								>
-									<p className="text-gray-600 dark:text-gray-400">
-										{faq.answer}
-									</p>
+									<p className="text-muted-foreground">{faq.answer}</p>
 								</motion.div>
 							)}
 						</motion.div>
@@ -873,8 +894,8 @@ function CTASection() {
 						variants={fadeInUp}
 						className="text-lg text-primary-100 mb-8"
 					>
-						Junte-se a mais de 500 empresas que já estão vendendo mais com o
-						Vendinhas.
+						Crie sua conta grátis em minutos. Sem cartão de crédito, sem
+						compromisso — evolua de plano só quando quiser.
 					</motion.p>
 					<motion.div variants={fadeInUp}>
 						<Link
@@ -899,7 +920,7 @@ export default function LandingPage() {
 			<HowItWorksSection />
 			<AISection />
 			<PricingSection />
-			<TestimonialsSection />
+			<DifferentiatorsSection />
 			<FAQSection />
 			<CTASection />
 		</>

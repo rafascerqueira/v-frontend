@@ -298,7 +298,7 @@ export default function ProductsPage() {
 										initial={{ opacity: 0, y: 10 }}
 										animate={{ opacity: 1, y: 0 }}
 										transition={{ delay: index * 0.05 }}
-										className="hover:bg-gray-50 transition-colors"
+										className="hover:bg-surface-muted transition-colors"
 									>
 										<TableCell>
 											<div className="flex items-center gap-3">

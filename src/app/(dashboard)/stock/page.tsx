@@ -402,7 +402,7 @@ export default function StockPage() {
 										initial={{ opacity: 0, y: 10 }}
 										animate={{ opacity: 1, y: 0 }}
 										transition={{ delay: index * 0.03 }}
-										className={`hover:bg-gray-50 transition-colors ${stock.isLowStock ? "bg-red-50" : ""}`}
+										className={`hover:bg-surface-muted transition-colors ${stock.isLowStock ? "bg-red-50 dark:bg-red-900/20" : ""}`}
 									>
 										<TableCell>
 											<div className="flex items-center gap-3">

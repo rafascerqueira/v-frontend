@@ -748,7 +748,7 @@ export default function SettingsPage() {
 											</div>
 											<Button
 												variant="outline"
-												className="mt-4 text-red-600 border-red-200 hover:bg-red-50"
+												className="mt-4 text-red-600 border-red-200 dark:border-red-900/40 hover:bg-red-50 dark:hover:bg-red-900/20"
 												onClick={handleDisable2FA}
 											>
 												<X className="h-4 w-4 mr-2" />
@@ -778,9 +778,9 @@ export default function SettingsPage() {
 															);
 															toast.success("Código copiado!");
 														}}
-														className="p-1 hover:bg-gray-200 rounded"
+														className="p-1 hover:bg-surface-hover rounded"
 													>
-														<Copy className="h-4 w-4 text-gray-500" />
+														<Copy className="h-4 w-4 text-muted-foreground" />
 													</button>
 												</div>
 											</div>

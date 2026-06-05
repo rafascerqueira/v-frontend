@@ -40,7 +40,7 @@ export default function RootLayout({
 	return (
 		<html lang="pt-BR" suppressHydrationWarning data-scroll-behavior="smooth">
 			<body
-				className={`${inter.variable} font-sans antialiased bg-gray-50 dark:bg-gray-900`}
+				className={`${inter.variable} font-sans antialiased bg-background text-foreground`}
 			>
 				<ThemeProvider>
 					<AuthProvider>

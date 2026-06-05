@@ -131,7 +131,11 @@ export default function StoreCheckoutPage() {
 
 	const [step, setStep] = useState<Step>(() => {
 		if (authenticatedCustomer) return "form";
-		if (prefilledCustomer) return "form";
+		// Personalized link: we know who the customer is, but their saved data (phone,
+		// CPF, address) stays protected until they authenticate. Route them through
+		// identification → password so the form prefills, instead of dropping them on an
+		// empty manual form. handleLookup skips the "is this you?" step since we already
+		// greet them by name.
 		return "lookup";
 	});
 	const [contactValue, setContactValue] = useState("");
@@ -482,11 +486,14 @@ export default function StoreCheckoutPage() {
 							<Search className="w-7 h-7 text-primary-600 dark:text-primary-400" />
 						</div>
 						<h2 className="text-xl font-bold text-gray-900 dark:text-white text-center mb-2">
-							Identificação
+							{prefilledCustomer
+								? `Olá, ${prefilledCustomer.firstName}!`
+								: "Identificação"}
 						</h2>
 						<p className="text-gray-500 dark:text-gray-400 text-center text-sm mb-6">
-							Informe seu email ou telefone para preencher seus dados
-							automaticamente.
+							{prefilledCustomer
+								? "Confirme seu email ou telefone para carregar seus dados cadastrados."
+								: "Informe seu email ou telefone para preencher seus dados automaticamente."}
 						</p>
 
 						<form

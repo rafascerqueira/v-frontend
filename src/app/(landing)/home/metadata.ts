@@ -118,24 +118,17 @@ export const structuredData = {
 					name: "Plano Grátis",
 					price: "0",
 					priceCurrency: "BRL",
-					description: "Até 50 produtos e 100 vendas/mês",
+					description: "Até 50 produtos, 100 clientes e 30 vendas/mês",
 				},
 				{
 					"@type": "Offer",
-					name: "Plano Pro",
-					price: "49",
+					name: "Plano Profissional",
+					price: "14.90",
 					priceCurrency: "BRL",
 					priceValidUntil: "2026-12-31",
-					description: "Produtos e vendas ilimitados",
+					description: "Até 500 produtos, 1.000 clientes e 500 vendas/mês",
 				},
 			],
-			aggregateRating: {
-				"@type": "AggregateRating",
-				ratingValue: "4.9",
-				ratingCount: "127",
-				bestRating: "5",
-				worstRating: "1",
-			},
 			featureList: [
 				"Gestão de vendas em tempo real",
 				"Controle de estoque automatizado",
@@ -156,7 +149,7 @@ export const structuredData = {
 					name: "O Vendinhas é realmente gratuito?",
 					acceptedAnswer: {
 						"@type": "Answer",
-						text: "Sim! O plano gratuito é para sempre e inclui até 50 produtos e 100 vendas por mês. Perfeito para quem está começando.",
+						text: "Sim! O plano gratuito é para sempre e inclui até 50 produtos, 100 clientes e 30 vendas por mês. Perfeito para quem está começando.",
 					},
 				},
 				{

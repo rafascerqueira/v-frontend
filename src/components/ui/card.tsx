@@ -9,7 +9,7 @@ function Card({ className, children, ...props }: CardProps) {
 	return (
 		<div
 			className={cn(
-				"bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700",
+				"bg-surface rounded-2xl shadow-sm border border-border dark:border-t-white/10",
 				className,
 			)}
 			{...props}
@@ -22,10 +22,7 @@ function Card({ className, children, ...props }: CardProps) {
 function CardHeader({ className, children, ...props }: CardProps) {
 	return (
 		<div
-			className={cn(
-				"px-6 py-5 border-b border-gray-100 dark:border-gray-700",
-				className,
-			)}
+			className={cn("px-6 py-5 border-b border-border", className)}
 			{...props}
 		>
 			{children}
@@ -36,10 +33,7 @@ function CardHeader({ className, children, ...props }: CardProps) {
 function CardTitle({ className, children, ...props }: CardProps) {
 	return (
 		<h3
-			className={cn(
-				"text-lg font-semibold text-gray-900 dark:text-white",
-				className,
-			)}
+			className={cn("text-lg font-semibold text-foreground", className)}
 			{...props}
 		>
 			{children}
@@ -50,7 +44,7 @@ function CardTitle({ className, children, ...props }: CardProps) {
 function CardDescription({ className, children, ...props }: CardProps) {
 	return (
 		<p
-			className={cn("text-sm text-gray-500 dark:text-gray-400 mt-1", className)}
+			className={cn("text-sm text-muted-foreground mt-1", className)}
 			{...props}
 		>
 			{children}
@@ -70,7 +64,7 @@ function CardFooter({ className, children, ...props }: CardProps) {
 	return (
 		<div
 			className={cn(
-				"px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 rounded-b-2xl",
+				"px-6 py-4 border-t border-border bg-surface-muted/50 rounded-b-2xl",
 				className,
 			)}
 			{...props}

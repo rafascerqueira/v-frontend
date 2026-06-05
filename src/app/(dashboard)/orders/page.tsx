@@ -323,7 +323,7 @@ export default function OrdersPage() {
 											initial={{ opacity: 0, y: 10 }}
 											animate={{ opacity: 1, y: 0 }}
 											transition={{ delay: index * 0.05 }}
-											className="hover:bg-gray-50 transition-colors"
+											className="hover:bg-surface-muted transition-colors"
 										>
 											<TableCell>
 												<code className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-medium">
