@@ -8,10 +8,19 @@ import { useEffect, useState } from "react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { cn } from "@/lib/utils";
 
+// Conjunto completo de links — usado no menu mobile/hambúrguer.
 const navLinks = [
 	{ href: "#features", label: "Funcionalidades" },
 	{ href: "#how-it-works", label: "Como Funciona" },
 	{ href: "#ai", label: "Inteligência Artificial" },
+	{ href: "#pricing", label: "Preços" },
+	{ href: "#faq", label: "FAQ" },
+];
+
+// Apenas os essenciais aparecem inline na topbar; os demais ficam no menu
+// para não sobrecarregar a barra em telas menores.
+const primaryNavLinks = [
+	{ href: "#features", label: "Funcionalidades" },
 	{ href: "#pricing", label: "Preços" },
 	{ href: "#faq", label: "FAQ" },
 ];
@@ -53,8 +62,8 @@ export function Header() {
 						/>
 					</Link>
 
-					<div className="hidden lg:flex items-center gap-8">
-						{navLinks.map((link) => (
+					<div className="hidden xl:flex items-center gap-8">
+						{primaryNavLinks.map((link) => (
 							<a
 								key={link.href}
 								href={link.href}
@@ -68,20 +77,9 @@ export function Header() {
 								{link.label}
 							</a>
 						))}
-						<Link
-							href="/releases"
-							className={cn(
-								"text-sm font-medium transition-colors hover:text-primary-600 dark:hover:text-primary-400",
-								isScrolled
-									? "text-gray-600 dark:text-gray-300"
-									: "text-white/90 hover:text-white",
-							)}
-						>
-							Novidades
-						</Link>
 					</div>
 
-					<div className="hidden lg:flex items-center gap-3">
+					<div className="hidden xl:flex items-center gap-3">
 						<ThemeToggle />
 						<Link
 							href="/login"
@@ -105,7 +103,7 @@ export function Header() {
 
 					<button
 						type="button"
-						className="lg:hidden p-2"
+						className="xl:hidden p-2"
 						onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
 						aria-label="Toggle menu"
 					>
@@ -132,7 +130,7 @@ export function Header() {
 						initial={{ opacity: 0, y: -10 }}
 						animate={{ opacity: 1, y: 0 }}
 						exit={{ opacity: 0, y: -10 }}
-						className="lg:hidden bg-white dark:bg-gray-900 rounded-xl shadow-lg mt-2 p-4 space-y-4"
+						className="xl:hidden bg-white dark:bg-gray-900 rounded-xl shadow-lg mt-2 p-4 space-y-4"
 					>
 						{navLinks.map((link) => (
 							<a

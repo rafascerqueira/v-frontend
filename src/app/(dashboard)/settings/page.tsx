@@ -23,6 +23,7 @@ import {
 	ShieldCheck,
 	Store,
 	Sun,
+	Trash2,
 	User,
 	X,
 } from "lucide-react";
@@ -237,7 +238,9 @@ export default function SettingsPage() {
 
 	const onSubmit = async (data: ProfileFormData) => {
 		try {
-			await api.patch("/auth/profile", { ...data, avatar: profileImage });
+			// Avatar is managed separately via /auth/profile/avatar (upload/remove),
+			// not through this profile update.
+			await api.patch("/auth/profile", data);
 			toast.success("Perfil atualizado com sucesso!");
 			refreshUser?.();
 		} catch (error: unknown) {
@@ -314,14 +317,34 @@ export default function SettingsPage() {
 
 		try {
 			setUploadingImage(true);
-			const response = await api.post("/upload/profile", formData, {
+			// Avatars are private: this endpoint stores the image and persists it on
+			// the account server-side, returning the authenticated proxy URL.
+			const response = await api.post("/auth/profile/avatar", formData, {
 				headers: { "Content-Type": "multipart/form-data" },
 			});
-			setProfileImage(response.data.url);
+			setProfileImage(response.data.avatarUrl);
 			toast.success("Foto atualizada!");
+			refreshUser?.();
 		} catch (error: unknown) {
 			const message =
 				error instanceof Error ? error.message : "Erro ao enviar foto";
+			toast.error(message);
+		} finally {
+			setUploadingImage(false);
+		}
+	};
+
+	const handleRemoveImage = async () => {
+		try {
+			setUploadingImage(true);
+			// Removes the stored file (S3/local) and clears the avatar on the account.
+			await api.delete("/auth/profile/avatar");
+			setProfileImage(null);
+			toast.success("Foto removida!");
+			refreshUser?.();
+		} catch (error: unknown) {
+			const message =
+				error instanceof Error ? error.message : "Erro ao remover foto";
 			toast.error(message);
 		} finally {
 			setUploadingImage(false);
@@ -418,6 +441,18 @@ export default function SettingsPage() {
 														disabled={uploadingImage}
 													/>
 												</label>
+												{profileImage && (
+													<button
+														type="button"
+														onClick={handleRemoveImage}
+														disabled={uploadingImage}
+														title="Remover foto"
+														aria-label="Remover foto"
+														className="absolute -top-1 -right-1 p-1 bg-red-600 rounded-full cursor-pointer hover:bg-red-700 transition-colors disabled:opacity-50"
+													>
+														<Trash2 className="w-3 h-3 text-white" />
+													</button>
+												)}
 											</div>
 											<div>
 												<p className="font-medium text-gray-900 dark:text-white">
