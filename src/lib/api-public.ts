@@ -4,6 +4,9 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 export const apiPublic = axios.create({
 	baseURL: API_URL,
+	// Public storefront endpoints never need the seller session — don't ship the
+	// auth cookie here (least privilege; avoids leaking it to public routes).
+	withCredentials: false,
 	headers: {
 		"Content-Type": "application/json",
 	},

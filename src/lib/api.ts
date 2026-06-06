@@ -5,6 +5,10 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 export const api = axios.create({
 	baseURL: API_URL,
 	withCredentials: true,
+	// Double-submit CSRF: Axios reads this cookie and echoes it in the header on
+	// every request, so state-changing calls clear the backend CsrfGuard.
+	xsrfCookieName: "csrf_token",
+	xsrfHeaderName: "X-CSRF-Token",
 	headers: {
 		"Content-Type": "application/json",
 	},
