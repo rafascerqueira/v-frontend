@@ -32,6 +32,26 @@ function readCookie(name: string): string | null {
 	return match ? decodeURIComponent(match[1]) : null;
 }
 
+const SAFE_METHODS = new Set(["get", "head", "options"]);
+
+// Inject X-CSRF-Token ourselves on every state-changing request instead of
+// trusting Axios's automatic withXSRFToken read alone. The automatic read can
+// race a just-written Set-Cookie (login/refresh rotate csrf_token), leaving the
+// header empty/stale -> backend CsrfGuard 403. Reading document.cookie at send
+// time, in the request interceptor, closes that window. (withXSRFToken stays on
+// as a same-origin fallback; this header set takes precedence.)
+api.interceptors.request.use((config) => {
+	const method = (config.method ?? "get").toLowerCase();
+	if (!SAFE_METHODS.has(method)) {
+		const csrf = readCookie("csrf_token");
+		if (csrf) {
+			config.headers = config.headers ?? {};
+			config.headers["X-CSRF-Token"] = csrf;
+		}
+	}
+	return config;
+});
+
 api.interceptors.response.use(
 	(response) => response,
 	async (error) => {
@@ -44,6 +64,26 @@ api.interceptors.response.use(
 				originalRequest._retryCount = retryCount + 1;
 				const backoff = BASE_RETRY_DELAY_MS * 2 ** retryCount;
 				await delay(backoff);
+				return api(originalRequest);
+			}
+		}
+
+		// CSRF 403 recovery. A state-changing request can still hit the backend
+		// CsrfGuard with a 403 if the csrf_token cookie wasn't readable when the
+		// request was built (e.g. it landed in the same tick as the login/refresh
+		// Set-Cookie). Re-read the cookie now that it has settled and retry once.
+		// The request interceptor would re-inject it anyway, but we set it
+		// explicitly here so a stale header on originalRequest is overwritten.
+		if (
+			error.response?.status === 403 &&
+			!originalRequest._csrfRetry &&
+			error.response?.data?.message?.toLowerCase?.().includes("csrf")
+		) {
+			originalRequest._csrfRetry = true;
+			const csrf = readCookie("csrf_token");
+			if (csrf) {
+				originalRequest.headers = originalRequest.headers ?? {};
+				originalRequest.headers["X-CSRF-Token"] = csrf;
 				return api(originalRequest);
 			}
 		}
