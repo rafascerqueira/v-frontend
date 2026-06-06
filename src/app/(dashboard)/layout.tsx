@@ -34,6 +34,7 @@ import {
 import { NotificationsDropdown } from "@/components/ui/notifications-dropdown";
 import { useAuth } from "@/contexts/auth-context";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
+import { useAvatarUrl } from "@/lib/use-avatar";
 import { cn } from "@/lib/utils";
 
 const navigation = [
@@ -58,6 +59,9 @@ export default function DashboardLayout({
 	children: React.ReactNode;
 }) {
 	const { user, isLoading, isAuthenticated, isAdmin, logout } = useAuth();
+	// Private avatars are served by an auth-gated proxy; a cross-origin <img src>
+	// won't carry the session cookie, so fetch with credentials into a blob URL.
+	const avatarUrl = useAvatarUrl(user?.avatar);
 	const router = useRouter();
 	const pathname = usePathname();
 	const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -206,9 +210,9 @@ export default function DashboardLayout({
 							className="flex items-center gap-3 p-2 rounded-lg hover:bg-surface-hover transition-colors"
 						>
 							<div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center overflow-hidden">
-								{user?.avatar ? (
+								{user?.avatar && avatarUrl ? (
 									<img
-										src={user.avatar}
+										src={avatarUrl}
 										alt={user.name ?? user.email}
 										className="w-full h-full object-cover"
 									/>

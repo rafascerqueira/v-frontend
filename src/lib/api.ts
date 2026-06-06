@@ -26,6 +26,12 @@ function delay(ms: number) {
 	return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function readCookie(name: string): string | null {
+	if (typeof document === "undefined") return null;
+	const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
+	return match ? decodeURIComponent(match[1]) : null;
+}
+
 api.interceptors.response.use(
 	(response) => response,
 	async (error) => {
@@ -55,6 +61,15 @@ api.interceptors.response.use(
 
 			try {
 				await api.post("/auth/refresh");
+				// The refresh rotated the csrf_token cookie via Set-Cookie. Re-read it
+				// and set the header explicitly on the retry — axios's automatic
+				// withXSRFToken read can race the cookie write, leaving the header
+				// stale/empty and tripping the backend CsrfGuard with a 403.
+				const csrf = readCookie("csrf_token");
+				if (csrf) {
+					originalRequest.headers = originalRequest.headers ?? {};
+					originalRequest.headers["X-CSRF-Token"] = csrf;
+				}
 				return api(originalRequest);
 			} catch {
 				// Only redirect if not already on login page and not an auth endpoint

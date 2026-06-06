@@ -113,7 +113,7 @@ function ProductCard({ product }: { product: CatalogProduct }) {
 				)}
 			</div>
 
-			<div className="p-4">
+			<div className="p-3 sm:p-4">
 				<span className="text-xs text-primary-600 dark:text-primary-400 font-medium">
 					{product.category}
 				</span>
@@ -127,13 +127,13 @@ function ProductCard({ product }: { product: CatalogProduct }) {
 					{product.brand} • {product.unit}
 				</p>
 
-				<div className="mt-3 flex items-center justify-between">
-					<div>
+				<div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+					<div className="flex flex-wrap items-baseline gap-x-2">
 						<span className="text-lg font-bold text-primary-600 dark:text-primary-400">
 							{formatCurrency(product.price)}
 						</span>
 						{product.originalPrice && (
-							<span className="ml-2 text-sm text-gray-400 line-through">
+							<span className="text-sm text-gray-400 line-through">
 								{formatCurrency(product.originalPrice)}
 							</span>
 						)}
@@ -144,26 +144,31 @@ function ProductCard({ product }: { product: CatalogProduct }) {
 							<button
 								type="button"
 								onClick={handleAdd}
-								className="flex items-center gap-1 bg-primary-600 hover:bg-primary-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
+								className="flex w-full items-center justify-center gap-1 bg-primary-600 hover:bg-primary-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors sm:w-auto sm:py-1.5"
 							>
 								<Plus className="w-4 h-4" />
 								Adicionar
 							</button>
 						) : (
-							<div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
+							<div className="flex items-center justify-between gap-2 bg-gray-100 dark:bg-gray-700 rounded-lg sm:justify-start">
 								<button
 									type="button"
 									onClick={handleDecrease}
+									aria-label={`Diminuir quantidade de ${product.name}`}
 									className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-l-lg transition-colors"
 								>
 									<Minus className="w-4 h-4 text-gray-600 dark:text-gray-300" />
 								</button>
-								<span className="w-8 text-center font-medium text-gray-900 dark:text-white">
+								<span
+									aria-live="polite"
+									className="w-8 text-center font-medium text-gray-900 dark:text-white"
+								>
 									{quantity}
 								</span>
 								<button
 									type="button"
 									onClick={handleIncrease}
+									aria-label={`Aumentar quantidade de ${product.name}`}
 									className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-r-lg transition-colors"
 								>
 									<Plus className="w-4 h-4 text-gray-600 dark:text-gray-300" />
@@ -421,8 +426,11 @@ export default function StorePage() {
 
 						<div className="flex items-center gap-2">
 							{customer && (
-								<span className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded-lg text-sm font-medium">
-									Olá, {customer.firstName}!
+								<span className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded-lg text-sm font-medium max-w-[40vw] truncate">
+									<span className="sm:hidden">Olá!</span>
+									<span className="hidden sm:inline">
+										Olá, {customer.firstName}!
+									</span>
 								</span>
 							)}
 							{store?.whatsapp && (
@@ -430,10 +438,11 @@ export default function StorePage() {
 									href={`https://wa.me/${store.whatsapp.replace(/\D/g, "")}`}
 									target="_blank"
 									rel="noopener noreferrer"
-									className="hidden sm:flex items-center gap-1 px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium transition-colors"
+									aria-label="Falar no WhatsApp"
+									className="flex items-center justify-center gap-1 p-2.5 sm:px-3 sm:py-1.5 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium transition-colors"
 								>
 									<Phone className="w-4 h-4" />
-									WhatsApp
+									<span className="hidden sm:inline">WhatsApp</span>
 								</a>
 							)}
 							<button
@@ -499,7 +508,7 @@ export default function StorePage() {
 			{/* Products Grid */}
 			<main className="max-w-7xl mx-auto px-4 py-6">
 				{loading ? (
-					<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+					<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
 						{[...Array(8)].map((_, i) => (
 							<div
 								key={i}
@@ -529,7 +538,7 @@ export default function StorePage() {
 						</p>
 					</div>
 				) : (
-					<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+					<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
 						{filteredProducts.map((product) => (
 							<ProductCard key={product.id} product={product} />
 						))}

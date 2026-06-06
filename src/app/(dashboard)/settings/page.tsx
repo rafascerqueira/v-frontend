@@ -43,6 +43,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/toast";
 import { useAuth } from "@/contexts/auth-context";
 import { api } from "@/lib/api";
+import { useAvatarUrl } from "@/lib/use-avatar";
 
 const profileSchema = z.object({
 	name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
@@ -138,6 +139,9 @@ export default function SettingsPage() {
 	const [profileImage, setProfileImage] = useState<string | null>(
 		user?.avatar || null,
 	);
+	// Private avatars (the auth-gated proxy route) can't be loaded by a plain
+	// <img src> cross-origin — fetch them with credentials into a blob URL.
+	const avatarDisplayUrl = useAvatarUrl(profileImage);
 	const [uploadingImage, setUploadingImage] = useState(false);
 	const [storeLoading, setStoreLoading] = useState(false);
 	const [catalogUrl, setCatalogUrl] = useState<string | null>(null);
@@ -424,9 +428,9 @@ export default function SettingsPage() {
 										<div className="flex items-center gap-4 sm:gap-6 pb-4 border-b border-gray-100 dark:border-gray-700">
 											<div className="relative">
 												<div className="w-20 h-20 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
-													{profileImage ? (
+													{profileImage && avatarDisplayUrl ? (
 														<img
-															src={profileImage}
+															src={avatarDisplayUrl}
 															alt="Avatar"
 															className="w-full h-full object-cover"
 														/>
