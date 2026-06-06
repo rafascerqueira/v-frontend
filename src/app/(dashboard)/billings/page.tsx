@@ -26,6 +26,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { Modal } from "@/components/ui/modal";
+import { SkeletonTable } from "@/components/ui/skeleton";
 import {
 	Table,
 	TableBody,
@@ -358,9 +359,7 @@ export default function BillingsPage() {
 
 				<CardContent className="p-0">
 					{isLoading ? (
-						<div className="flex items-center justify-center py-12">
-							<div className="animate-spin rounded-full h-8 w-8 border-2 border-primary-600 border-t-transparent" />
-						</div>
+						<SkeletonTable rows={5} />
 					) : filteredBillings.length === 0 ? (
 						<div className="flex flex-col items-center justify-center py-12 text-gray-500">
 							<FileText className="h-12 w-12 mb-4 text-gray-300" />

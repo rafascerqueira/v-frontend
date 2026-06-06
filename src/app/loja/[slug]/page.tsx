@@ -85,6 +85,8 @@ function ProductCard({ product }: { product: CatalogProduct }) {
 					<img
 						src={product.images[0]}
 						alt={product.name}
+						loading="lazy"
+						decoding="async"
 						className="w-full h-full object-cover"
 					/>
 				) : (
@@ -238,6 +240,8 @@ function CartSidebar({
 												<img
 													src={item.product.images[0]}
 													alt={item.product.name}
+													loading="lazy"
+													decoding="async"
 													className="w-full h-full object-cover rounded-lg"
 												/>
 											) : (

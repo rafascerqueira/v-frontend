@@ -307,7 +307,9 @@ export default function PromotionsPage() {
 													{promo.product?.image_url ? (
 														<img
 															src={promo.product.image_url}
-															alt=""
+															alt={promo.product.name ?? "Produto"}
+															loading="lazy"
+															decoding="async"
 															className="w-full h-full object-cover rounded-lg"
 														/>
 													) : (

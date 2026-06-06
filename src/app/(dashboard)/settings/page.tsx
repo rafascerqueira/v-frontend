@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import {
 	Bell,
 	Camera,
@@ -119,6 +119,8 @@ interface StoreSettings {
 export default function SettingsPage() {
 	const { user, refreshUser } = useAuth();
 	const { theme, setTheme } = useTheme();
+	// Respect the OS "reduce motion" setting — animations are opt-out for a11y/perf.
+	const shouldReduceMotion = useReducedMotion();
 	const [activeTab, setActiveTab] = useState("profile");
 	const [showCurrentPassword, setShowCurrentPassword] = useState(false);
 	const [showNewPassword, setShowNewPassword] = useState(false);
@@ -371,24 +373,25 @@ export default function SettingsPage() {
 			</div>
 
 			<div className="flex flex-col lg:flex-row gap-6">
-				{/* Sidebar */}
-				<div className="lg:w-64 shrink-0">
+				{/* Tabs — horizontal scrollable bar on mobile, vertical sidebar on desktop.
+				    Keeps navigation to a single row on short/narrow screens. */}
+				<div className="lg:w-64 lg:shrink-0">
 					<Card>
 						<CardContent className="p-2">
-							<nav className="space-y-1">
+							<nav className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible">
 								{tabs.map((tab) => (
 									<button
 										key={tab.id}
 										type="button"
 										onClick={() => setActiveTab(tab.id)}
-										className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+										className={`flex items-center gap-2 lg:gap-3 shrink-0 lg:w-full px-3 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
 											activeTab === tab.id
 												? "bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300"
 												: "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
 										}`}
 									>
 										<tab.icon
-											className={`h-5 w-5 ${activeTab === tab.id ? "text-primary-600" : "text-gray-400"}`}
+											className={`h-5 w-5 shrink-0 ${activeTab === tab.id ? "text-primary-600" : "text-gray-400"}`}
 										/>
 										{tab.label}
 									</button>
@@ -418,7 +421,7 @@ export default function SettingsPage() {
 								</CardHeader>
 								<CardContent>
 									<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-										<div className="flex items-center gap-6 pb-4 border-b border-gray-100 dark:border-gray-700">
+										<div className="flex items-center gap-4 sm:gap-6 pb-4 border-b border-gray-100 dark:border-gray-700">
 											<div className="relative">
 												<div className="w-20 h-20 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
 													{profileImage ? (
@@ -454,11 +457,13 @@ export default function SettingsPage() {
 													</button>
 												)}
 											</div>
-											<div>
-												<p className="font-medium text-gray-900 dark:text-white">
+											<div className="min-w-0">
+												<p className="font-medium text-gray-900 dark:text-white truncate">
 													{user?.name}
 												</p>
-												<p className="text-sm text-gray-500">{user?.email}</p>
+												<p className="text-sm text-gray-500 truncate">
+													{user?.email}
+												</p>
 											</div>
 										</div>
 										<Input
@@ -628,7 +633,7 @@ export default function SettingsPage() {
 									</CardHeader>
 									<CardContent>
 										<div className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg">
-											<code className="flex-1 text-sm text-gray-700 dark:text-gray-300 truncate">
+											<code className="flex-1 min-w-0 text-sm text-gray-700 dark:text-gray-300 truncate">
 												{catalogUrl}
 											</code>
 											<button
@@ -637,7 +642,7 @@ export default function SettingsPage() {
 													navigator.clipboard.writeText(catalogUrl);
 													toast.success("Link copiado!");
 												}}
-												className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md transition-colors"
+												className="shrink-0 p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md transition-colors"
 												aria-label="Copiar link"
 											>
 												<Copy className="h-4 w-4 text-gray-500" />
@@ -646,7 +651,7 @@ export default function SettingsPage() {
 												href={catalogUrl}
 												target="_blank"
 												rel="noopener noreferrer"
-												className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md transition-colors"
+												className="shrink-0 p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md transition-colors"
 												aria-label="Abrir catálogo"
 											>
 												<ExternalLink className="h-4 w-4 text-gray-500" />
@@ -802,7 +807,7 @@ export default function SettingsPage() {
 													className="mx-auto mb-4"
 												/>
 												<div className="flex items-center justify-center gap-2 p-2 bg-gray-100 dark:bg-gray-700 rounded">
-													<code className="text-sm font-mono">
+													<code className="min-w-0 break-all text-sm font-mono">
 														{twoFactorSetup.secret}
 													</code>
 													<button
@@ -813,7 +818,7 @@ export default function SettingsPage() {
 															);
 															toast.success("Código copiado!");
 														}}
-														className="p-1 hover:bg-surface-hover rounded"
+														className="shrink-0 p-1 hover:bg-surface-hover rounded"
 													>
 														<Copy className="h-4 w-4 text-muted-foreground" />
 													</button>
@@ -826,7 +831,7 @@ export default function SettingsPage() {
 												onChange={(e) => setVerificationCode(e.target.value)}
 												maxLength={6}
 											/>
-											<div className="flex gap-2">
+											<div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
 												<Button
 													variant="outline"
 													onClick={() => setTwoFactorSetup(null)}
@@ -902,9 +907,9 @@ export default function SettingsPage() {
 									].map((item) => (
 										<div
 											key={item.label}
-											className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg"
+											className="flex items-center justify-between gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg"
 										>
-											<div>
+											<div className="min-w-0">
 												<h3 className="font-medium text-gray-900 dark:text-white">
 													{item.label}
 												</h3>
@@ -912,7 +917,7 @@ export default function SettingsPage() {
 													{item.description}
 												</p>
 											</div>
-											<label className="relative inline-flex items-center cursor-pointer">
+											<label className="relative inline-flex items-center cursor-pointer shrink-0">
 												<input
 													type="checkbox"
 													className="sr-only peer"
@@ -952,35 +957,62 @@ export default function SettingsPage() {
 												{ id: "light", label: "Claro", icon: Sun },
 												{ id: "dark", label: "Escuro", icon: Moon },
 												{ id: "system", label: "Sistema", icon: Monitor },
-											].map((t) => (
-												<button
-													key={t.id}
-													type="button"
-													onClick={() => setTheme(t.id)}
-													className={`p-4 rounded-lg border-2 text-center transition-colors ${
-														theme === t.id
-															? "border-primary-500 bg-primary-50 dark:bg-primary-900/30"
-															: "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
-													}`}
-												>
-													<t.icon
-														className={`w-6 h-6 mx-auto mb-2 ${
-															theme === t.id
-																? "text-primary-600 dark:text-primary-400"
-																: "text-gray-500 dark:text-gray-400"
-														}`}
-													/>
-													<span
-														className={`text-sm font-medium ${
-															theme === t.id
-																? "text-primary-600 dark:text-primary-400"
-																: "text-gray-700 dark:text-gray-300"
+											].map((t) => {
+												const isActive = theme === t.id;
+												return (
+													<motion.button
+														key={t.id}
+														type="button"
+														onClick={() => setTheme(t.id)}
+														// Tactile press feedback (transform-only, so it's GPU-cheap)
+														whileTap={
+															shouldReduceMotion ? undefined : { scale: 0.96 }
+														}
+														className={`relative p-3 rounded-lg border-2 text-center transition-colors ${
+															isActive
+																? "border-transparent"
+																: "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
 														}`}
 													>
-														{t.label}
-													</span>
-												</button>
-											))}
+														{/* Shared-layout highlight: a single element that glides
+															between options via transform (no layout/paint thrash). */}
+														{isActive && (
+															<motion.span
+																layoutId="theme-active"
+																transition={
+																	shouldReduceMotion
+																		? { duration: 0 }
+																		: {
+																				type: "spring",
+																				stiffness: 420,
+																				damping: 34,
+																			}
+																}
+																className="absolute inset-0 rounded-lg border-2 border-primary-500 bg-primary-50 dark:bg-primary-900/30"
+															/>
+														)}
+														<span className="relative z-10 block">
+															<t.icon
+																strokeWidth={1.5}
+																className={`w-5 h-5 mx-auto mb-2 transition-colors ${
+																	isActive
+																		? "text-primary-600 dark:text-primary-400"
+																		: "text-gray-400 dark:text-gray-500"
+																}`}
+															/>
+															<span
+																className={`text-sm font-medium transition-colors ${
+																	isActive
+																		? "text-primary-600 dark:text-primary-400"
+																		: "text-gray-700 dark:text-gray-300"
+																}`}
+															>
+																{t.label}
+															</span>
+														</span>
+													</motion.button>
+												);
+											})}
 										</div>
 									</div>
 									<div className="p-4 bg-primary-50 dark:bg-primary-900/30 border border-primary-200 dark:border-primary-800 rounded-lg">

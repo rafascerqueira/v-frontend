@@ -7,6 +7,11 @@ export const api = axios.create({
 	withCredentials: true,
 	// Double-submit CSRF: Axios reads this cookie and echoes it in the header on
 	// every request, so state-changing calls clear the backend CsrfGuard.
+	// `withXSRFToken` is REQUIRED — in Axios 1.x the header is otherwise only sent
+	// for same-origin requests, and prod is cross-origin (vendinhas.app ->
+	// api.vendinhas.app). Without it every cookie-auth mutation 403s. Safe because
+	// this instance only ever talks to our own API (baseURL).
+	withXSRFToken: true,
 	xsrfCookieName: "csrf_token",
 	xsrfHeaderName: "X-CSRF-Token",
 	headers: {

@@ -220,11 +220,14 @@ export default function CustomersPage() {
 		}
 	};
 
+	const term = searchTerm.toLowerCase();
 	const filteredCustomers = customers.filter(
 		(customer) =>
-			customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			customer.phone.includes(searchTerm),
+			// email and document are nullable — guard before toLowerCase()
+			customer.name?.toLowerCase().includes(term) ||
+			customer.email?.toLowerCase().includes(term) ||
+			customer.phone?.includes(searchTerm) ||
+			customer.document?.toLowerCase().includes(term),
 	);
 
 	return (

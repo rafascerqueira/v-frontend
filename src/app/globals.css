@@ -223,3 +223,22 @@ input:-webkit-autofill:focus {
   -webkit-box-shadow: 0 0 0 1000px #1f2937 inset;
   -webkit-text-fill-color: #e5e7eb;
 }
+
+/* Keyboard-only focus baseline.
+   Gives every interactive element a visible focus ring for keyboard/AT users,
+   without the noisy ring-on-mouse-click that plain :focus causes. Components
+   that provide their own focus-visible ring (e.g. the Button primitive) opt out
+   via `focus:outline-none`, so there is no double indicator. */
+@layer base {
+  a:focus-visible,
+  button:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  [role="button"]:focus-visible,
+  [role="link"]:focus-visible,
+  [role="tab"]:focus-visible,
+  [tabindex]:not([tabindex="-1"]):focus-visible {
+    outline: 2px solid var(--color-primary-500);
+    outline-offset: 2px;
+  }
+}

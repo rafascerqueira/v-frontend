@@ -21,7 +21,9 @@ import { z } from "zod";
 import { ActionMenu, ActionMenuItem } from "@/components/ui/action-menu";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
+import { SkeletonTable } from "@/components/ui/skeleton";
 import {
 	Table,
 	TableBody,
@@ -310,11 +312,13 @@ export default function SuppliersPage() {
 				</CardHeader>
 				<CardContent className="p-0">
 					{loading ? (
-						<div className="p-8 text-center text-gray-500">Carregando...</div>
+						<SkeletonTable rows={5} />
 					) : filteredSuppliers.length === 0 ? (
-						<div className="p-8 text-center text-gray-500">
-							Nenhum fornecedor encontrado
-						</div>
+						<EmptyState
+							icon={Building2}
+							title="Nenhum fornecedor encontrado"
+							description="Cadastre seus fornecedores para acompanhar contatos e débitos."
+						/>
 					) : (
 						<Table>
 							<TableHeader>
