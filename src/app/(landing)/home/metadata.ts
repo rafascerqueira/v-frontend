@@ -46,11 +46,15 @@ export const metadata: Metadata = {
 		description:
 			"Sistema completo de gestão de vendas, estoque e clientes com inteligência artificial. Comece grátis!",
 		siteName: "Vendinhas",
+		// Point at the dynamically generated card (src/app/opengraph-image.tsx).
+		// Defining `openGraph` here overrides the root layout, so the image must
+		// be declared explicitly or the landing card would render blank.
 		images: [
 			{
-				url: "/og-image.png",
+				url: "https://vendinhas.app/opengraph-image",
 				width: 1200,
 				height: 630,
+				type: "image/png",
 				alt: "Vendinhas - Sistema de Gestão Inteligente para seu Negócio",
 			},
 		],
@@ -60,7 +64,7 @@ export const metadata: Metadata = {
 		title: "Vendinhas - Sistema de Gestão de Vendas com IA",
 		description:
 			"Sistema completo de gestão de vendas, estoque e clientes com inteligência artificial. Comece grátis!",
-		images: ["/og-image.png"],
+		images: ["https://vendinhas.app/twitter-image"],
 		creator: "@vendinhas",
 	},
 	category: "Business Software",
