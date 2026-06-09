@@ -36,15 +36,20 @@ interface LogsResponse {
 	};
 }
 
-function formatDate(date: string) {
+function formatDate(date: string | null | undefined) {
+	// Defensive: Intl throws a RangeError on an Invalid Date, which would crash
+	// the whole page over a single malformed row.
+	if (!date) return "-";
+	const parsed = new Date(date);
+	if (Number.isNaN(parsed.getTime())) return "-";
 	return new Intl.DateTimeFormat("pt-BR", {
 		dateStyle: "short",
 		timeStyle: "medium",
-	}).format(new Date(date));
+	}).format(parsed);
 }
 
-function getActionColor(action: string) {
-	switch (action.toLowerCase()) {
+function getActionColor(action: string | null | undefined) {
+	switch (action?.toLowerCase()) {
 		case "create":
 			return "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400";
 		case "update":
@@ -60,21 +65,31 @@ export default function AdminLogsPage() {
 	const [logs, setLogs] = useState<AuditLog[]>([]);
 	const [meta, setMeta] = useState({ total: 0, page: 1, totalPages: 1 });
 	const [loading, setLoading] = useState(true);
+	const [loadError, setLoadError] = useState(false);
 	const [entityFilter, setEntityFilter] = useState("");
 	const [actionFilter, setActionFilter] = useState("");
 
 	const loadLogs = useCallback(
 		async (page = 1) => {
 			setLoading(true);
+			setLoadError(false);
 			try {
-				let url = `/admin/logs?page=${page}&limit=50`;
-				if (entityFilter) url += `&entity=${entityFilter}`;
-				if (actionFilter) url += `&action=${actionFilter}`;
-
-				const response = await api.get<LogsResponse>(url);
-				setLogs(response.data.data);
-				setMeta(response.data.meta);
+				// `params` lets axios URL-encode the values — entity names can contain
+				// characters like "/" (e.g. "admin/accounts").
+				const response = await api.get<LogsResponse>("/admin/logs", {
+					params: {
+						page,
+						limit: 50,
+						entity: entityFilter || undefined,
+						action: actionFilter || undefined,
+					},
+				});
+				setLogs(response.data?.data ?? []);
+				setMeta(response.data?.meta ?? { total: 0, page: 1, totalPages: 1 });
 			} catch (_error) {
+				setLogs([]);
+				setMeta({ total: 0, page: 1, totalPages: 1 });
+				setLoadError(true);
 				toast.error("Erro ao carregar logs");
 			} finally {
 				setLoading(false);
@@ -87,8 +102,18 @@ export default function AdminLogsPage() {
 		loadLogs();
 	}, [loadLogs]);
 
-	const entities = [...new Set(logs.map((log) => log.entity))];
-	const actions = [...new Set(logs.map((log) => log.action))];
+	// Keep the selected filter in the options even when the filtered page no
+	// longer contains it, so the <select> never shows a value without an option.
+	const entities = [
+		...new Set(
+			[entityFilter, ...logs.map((log) => log.entity)].filter(Boolean),
+		),
+	];
+	const actions = [
+		...new Set(
+			[actionFilter, ...logs.map((log) => log.action)].filter(Boolean),
+		),
+	];
 
 	return (
 		<div className="space-y-6">
@@ -169,6 +194,20 @@ export default function AdminLogsPage() {
 						<p className="text-gray-500 dark:text-gray-400 mt-2">
 							Carregando...
 						</p>
+					</div>
+				) : loadError ? (
+					<div className="p-8 text-center">
+						<FileText className="w-12 h-12 text-gray-300 mx-auto mb-2" />
+						<p className="text-gray-500 dark:text-gray-400">
+							Não foi possível carregar os logs.
+						</p>
+						<button
+							type="button"
+							onClick={() => loadLogs(1)}
+							className="mt-3 text-sm text-red-600 hover:underline"
+						>
+							Tentar novamente
+						</button>
 					</div>
 				) : logs.length === 0 ? (
 					<div className="p-8 text-center">
