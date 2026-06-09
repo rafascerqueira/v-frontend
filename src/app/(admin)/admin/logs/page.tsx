@@ -12,17 +12,15 @@ import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { api } from "@/lib/api";
 
+// List projection only — the backend intentionally does not return
+// old_value/new_value/metadata here (unbounded raw request bodies).
 interface AuditLog {
 	id: number;
 	action: string;
 	entity: string;
 	entity_id: string | null;
 	user_id: string | null;
-	old_value: Record<string, unknown> | null;
-	new_value: Record<string, unknown> | null;
-	metadata: Record<string, unknown> | null;
 	ip_address: string | null;
-	user_agent: string | null;
 	created_at: string;
 }
 
