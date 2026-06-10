@@ -102,12 +102,16 @@ jobs:
 
       # Standalone output is self-contained — no install step needed on VPS.
       # Exclude VPS-managed files so --delete does not remove them.
+      # IMPORTANT: patterns are anchored with a leading "/" (= transfer root).
+      # An unanchored "logs/" matches at ANY depth and silently froze
+      # .next/server/app/(admin)/admin/logs/, serving a stale page whose
+      # chunks --delete had removed (HTTP 500 on /admin/logs).
       - name: Sync standalone bundle to VPS
         run: |
           rsync -az --delete \
-            --exclude=ecosystem.config.js \
-            --exclude=logs/ \
-            --exclude=.env \
+            --exclude=/ecosystem.config.js \
+            --exclude=/logs/ \
+            --exclude=/.env \
             -e "ssh -i ~/.ssh/deploy_key" \
             .next/standalone/ \
             ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/vendinhas/frontend/
