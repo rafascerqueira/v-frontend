@@ -5,6 +5,7 @@ import {
 	type ReactNode,
 	useCallback,
 	useContext,
+	useMemo,
 	useState,
 } from "react";
 import type {
@@ -96,34 +97,44 @@ export function CartProvider({ children }: { children: ReactNode }) {
 		setCustomerToken(null);
 	}, []);
 
-	const total = items.reduce(
-		(sum, item) => sum + item.product.price * item.quantity,
-		0,
-	);
+	// Memoized so storefront consumers only re-render when cart state actually
+	// changes, not on every provider render pass.
+	const value = useMemo(() => {
+		const total = items.reduce(
+			(sum, item) => sum + item.product.price * item.quantity,
+			0,
+		);
+		const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
-	const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+		return {
+			items,
+			addItem,
+			removeItem,
+			updateQuantity,
+			clearCart,
+			total,
+			itemCount,
+			customer,
+			authenticatedCustomer,
+			customerToken,
+			setCustomer,
+			setAuthenticatedCustomer,
+			clearCustomerAuth,
+		};
+	}, [
+		items,
+		addItem,
+		removeItem,
+		updateQuantity,
+		clearCart,
+		customer,
+		authenticatedCustomer,
+		customerToken,
+		setAuthenticatedCustomer,
+		clearCustomerAuth,
+	]);
 
-	return (
-		<CartContext.Provider
-			value={{
-				items,
-				addItem,
-				removeItem,
-				updateQuantity,
-				clearCart,
-				total,
-				itemCount,
-				customer,
-				authenticatedCustomer,
-				customerToken,
-				setCustomer,
-				setAuthenticatedCustomer,
-				clearCustomerAuth,
-			}}
-		>
-			{children}
-		</CartContext.Provider>
-	);
+	return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 
 export function useCart() {

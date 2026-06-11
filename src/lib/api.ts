@@ -128,7 +128,7 @@ api.interceptors.response.use(
 
 // Fetch every page of a list endpoint so dropdowns show ALL records, not just
 // the API's default first page. Works whether the endpoint returns a plain
-// array or a paginated { data, totalPages } payload.
+// array or a paginated { data, meta: { totalPages } } payload.
 export async function fetchAllRecords<T>(endpoint: string): Promise<T[]> {
 	const limit = 100;
 	let page = 1;
@@ -147,7 +147,10 @@ export async function fetchAllRecords<T>(endpoint: string): Promise<T[]> {
 		const items: T[] = response?.data ?? [];
 		all.push(...items);
 
-		const totalPages = response?.totalPages ?? 1;
+		// Paginated endpoints report totalPages under `meta` — the old bare
+		// `response.totalPages` read was always undefined, so the loop silently
+		// stopped after page 1 (capping callers at 100 records).
+		const totalPages = response?.meta?.totalPages ?? response?.totalPages ?? 1;
 		if (page >= totalPages || items.length < limit) break;
 		page += 1;
 	}

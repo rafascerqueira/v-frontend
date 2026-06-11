@@ -18,7 +18,7 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { api } from "@/lib/api";
+import { api, fetchAllRecords } from "@/lib/api";
 
 interface Customer {
 	id: string;
@@ -44,9 +44,11 @@ export default function CatalogSharePage() {
 	useEffect(() => {
 		async function load() {
 			try {
-				const [storeRes, customersRes] = await Promise.all([
+				// /customers is paginated (default limit 10) — fetch every page so
+				// share links can be generated for any customer, not just the first 10.
+				const [storeRes, allCustomers] = await Promise.all([
 					api.get<StoreSettings>("/store/settings"),
-					api.get("/customers"),
+					fetchAllRecords<Customer>("/customers"),
 				]);
 
 				setSlug(storeRes.data.slug);
@@ -55,7 +57,7 @@ export default function CatalogSharePage() {
 					setCatalogUrl(`${origin}/loja/${storeRes.data.slug}`);
 				}
 
-				setCustomers(customersRes.data.data || customersRes.data);
+				setCustomers(allCustomers);
 			} catch (_error) {
 				toast.error("Erro ao carregar dados");
 			} finally {

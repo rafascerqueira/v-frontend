@@ -6,9 +6,9 @@ import {
 	useCallback,
 	useContext,
 	useEffect,
+	useMemo,
 	useState,
 } from "react";
-import toast from "react-hot-toast";
 import { api } from "@/lib/api";
 import { useAuth } from "./auth-context";
 
@@ -139,19 +139,8 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 			const remaining = Math.max(0, limit - usage.current);
 			const allowed = usage.current < limit;
 
-			// Show warning toast when approaching limit
-			if (usage.percentage >= 80 && usage.percentage < 100) {
-				const typeNames = {
-					products: "produtos",
-					orders: "vendas",
-					customers: "clientes",
-				};
-				toast(
-					`Você está usando ${usage.percentage}% do limite de ${typeNames[type]}`,
-					{ icon: "⚠️" },
-				);
-			}
-
+			// NOTE: keep this a pure getter — it may be called during render, so
+			// side effects (e.g. toasts) here fire once per render and are unsafe.
 			return { allowed, remaining, percentage: usage.percentage };
 		},
 		[subscription],
@@ -164,29 +153,42 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 		[subscription],
 	);
 
-	const isPro = subscription?.plan === "pro";
-	const isEnterprise = subscription?.plan === "enterprise";
-	const isFree = subscription?.plan === "free";
-	const isProEffective =
-		isPro ||
-		isEnterprise ||
-		(isFree && subscription?.activeWindow?.type === "unlimited_period");
+	// Memoized so consumers only re-render when subscription data actually
+	// changes — this provider wraps the whole app and re-runs whenever the auth
+	// context updates, and an inline value object would re-render every
+	// useSubscription() consumer on each of those passes.
+	const value = useMemo(() => {
+		const isPro = subscription?.plan === "pro";
+		const isEnterprise = subscription?.plan === "enterprise";
+		const isFree = subscription?.plan === "free";
+		const isProEffective =
+			isPro ||
+			isEnterprise ||
+			(isFree && subscription?.activeWindow?.type === "unlimited_period");
+
+		return {
+			subscription,
+			plans,
+			loading,
+			refreshSubscription,
+			checkLimit,
+			hasFeature,
+			isPro,
+			isEnterprise,
+			isFree,
+			isProEffective,
+		};
+	}, [
+		subscription,
+		plans,
+		loading,
+		refreshSubscription,
+		checkLimit,
+		hasFeature,
+	]);
 
 	return (
-		<SubscriptionContext.Provider
-			value={{
-				subscription,
-				plans,
-				loading,
-				refreshSubscription,
-				checkLimit,
-				hasFeature,
-				isPro,
-				isEnterprise,
-				isFree,
-				isProEffective,
-			}}
-		>
+		<SubscriptionContext.Provider value={value}>
 			{children}
 		</SubscriptionContext.Provider>
 	);

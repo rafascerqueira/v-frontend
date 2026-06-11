@@ -27,7 +27,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { toast } from "@/components/ui/toast";
-import { api } from "@/lib/api";
+import { api, fetchAllRecords } from "@/lib/api";
 
 interface StockItem {
 	id: number;
@@ -118,9 +118,11 @@ export default function StockPage() {
 
 	const fetchProducts = useCallback(async () => {
 		try {
-			const { data: response } = await api.get("/products");
-			const prods = response?.data ?? response;
-			setProducts(Array.isArray(prods) ? prods : []);
+			// /products is paginated (default limit 10) — fetch every page so the
+			// "new stock" picker isn't silently capped at the first one.
+			setProducts(
+				await fetchAllRecords<{ id: number; name: string }>("/products"),
+			);
 		} catch (error) {
 			console.error(error);
 		}

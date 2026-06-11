@@ -33,7 +33,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { toast } from "@/components/ui/toast";
-import { api } from "@/lib/api";
+import { api, fetchAllRecords } from "@/lib/api";
 import { validateDocument } from "@/lib/validators";
 import type { Customer } from "@/types";
 
@@ -96,9 +96,10 @@ export default function CustomersPage() {
 	const fetchCustomers = useCallback(async () => {
 		try {
 			setIsLoading(true);
-			const { data: response } = await api.get("/customers");
-			const customers = response?.data ?? response;
-			setCustomers(Array.isArray(customers) ? customers : []);
+			// /customers is paginated (default limit 10) — fetch every page so the
+			// list isn't silently capped at the first one.
+			const customers = await fetchAllRecords<Customer>("/customers");
+			setCustomers(customers);
 		} catch (error) {
 			toast.error("Erro ao carregar clientes");
 			console.error(error);

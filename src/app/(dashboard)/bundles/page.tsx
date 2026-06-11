@@ -76,6 +76,7 @@ export default function BundlesPage() {
 	const [products, setProducts] = useState<Product[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [searchTerm, setSearchTerm] = useState("");
+	const [productSearch, setProductSearch] = useState("");
 	const [showModal, setShowModal] = useState(false);
 	const [selectedItems, setSelectedItems] = useState<
 		{ product: Product; quantity: number }[]
@@ -100,13 +101,8 @@ export default function BundlesPage() {
 	const fetchBundles = useCallback(async () => {
 		try {
 			setLoading(true);
-			const [bundlesRes, productsRes] = await Promise.all([
-				api.get("/bundles").catch(() => ({ data: [] })),
-				api.get("/products").catch(() => ({ data: { data: [] } })),
-			]);
+			const bundlesRes = await api.get("/bundles");
 			setBundles(bundlesRes.data?.data || bundlesRes.data || []);
-			const prods = productsRes.data?.data || productsRes.data || [];
-			setProducts(Array.isArray(prods) ? prods : []);
 		} catch (_error) {
 			toast.error("Erro ao carregar kits");
 		} finally {
@@ -114,9 +110,35 @@ export default function BundlesPage() {
 		}
 	}, []);
 
+	// The /products endpoint is paginated (default limit 10), which silently
+	// capped the picker at the first 10 products. Fetch the max page and let
+	// the user narrow it down with a server-side search (same pattern as the
+	// products page).
+	const fetchProducts = useCallback(async (search?: string) => {
+		try {
+			const { data: response } = await api.get("/products", {
+				params: {
+					limit: 100,
+					...(search ? { search } : {}),
+				},
+			});
+			const prods = response?.data ?? response;
+			setProducts(Array.isArray(prods) ? prods : []);
+		} catch (_error) {
+			setProducts([]);
+		}
+	}, []);
+
 	useEffect(() => {
 		fetchBundles();
 	}, [fetchBundles]);
+
+	useEffect(() => {
+		const handle = setTimeout(() => {
+			fetchProducts(productSearch.trim() || undefined);
+		}, 300);
+		return () => clearTimeout(handle);
+	}, [fetchProducts, productSearch]);
 
 	const totalPrice = selectedItems.reduce(
 		(acc, item) => acc + getProductPrice(item.product) * item.quantity,
@@ -214,6 +236,7 @@ export default function BundlesPage() {
 		setShowModal(false);
 		setEditingBundle(null);
 		setSelectedItems([]);
+		setProductSearch("");
 		reset();
 	};
 
@@ -457,22 +480,37 @@ export default function BundlesPage() {
 									<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
 										Adicionar Produtos
 									</label>
-									<div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-40 overflow-y-auto p-2 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
-										{products.map((product) => (
-											<button
-												key={product.id}
-												type="button"
-												onClick={() => addProduct(product)}
-												className="p-2 text-left bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg hover:border-primary-500 transition-colors"
-											>
-												<p className="text-sm font-medium truncate">
-													{product.name}
-												</p>
-												<p className="text-xs text-gray-500">
-													{formatCurrency(getProductPrice(product))}
-												</p>
-											</button>
-										))}
+									<div className="relative mb-2">
+										<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+										<Input
+											placeholder="Buscar produto..."
+											value={productSearch}
+											onChange={(e) => setProductSearch(e.target.value)}
+											className="pl-10"
+										/>
+									</div>
+									<div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-60 overflow-y-auto p-2 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+										{products.length === 0 ? (
+											<p className="col-span-full p-2 text-sm text-gray-500 text-center">
+												Nenhum produto encontrado
+											</p>
+										) : (
+											products.map((product) => (
+												<button
+													key={product.id}
+													type="button"
+													onClick={() => addProduct(product)}
+													className="p-2 text-left bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg hover:border-primary-500 transition-colors"
+												>
+													<p className="text-sm font-medium truncate">
+														{product.name}
+													</p>
+													<p className="text-xs text-gray-500">
+														{formatCurrency(getProductPrice(product))}
+													</p>
+												</button>
+											))
+										)}
 									</div>
 								</div>
 
