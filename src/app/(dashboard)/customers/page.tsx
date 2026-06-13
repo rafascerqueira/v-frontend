@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
 	Check,
 	Copy,
@@ -45,24 +45,69 @@ const billingModeOptions = [
 	{ value: "custom", label: "Data Personalizada" },
 ];
 
-const customerSchema = z.object({
-	name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
-	email: z.string().email("Email inválido").optional().or(z.literal("")),
-	phone: z.string().min(10, "Telefone inválido"),
-	document: z
-		.string()
-		.min(11, "CPF/CNPJ inválido")
-		.refine(validateDocument, "CPF/CNPJ inválido")
-		.optional()
-		.or(z.literal("")),
-	city: z.string().min(2, "Cidade é obrigatória"),
-	state: z.string().length(2, "Estado deve ter 2 caracteres"),
-	zip_code: z.string().min(8, "CEP inválido").optional().or(z.literal("")),
-	billing_mode: z
-		.enum(["per_sale", "weekly", "biweekly", "monthly", "custom"])
-		.optional(),
-	billing_day: z.number().min(1).max(31).optional(),
-});
+// weekly billing uses billing_day as a day of week (0=Sunday … 6=Saturday).
+const weekdayOptions = [
+	{ value: 0, label: "Domingo" },
+	{ value: 1, label: "Segunda-feira" },
+	{ value: 2, label: "Terça-feira" },
+	{ value: 3, label: "Quarta-feira" },
+	{ value: 4, label: "Quinta-feira" },
+	{ value: 5, label: "Sexta-feira" },
+	{ value: 6, label: "Sábado" },
+];
+
+// Modes that don't use billing_day: explain how the due date is determined.
+const billingModeHelp: Record<string, string> = {
+	per_sale: "A data da venda será usada como data de cobrança.",
+	biweekly: "A cobrança ocorre a cada 15 dias após a venda.",
+	custom: "A data de cobrança é definida manualmente em cada venda.",
+};
+
+// An empty day input/select yields ""; map it (and null) to undefined so an
+// unset day stays optional instead of being coerced to a number.
+const dayFieldOptions = {
+	setValueAs: (v: unknown) => (v === "" || v == null ? undefined : Number(v)),
+};
+
+const customerSchema = z
+	.object({
+		name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
+		email: z.string().email("Email inválido").optional().or(z.literal("")),
+		phone: z.string().min(10, "Telefone inválido"),
+		document: z
+			.string()
+			.min(11, "CPF/CNPJ inválido")
+			.refine(validateDocument, "CPF/CNPJ inválido")
+			.optional()
+			.or(z.literal("")),
+		city: z.string().min(2, "Cidade é obrigatória"),
+		state: z.string().length(2, "Estado deve ter 2 caracteres"),
+		zip_code: z.string().min(8, "CEP inválido").optional().or(z.literal("")),
+		billing_mode: z
+			.enum(["per_sale", "weekly", "biweekly", "monthly", "custom"])
+			.optional(),
+		billing_day: z.number().int().min(0).max(31).optional(),
+	})
+	.refine(
+		(d) =>
+			d.billing_mode !== "weekly" ||
+			d.billing_day == null ||
+			(d.billing_day >= 0 && d.billing_day <= 6),
+		{
+			message: "Selecione um dia da semana válido",
+			path: ["billing_day"],
+		},
+	)
+	.refine(
+		(d) =>
+			d.billing_mode !== "monthly" ||
+			d.billing_day == null ||
+			(d.billing_day >= 1 && d.billing_day <= 31),
+		{
+			message: "Informe um dia do mês entre 1 e 31",
+			path: ["billing_day"],
+		},
+	);
 
 type CustomerFormData = z.infer<typeof customerSchema>;
 
@@ -88,10 +133,17 @@ export default function CustomersPage() {
 		register,
 		handleSubmit,
 		reset,
+		watch,
+		setValue,
 		formState: { errors, isSubmitting },
 	} = useForm<CustomerFormData>({
 		resolver: zodResolver(customerSchema),
 	});
+
+	// Drives which billing_day input (if any) is shown. watch is required here
+	// because the field must react in real time as the mode changes.
+	const billingMode = watch("billing_mode");
+	const billingModeField = register("billing_mode");
 
 	const fetchCustomers = useCallback(async () => {
 		try {
@@ -288,77 +340,82 @@ export default function CustomersPage() {
 								</TableRow>
 							</TableHeader>
 							<TableBody>
-								{filteredCustomers.map((customer, index) => (
-									<motion.tr
-										key={customer.id}
-										initial={{ opacity: 0, y: 10 }}
-										animate={{ opacity: 1, y: 0 }}
-										transition={{ delay: index * 0.05 }}
-										className="hover:bg-surface-muted transition-colors"
-									>
-										<TableCell>
-											<div className="flex items-center gap-3">
-												<div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
-													<span className="text-primary-600 font-medium">
-														{customer.name.charAt(0).toUpperCase()}
-													</span>
+								<AnimatePresence>
+									{filteredCustomers.map((customer, index) => (
+										<motion.tr
+											key={customer.id}
+											initial={{ opacity: 0, y: 10 }}
+											animate={{ opacity: 1, y: 0 }}
+											transition={{ delay: index * 0.05 }}
+											exit={{ opacity: 0, x: -20 }}
+											className="hover:bg-surface-muted transition-colors"
+										>
+											<TableCell>
+												<div className="flex items-center gap-3">
+													<div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
+														<span className="text-primary-600 font-medium">
+															{customer.name.charAt(0).toUpperCase()}
+														</span>
+													</div>
+													<div>
+														<p className="font-medium text-gray-900 dark:text-white">
+															{customer.name}
+														</p>
+														<p className="text-sm text-gray-500">
+															{customer.document}
+														</p>
+													</div>
 												</div>
-												<div>
-													<p className="font-medium text-gray-900 dark:text-white">
-														{customer.name}
-													</p>
-													<p className="text-sm text-gray-500">
-														{customer.document}
-													</p>
+											</TableCell>
+											<TableCell>
+												<div className="space-y-1">
+													<div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+														<Mail className="h-3.5 w-3.5" />
+														{customer.email}
+													</div>
+													<div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+														<Phone className="h-3.5 w-3.5" />
+														{customer.phone}
+													</div>
 												</div>
-											</div>
-										</TableCell>
-										<TableCell>
-											<div className="space-y-1">
+											</TableCell>
+											<TableCell>
 												<div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-													<Mail className="h-3.5 w-3.5" />
-													{customer.email}
+													<MapPin className="h-3.5 w-3.5" />
+													{customer.city}, {customer.state}
 												</div>
-												<div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-													<Phone className="h-3.5 w-3.5" />
-													{customer.phone}
-												</div>
-											</div>
-										</TableCell>
-										<TableCell>
-											<div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-												<MapPin className="h-3.5 w-3.5" />
-												{customer.city}, {customer.state}
-											</div>
-										</TableCell>
-										<TableCell>
-											<Badge variant={customer.active ? "success" : "error"}>
-												{customer.active ? "Ativo" : "Inativo"}
-											</Badge>
-										</TableCell>
-										<TableCell className="text-right">
-											<ActionMenu>
-												<ActionMenuItem onClick={() => openEditModal(customer)}>
-													<Edit2 className="h-4 w-4" />
-													Editar
-												</ActionMenuItem>
-												<ActionMenuItem
-													onClick={() => handleGenerateInvite(customer)}
-												>
-													<KeyRound className="h-4 w-4" />
-													Link de senha
-												</ActionMenuItem>
-												<ActionMenuItem
-													variant="danger"
-													onClick={() => setDeletingCustomer(customer)}
-												>
-													<Trash2 className="h-4 w-4" />
-													Excluir
-												</ActionMenuItem>
-											</ActionMenu>
-										</TableCell>
-									</motion.tr>
-								))}
+											</TableCell>
+											<TableCell>
+												<Badge variant={customer.active ? "success" : "error"}>
+													{customer.active ? "Ativo" : "Inativo"}
+												</Badge>
+											</TableCell>
+											<TableCell className="text-right">
+												<ActionMenu>
+													<ActionMenuItem
+														onClick={() => openEditModal(customer)}
+													>
+														<Edit2 className="h-4 w-4" />
+														Editar
+													</ActionMenuItem>
+													<ActionMenuItem
+														onClick={() => handleGenerateInvite(customer)}
+													>
+														<KeyRound className="h-4 w-4" />
+														Link de senha
+													</ActionMenuItem>
+													<ActionMenuItem
+														variant="danger"
+														onClick={() => setDeletingCustomer(customer)}
+													>
+														<Trash2 className="h-4 w-4" />
+														Excluir
+													</ActionMenuItem>
+												</ActionMenu>
+											</TableCell>
+										</motion.tr>
+									))}
+								</AnimatePresence>
 							</TableBody>
 						</Table>
 					)}
@@ -425,11 +482,22 @@ export default function CustomersPage() {
 					</div>
 					<div className="grid grid-cols-2 gap-4">
 						<div>
-							<label className="block text-sm font-medium text-gray-700 mb-1">
+							<label
+								htmlFor="billing_mode"
+								className="block text-sm font-medium text-gray-700 mb-1"
+							>
 								Modalidade de Cobrança
 							</label>
 							<select
-								{...register("billing_mode")}
+								id="billing_mode"
+								{...billingModeField}
+								onChange={(e) => {
+									billingModeField.onChange(e);
+									// billing_day is a weekday for "weekly" but a day of month
+									// for "monthly"; reset it so a stale value can't leak
+									// across modes when the user switches.
+									setValue("billing_day", undefined);
+								}}
 								className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
 							>
 								{billingModeOptions.map((option) => (
@@ -439,15 +507,49 @@ export default function CustomersPage() {
 								))}
 							</select>
 						</div>
-						<Input
-							label="Dia de Cobrança"
-							type="number"
-							min={1}
-							max={31}
-							placeholder="1-31 (opcional)"
-							error={errors.billing_day?.message}
-							{...register("billing_day", { valueAsNumber: true })}
-						/>
+						{billingMode === "weekly" ? (
+							<div>
+								<label
+									htmlFor="billing_day"
+									className="block text-sm font-medium text-gray-700 mb-1"
+								>
+									Dia da Semana
+								</label>
+								<select
+									id="billing_day"
+									{...register("billing_day", dayFieldOptions)}
+									className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+								>
+									<option value="">Padrão (Segunda-feira)</option>
+									{weekdayOptions.map((option) => (
+										<option key={option.value} value={option.value}>
+											{option.label}
+										</option>
+									))}
+								</select>
+								{errors.billing_day?.message && (
+									<p className="mt-1 text-sm text-red-500">
+										{errors.billing_day.message}
+									</p>
+								)}
+							</div>
+						) : billingMode === "monthly" ? (
+							<Input
+								label="Dia do Mês"
+								type="number"
+								min={1}
+								max={31}
+								placeholder="1-31 (padrão: dia 5)"
+								error={errors.billing_day?.message}
+								{...register("billing_day", dayFieldOptions)}
+							/>
+						) : (
+							<div className="flex items-end">
+								<p className="text-sm text-gray-500 dark:text-gray-400">
+									{billingModeHelp[billingMode ?? "per_sale"]}
+								</p>
+							</div>
+						)}
 					</div>
 					<div className="flex justify-end gap-3 pt-4">
 						<Button type="button" variant="outline" onClick={closeModal}>

@@ -78,7 +78,7 @@ function ProductCard({ product }: { product: CatalogProduct }) {
 		<motion.div
 			initial={{ opacity: 0, y: 20 }}
 			animate={{ opacity: 1, y: 0 }}
-			className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-shadow"
+			className="group bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg hover:-translate-y-1.5 transition-all duration-300"
 		>
 			<div className="aspect-square bg-gray-100 dark:bg-gray-700 relative">
 				{product.images && product.images.length > 0 ? (
@@ -87,7 +87,7 @@ function ProductCard({ product }: { product: CatalogProduct }) {
 						alt={product.name}
 						loading="lazy"
 						decoding="async"
-						className="w-full h-full object-cover"
+						className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
 					/>
 				) : (
 					<div className="w-full h-full flex items-center justify-center">

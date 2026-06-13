@@ -8,24 +8,29 @@ export function ToastProvider() {
 			position="top-right"
 			toastOptions={{
 				duration: 4000,
+				// Drive colours from the semantic CSS variables (defined in
+				// globals.css :root / .dark) so toasts track light/dark
+				// automatically — no useTheme() round-trip, reactive to theme
+				// switches with zero JS.
 				style: {
-					background: "#fff",
-					color: "#1f2937",
+					background: "var(--surface)",
+					color: "var(--foreground)",
+					border: "1px solid var(--border)",
 					padding: "16px",
-					borderRadius: "8px",
+					borderRadius: "12px",
 					boxShadow:
-						"0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
+						"0 10px 15px -3px rgb(0 0 0 / 0.12), 0 4px 6px -4px rgb(0 0 0 / 0.12)",
 				},
 				success: {
 					iconTheme: {
 						primary: "#10b981",
-						secondary: "#fff",
+						secondary: "var(--surface)",
 					},
 				},
 				error: {
 					iconTheme: {
 						primary: "#ef4444",
-						secondary: "#fff",
+						secondary: "var(--surface)",
 					},
 				},
 			}}

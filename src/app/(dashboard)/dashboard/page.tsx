@@ -10,7 +10,9 @@ import {
 	Users,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { AnimatedNumber } from "@/components/ui/animated-number";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SkeletonPage } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
 import { cn, formatCurrency } from "@/lib/utils";
 import type { DashboardStats } from "@/types";
@@ -69,40 +71,44 @@ export default function DashboardPage() {
 		fetchStats();
 	}, [fetchStats]);
 
-	const statCards = [
+	const statCards: {
+		name: string;
+		value: number;
+		format?: (value: number) => string;
+		subtitle?: string;
+		icon: typeof DollarSign;
+		color: string;
+	}[] = [
 		{
 			name: "Receita Total",
-			value: formatCurrency(stats?.totalRevenue || 0),
+			value: stats?.totalRevenue || 0,
+			format: formatCurrency,
 			icon: DollarSign,
 			color: "bg-green-500",
 		},
 		{
 			name: "Pedidos",
-			value: stats?.totalOrders?.toString() || "0",
+			value: stats?.totalOrders || 0,
 			subtitle: `${stats?.pendingOrders || 0} pendentes`,
 			icon: ShoppingCart,
 			color: "bg-blue-500",
 		},
 		{
 			name: "Clientes",
-			value: stats?.totalCustomers?.toString() || "0",
+			value: stats?.totalCustomers || 0,
 			icon: Users,
 			color: "bg-secondary-500",
 		},
 		{
 			name: "Produtos",
-			value: stats?.totalProducts?.toString() || "0",
+			value: stats?.totalProducts || 0,
 			icon: Package,
 			color: "bg-orange-500",
 		},
 	];
 
 	if (isLoading) {
-		return (
-			<div className="flex items-center justify-center py-12">
-				<div className="animate-spin rounded-full h-8 w-8 border-2 border-primary-600 border-t-transparent" />
-			</div>
-		);
+		return <SkeletonPage />;
 	}
 
 	return (
@@ -121,7 +127,7 @@ export default function DashboardPage() {
 				className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
 			>
 				{statCards.map((stat) => (
-					<motion.div key={stat.name} variants={item}>
+					<motion.div key={stat.name} variants={item} whileHover={{ y: -4 }}>
 						<Card className="hover:shadow-md transition-shadow">
 							<CardContent className="p-6">
 								<div className="flex items-center justify-between">
@@ -137,7 +143,7 @@ export default function DashboardPage() {
 								</div>
 								<div className="mt-4">
 									<p className="text-2xl font-bold text-foreground">
-										{stat.value}
+										<AnimatedNumber value={stat.value} format={stat.format} />
 									</p>
 									<p className="text-sm text-muted-foreground mt-1">
 										{stat.name}

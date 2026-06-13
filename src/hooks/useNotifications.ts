@@ -27,12 +27,16 @@ export function useNotifications() {
 	useEffect(() => {
 		if (!user?.id) return;
 
+		// Capture the id this effect run is connecting for; the cleanup below
+		// tears the socket down whenever it changes (logout / account switch).
+		const userId = user.id;
+
 		// Delay connection to avoid React StrictMode double-invoke issues
 		const timeoutId = setTimeout(() => {
 			if (socketRef.current?.connected) return;
 
 			const newSocket = io(`${API_URL}/notifications`, {
-				query: { userId: user.id },
+				query: { userId },
 				transports: ["websocket"],
 				withCredentials: true,
 				reconnectionAttempts: 3,

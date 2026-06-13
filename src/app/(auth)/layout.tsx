@@ -1,34 +1,12 @@
-"use client";
-
-import { motion } from "framer-motion";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { AuthRedirectGate } from "@/components/auth-redirect-gate";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { useAuth } from "@/contexts/auth-context";
 
 export default function AuthLayout({
 	children,
 }: {
 	children: React.ReactNode;
 }) {
-	const { isAuthenticated, isLoading } = useAuth();
-	const router = useRouter();
-
-	useEffect(() => {
-		if (!isLoading && isAuthenticated) {
-			router.push("/dashboard");
-		}
-	}, [isAuthenticated, isLoading, router]);
-
-	if (isLoading) {
-		return (
-			<div className="min-h-screen flex items-center justify-center bg-linear-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900">
-				<div className="animate-spin rounded-full h-8 w-8 border-2 border-primary-600 border-t-transparent" />
-			</div>
-		);
-	}
-
 	return (
 		<div className="min-h-screen flex bg-linear-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900">
 			{/* Left side - Branding */}
@@ -38,12 +16,7 @@ export default function AuthLayout({
 					<div className="absolute bottom-20 right-20 w-96 h-96 bg-secondary-300 rounded-full blur-3xl" />
 				</div>
 
-				<motion.div
-					initial={{ opacity: 0, y: 20 }}
-					animate={{ opacity: 1, y: 0 }}
-					transition={{ duration: 0.6 }}
-					className="relative z-10"
-				>
+				<div className="relative z-10 animate-fade-in-up">
 					<div className="flex items-center gap-3">
 						<Image
 							src="/vendinhas.svg"
@@ -55,13 +28,11 @@ export default function AuthLayout({
 							priority
 						/>
 					</div>
-				</motion.div>
+				</div>
 
-				<motion.div
-					initial={{ opacity: 0, y: 20 }}
-					animate={{ opacity: 1, y: 0 }}
-					transition={{ duration: 0.6, delay: 0.2 }}
-					className="relative z-10 space-y-6"
+				<div
+					className="relative z-10 space-y-6 animate-fade-in-up"
+					style={{ animationDelay: "0.15s" }}
 				>
 					<h1 className="text-4xl font-bold text-white leading-tight">
 						Gerencie suas vendas de forma simples e eficiente
@@ -85,16 +56,14 @@ export default function AuthLayout({
 							<div className="text-primary-200 text-sm">Disponibilidade</div>
 						</div>
 					</div>
-				</motion.div>
+				</div>
 
-				<motion.div
-					initial={{ opacity: 0 }}
-					animate={{ opacity: 1 }}
-					transition={{ duration: 0.6, delay: 0.4 }}
-					className="relative z-10 text-primary-200 text-sm"
+				<div
+					className="relative z-10 text-primary-200 text-sm animate-fade-in-up"
+					style={{ animationDelay: "0.3s" }}
 				>
 					2025 Vendinhas. Todos os direitos reservados.
-				</motion.div>
+				</div>
 			</div>
 
 			{/* Right side - Form */}
@@ -104,14 +73,9 @@ export default function AuthLayout({
 					<ThemeToggle />
 				</div>
 
-				<motion.div
-					initial={{ opacity: 0, scale: 0.95 }}
-					animate={{ opacity: 1, scale: 1 }}
-					transition={{ duration: 0.4 }}
-					className="w-full max-w-md"
-				>
-					{children}
-				</motion.div>
+				<div className="w-full max-w-md">
+					<AuthRedirectGate>{children}</AuthRedirectGate>
+				</div>
 			</div>
 		</div>
 	);

@@ -189,6 +189,8 @@ export function ActionMenuDivider() {
 
 export function ActionMenuLabel({ children }: { children: React.ReactNode }) {
 	return (
-		<p className="px-4 py-1 text-xs uppercase text-gray-500">{children}</p>
+		<p className="px-4 py-1 text-xs uppercase text-gray-500 dark:text-gray-400">
+			{children}
+		</p>
 	);
 }

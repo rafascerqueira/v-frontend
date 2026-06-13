@@ -7,10 +7,7 @@ interface SkeletonProps {
 export function Skeleton({ className }: SkeletonProps) {
 	return (
 		<div
-			className={cn(
-				"animate-pulse rounded-md bg-gray-200 dark:bg-gray-700",
-				className,
-			)}
+			className={cn("skeleton-shimmer rounded-md bg-surface-muted", className)}
 		/>
 	);
 }
@@ -25,7 +22,7 @@ export function SkeletonCircle({ className }: SkeletonProps) {
 
 export function SkeletonCard() {
 	return (
-		<div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-6">
+		<div className="bg-surface rounded-2xl border border-border p-6">
 			<div className="flex items-center gap-4 mb-4">
 				<Skeleton className="h-12 w-12 rounded-xl" />
 				<div className="space-y-2 flex-1">
@@ -39,7 +36,7 @@ export function SkeletonCard() {
 
 export function SkeletonTableRow() {
 	return (
-		<tr className="border-b border-gray-100 dark:border-gray-700">
+		<tr className="border-b border-border">
 			<td className="px-4 py-4">
 				<Skeleton className="h-4 w-32" />
 			</td>
@@ -67,7 +64,7 @@ export function SkeletonTable({ rows = 5 }: { rows?: number }) {
 		<div className="overflow-x-auto">
 			<table className="w-full">
 				<thead>
-					<tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+					<tr className="border-b border-border bg-surface-muted">
 						<th className="px-4 py-3 text-left">
 							<Skeleton className="h-3 w-20" />
 						</th>
@@ -119,8 +116,8 @@ export function SkeletonPage() {
 				<Skeleton className="h-10 w-32 rounded-lg" />
 			</div>
 			<SkeletonStats />
-			<div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700">
-				<div className="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+			<div className="bg-surface rounded-2xl border border-border">
+				<div className="px-6 py-5 border-b border-border flex justify-between items-center">
 					<Skeleton className="h-6 w-40" />
 					<Skeleton className="h-10 w-48 rounded-lg" />
 				</div>

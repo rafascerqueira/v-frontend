@@ -1,8 +1,4 @@
-"use client";
-
-import { motion } from "framer-motion";
 import {
-	ArrowLeft,
 	BookOpen,
 	Code,
 	FileText,
@@ -11,7 +7,7 @@ import {
 	Settings,
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { BackButton } from "@/components/ui/back-button";
 
 const sections = [
 	{
@@ -49,24 +45,11 @@ const sections = [
 ];
 
 export default function DocsPage() {
-	const router = useRouter();
-
 	return (
 		<div className="min-h-screen bg-gray-50 dark:bg-gray-900">
 			<div className="max-w-4xl mx-auto px-4 py-12">
-				<motion.div
-					initial={{ opacity: 0, y: 20 }}
-					animate={{ opacity: 1, y: 0 }}
-					transition={{ duration: 0.5 }}
-				>
-					<button
-						type="button"
-						onClick={() => router.back()}
-						className="inline-flex items-center gap-2 text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 mb-8 transition-colors"
-					>
-						<ArrowLeft className="w-4 h-4" />
-						Voltar
-					</button>
+				<div className="animate-fade-in-up">
+					<BackButton />
 
 					<div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-8 md:p-12">
 						<div className="flex items-center gap-4 mb-8">
@@ -127,7 +110,7 @@ export default function DocsPage() {
 							</p>
 						</div>
 					</div>
-				</motion.div>
+				</div>
 			</div>
 		</div>
 	);

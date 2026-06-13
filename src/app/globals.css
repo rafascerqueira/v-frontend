@@ -85,6 +85,8 @@
   --subtle-foreground: #8c84a3;
   --selection-bg: #4a00e0;
   --selection-fg: #ffffff;
+  /* Brand-tinted sweep for skeleton loaders — faint violet on light surfaces. */
+  --skeleton-shimmer: rgba(74, 0, 224, 0.08);
 
   /* Smoke wash — soft, overlapping brand-tinted radial gradients (aurora/mesh)
      plus a gentle overhead light. Kept very faint in light mode so it never
@@ -127,6 +129,8 @@
   --subtle-foreground: #8b8399;
   --selection-bg: #9b61ff;
   --selection-fg: #110038;
+  /* A brighter, glowing sweep so the shimmer reads on deep violet-black. */
+  --skeleton-shimmer: rgba(155, 97, 255, 0.14);
 
   /* Smoke wash — deeper in dark mode so the violet-black gains glowing depth,
      with a soft overhead light to lift the top of each viewport. */
@@ -204,8 +208,62 @@ body::after {
   }
 }
 
+/* RSC-friendly entrance — a pure-CSS fade/rise so Server Components can animate
+   their content in without pulling in framer-motion (which is client-only).
+   Easing matches the framer page transitions for a consistent feel. */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+/* Skeleton loaders: a brand-tinted highlight sweeps left→right across the muted
+   base instead of the flat opacity throb of animate-pulse. The base element
+   carries `bg-surface-muted`; this overlay rides on top via ::after. */
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(
+    90deg,
+    transparent,
+    var(--skeleton-shimmer),
+    transparent
+  );
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   body::before {
+    animation: none;
+  }
+
+  .animate-fade-in-up {
+    animation: none;
+  }
+
+  .skeleton-shimmer::after {
     animation: none;
   }
 }

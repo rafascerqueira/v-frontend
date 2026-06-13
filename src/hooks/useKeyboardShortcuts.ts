@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 interface Shortcut {
 	key: string;
@@ -101,14 +101,19 @@ export function useKeyboardShortcuts() {
 }
 
 export function useEscapeKey(onEscape: () => void) {
+	// Keep the latest callback in a ref so the listener is attached once and
+	// isn't re-bound on every render when `onEscape` is an inline arrow fn.
+	const onEscapeRef = useRef(onEscape);
+	onEscapeRef.current = onEscape;
+
 	useEffect(() => {
 		const handleKeyDown = (event: KeyboardEvent) => {
 			if (event.key === "Escape") {
-				onEscape();
+				onEscapeRef.current();
 			}
 		};
 
 		window.addEventListener("keydown", handleKeyDown);
 		return () => window.removeEventListener("keydown", handleKeyDown);
-	}, [onEscape]);
+	}, []);
 }

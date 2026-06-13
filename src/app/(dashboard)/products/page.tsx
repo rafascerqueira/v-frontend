@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
 	Edit2,
 	ImagePlus,
@@ -292,83 +292,88 @@ export default function ProductsPage() {
 								</TableRow>
 							</TableHeader>
 							<TableBody>
-								{filteredProducts.map((product, index) => (
-									<motion.tr
-										key={product.id}
-										initial={{ opacity: 0, y: 10 }}
-										animate={{ opacity: 1, y: 0 }}
-										transition={{ delay: index * 0.05 }}
-										className="hover:bg-surface-muted transition-colors"
-									>
-										<TableCell>
-											<div className="flex items-center gap-3">
-												<div className="w-10 h-10 shrink-0 rounded-md overflow-hidden bg-gray-100 dark:bg-gray-700 flex items-center justify-center border border-gray-200 dark:border-gray-600">
-													{product.images?.[0] ? (
-														<img
-															src={product.images[0]}
-															alt={product.name}
-															loading="lazy"
-															decoding="async"
-															className="w-full h-full object-cover"
-														/>
-													) : (
-														<Package className="w-5 h-5 text-gray-400" />
-													)}
+								<AnimatePresence>
+									{filteredProducts.map((product, index) => (
+										<motion.tr
+											key={product.id}
+											initial={{ opacity: 0, y: 10 }}
+											animate={{ opacity: 1, y: 0 }}
+											transition={{ delay: index * 0.05 }}
+											exit={{ opacity: 0, x: -20 }}
+											className="hover:bg-surface-muted transition-colors"
+										>
+											<TableCell>
+												<div className="flex items-center gap-3">
+													<div className="w-10 h-10 shrink-0 rounded-md overflow-hidden bg-gray-100 dark:bg-gray-700 flex items-center justify-center border border-gray-200 dark:border-gray-600">
+														{product.images?.[0] ? (
+															<img
+																src={product.images[0]}
+																alt={product.name}
+																loading="lazy"
+																decoding="async"
+																className="w-full h-full object-cover"
+															/>
+														) : (
+															<Package className="w-5 h-5 text-gray-400" />
+														)}
+													</div>
+													<div className="min-w-0">
+														<p className="font-medium text-gray-900 dark:text-white truncate">
+															{product.name}
+														</p>
+														<p className="text-sm text-gray-500 truncate max-w-xs">
+															{product.description}
+														</p>
+													</div>
 												</div>
-												<div className="min-w-0">
-													<p className="font-medium text-gray-900 dark:text-white truncate">
-														{product.name}
-													</p>
-													<p className="text-sm text-gray-500 truncate max-w-xs">
-														{product.description}
-													</p>
-												</div>
-											</div>
-										</TableCell>
-										<TableCell>
-											<code className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs">
-												{product.sku || "-"}
-											</code>
-										</TableCell>
-										<TableCell>
-											{product.prices?.[0]?.price
-												? `R$ ${(product.prices[0].price / 100).toFixed(2)}`
-												: "-"}
-										</TableCell>
-										<TableCell>
-											<span
-												className={`font-medium ${
-													(product.stock?.quantity ?? 0) <=
-													(product.stock?.min_stock ?? 0)
-														? "text-red-600"
-														: "text-gray-900 dark:text-gray-100"
-												}`}
-											>
-												{product.stock?.quantity ?? 0}
-											</span>
-										</TableCell>
-										<TableCell>
-											<Badge variant={product.active ? "success" : "error"}>
-												{product.active ? "Ativo" : "Inativo"}
-											</Badge>
-										</TableCell>
-										<TableCell className="text-right">
-											<ActionMenu className="w-36">
-												<ActionMenuItem onClick={() => openEditModal(product)}>
-													<Edit2 className="h-4 w-4" />
-													Editar
-												</ActionMenuItem>
-												<ActionMenuItem
-													variant="danger"
-													onClick={() => setDeletingProduct(product)}
+											</TableCell>
+											<TableCell>
+												<code className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs">
+													{product.sku || "-"}
+												</code>
+											</TableCell>
+											<TableCell>
+												{product.prices?.[0]?.price
+													? `R$ ${(product.prices[0].price / 100).toFixed(2)}`
+													: "-"}
+											</TableCell>
+											<TableCell>
+												<span
+													className={`font-medium ${
+														(product.stock?.quantity ?? 0) <=
+														(product.stock?.min_stock ?? 0)
+															? "text-red-600"
+															: "text-gray-900 dark:text-gray-100"
+													}`}
 												>
-													<Trash2 className="h-4 w-4" />
-													Excluir
-												</ActionMenuItem>
-											</ActionMenu>
-										</TableCell>
-									</motion.tr>
-								))}
+													{product.stock?.quantity ?? 0}
+												</span>
+											</TableCell>
+											<TableCell>
+												<Badge variant={product.active ? "success" : "error"}>
+													{product.active ? "Ativo" : "Inativo"}
+												</Badge>
+											</TableCell>
+											<TableCell className="text-right">
+												<ActionMenu className="w-36">
+													<ActionMenuItem
+														onClick={() => openEditModal(product)}
+													>
+														<Edit2 className="h-4 w-4" />
+														Editar
+													</ActionMenuItem>
+													<ActionMenuItem
+														variant="danger"
+														onClick={() => setDeletingProduct(product)}
+													>
+														<Trash2 className="h-4 w-4" />
+														Excluir
+													</ActionMenuItem>
+												</ActionMenu>
+											</TableCell>
+										</motion.tr>
+									))}
+								</AnimatePresence>
 							</TableBody>
 						</Table>
 					)}

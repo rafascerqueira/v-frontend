@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
 	AlertCircle,
 	Calendar,
@@ -47,7 +47,7 @@ interface Billing {
 	paid_amount: number;
 	payment_method: string;
 	payment_status: string;
-	due_date: string;
+	due_date: string | null;
 	payment_date?: string;
 	notes?: string;
 	createdAt: string;
@@ -386,147 +386,150 @@ export default function BillingsPage() {
 								</TableRow>
 							</TableHeader>
 							<TableBody>
-								{filteredBillings.map((billing, index) => {
-									const status =
-										statusConfig[billing.status] ?? statusConfig.pending;
-									const StatusIcon = status.icon;
-									return (
-										<motion.tr
-											key={billing.id}
-											initial={{ opacity: 0, y: 10 }}
-											animate={{ opacity: 1, y: 0 }}
-											transition={{ delay: index * 0.03 }}
-											className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
-										>
-											<TableCell>
-												<code className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-medium">
-													{billing.billing_number}
-												</code>
-											</TableCell>
-											<TableCell>
-												<div>
-													<p className="text-sm font-medium text-gray-900 dark:text-white">
-														{billing.order?.order_number ?? "-"}
-													</p>
-													<p className="text-xs text-gray-500">
-														{billing.order?.customer?.name ??
-															"Cliente não encontrado"}
-													</p>
-												</div>
-											</TableCell>
-											<TableCell>
-												{(() => {
-													const os =
-														orderStatusConfig[billing.order?.status ?? ""];
-													if (!os) return "-";
-													const OsIcon = os.icon;
-													return (
-														<Badge
-															variant={os.variant}
-															className="flex items-center gap-1 w-fit"
-														>
-															<OsIcon className="h-3 w-3" />
-															{os.label}
-														</Badge>
-													);
-												})()}
-											</TableCell>
-											<TableCell>
-												<div className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400">
-													<Calendar className="h-3.5 w-3.5" />
-													{formatDate(billing.due_date)}
-												</div>
-											</TableCell>
-											<TableCell>
-												<span className="text-sm text-gray-600 dark:text-gray-400">
-													{paymentMethodLabel(billing.payment_method)}
-												</span>
-											</TableCell>
-											<TableCell>
-												<span className="font-medium text-gray-900 dark:text-white">
-													{formatCurrency(billing.total_amount)}
-												</span>
-											</TableCell>
-											<TableCell>
-												<div>
-													<span className="text-green-600 font-medium">
-														{formatCurrency(billing.paid_amount)}
+								<AnimatePresence>
+									{filteredBillings.map((billing, index) => {
+										const status =
+											statusConfig[billing.status] ?? statusConfig.pending;
+										const StatusIcon = status.icon;
+										return (
+											<motion.tr
+												key={billing.id}
+												initial={{ opacity: 0, y: 10 }}
+												animate={{ opacity: 1, y: 0 }}
+												transition={{ delay: index * 0.03 }}
+												exit={{ opacity: 0, x: -20 }}
+												className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+											>
+												<TableCell>
+													<code className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-medium">
+														{billing.billing_number}
+													</code>
+												</TableCell>
+												<TableCell>
+													<div>
+														<p className="text-sm font-medium text-gray-900 dark:text-white">
+															{billing.order?.order_number ?? "-"}
+														</p>
+														<p className="text-xs text-gray-500">
+															{billing.order?.customer?.name ??
+																"Cliente não encontrado"}
+														</p>
+													</div>
+												</TableCell>
+												<TableCell>
+													{(() => {
+														const os =
+															orderStatusConfig[billing.order?.status ?? ""];
+														if (!os) return "-";
+														const OsIcon = os.icon;
+														return (
+															<Badge
+																variant={os.variant}
+																className="flex items-center gap-1 w-fit"
+															>
+																<OsIcon className="h-3 w-3" />
+																{os.label}
+															</Badge>
+														);
+													})()}
+												</TableCell>
+												<TableCell>
+													<div className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400">
+														<Calendar className="h-3.5 w-3.5" />
+														{formatDate(billing.due_date)}
+													</div>
+												</TableCell>
+												<TableCell>
+													<span className="text-sm text-gray-600 dark:text-gray-400">
+														{paymentMethodLabel(billing.payment_method)}
 													</span>
-													{billing.paid_amount > 0 &&
-														billing.paid_amount < billing.total_amount && (
-															<p className="text-xs text-gray-400">
-																Falta{" "}
-																{formatCurrency(
-																	billing.total_amount - billing.paid_amount,
-																)}
-															</p>
-														)}
-												</div>
-											</TableCell>
-											<TableCell>
-												<Badge
-													variant={status.variant}
-													className="flex items-center gap-1 w-fit"
-												>
-													<StatusIcon className="h-3 w-3" />
-													{status.label}
-												</Badge>
-											</TableCell>
-											<TableCell className="text-right">
-												<ActionMenu className="w-48">
-													<ActionMenuItem
-														onClick={() => setViewingBilling(billing)}
+												</TableCell>
+												<TableCell>
+													<span className="font-medium text-gray-900 dark:text-white">
+														{formatCurrency(billing.total_amount)}
+													</span>
+												</TableCell>
+												<TableCell>
+													<div>
+														<span className="text-green-600 font-medium">
+															{formatCurrency(billing.paid_amount)}
+														</span>
+														{billing.paid_amount > 0 &&
+															billing.paid_amount < billing.total_amount && (
+																<p className="text-xs text-gray-400">
+																	Falta{" "}
+																	{formatCurrency(
+																		billing.total_amount - billing.paid_amount,
+																	)}
+																</p>
+															)}
+													</div>
+												</TableCell>
+												<TableCell>
+													<Badge
+														variant={status.variant}
+														className="flex items-center gap-1 w-fit"
 													>
-														<FileText className="h-4 w-4" />
-														Ver Detalhes
-													</ActionMenuItem>
-													{billing.status !== "paid" &&
-														billing.status !== "canceled" && (
-															<>
-																<ActionMenuDivider />
-																<ActionMenuItem
-																	variant="success"
-																	onClick={() => openPaymentModal(billing)}
-																>
-																	<CreditCard className="h-4 w-4" />
-																	Registrar Pagamento
-																</ActionMenuItem>
-																<ActionMenuItem
-																	variant="info"
-																	onClick={() => openEditModal(billing)}
-																>
-																	<Pencil className="h-4 w-4" />
-																	Editar Cobrança
-																</ActionMenuItem>
-																<ActionMenuItem
-																	variant="warning"
-																	onClick={() => {
-																		if (confirm("Cancelar esta cobrança?")) {
-																			handleUpdateStatus(
-																				billing.id,
-																				"canceled",
-																			);
-																		}
-																	}}
-																>
-																	<XCircle className="h-4 w-4" />
-																	Cancelar
-																</ActionMenuItem>
-															</>
-														)}
-													<ActionMenuDivider />
-													<ActionMenuItem
-														variant="danger"
-														onClick={() => handleDelete(billing.id)}
-													>
-														<Trash2 className="h-4 w-4" />
-														Excluir
-													</ActionMenuItem>
-												</ActionMenu>
-											</TableCell>
-										</motion.tr>
-									);
-								})}
+														<StatusIcon className="h-3 w-3" />
+														{status.label}
+													</Badge>
+												</TableCell>
+												<TableCell className="text-right">
+													<ActionMenu className="w-48">
+														<ActionMenuItem
+															onClick={() => setViewingBilling(billing)}
+														>
+															<FileText className="h-4 w-4" />
+															Ver Detalhes
+														</ActionMenuItem>
+														{billing.status !== "paid" &&
+															billing.status !== "canceled" && (
+																<>
+																	<ActionMenuDivider />
+																	<ActionMenuItem
+																		variant="success"
+																		onClick={() => openPaymentModal(billing)}
+																	>
+																		<CreditCard className="h-4 w-4" />
+																		Registrar Pagamento
+																	</ActionMenuItem>
+																	<ActionMenuItem
+																		variant="info"
+																		onClick={() => openEditModal(billing)}
+																	>
+																		<Pencil className="h-4 w-4" />
+																		Editar Cobrança
+																	</ActionMenuItem>
+																	<ActionMenuItem
+																		variant="warning"
+																		onClick={() => {
+																			if (confirm("Cancelar esta cobrança?")) {
+																				handleUpdateStatus(
+																					billing.id,
+																					"canceled",
+																				);
+																			}
+																		}}
+																	>
+																		<XCircle className="h-4 w-4" />
+																		Cancelar
+																	</ActionMenuItem>
+																</>
+															)}
+														<ActionMenuDivider />
+														<ActionMenuItem
+															variant="danger"
+															onClick={() => handleDelete(billing.id)}
+														>
+															<Trash2 className="h-4 w-4" />
+															Excluir
+														</ActionMenuItem>
+													</ActionMenu>
+												</TableCell>
+											</motion.tr>
+										);
+									})}
+								</AnimatePresence>
 							</TableBody>
 						</Table>
 					)}

@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
 	Calendar,
 	CheckCircle,
@@ -313,83 +313,90 @@ export default function OrdersPage() {
 								</TableRow>
 							</TableHeader>
 							<TableBody>
-								{filteredOrders.map((order, index) => {
-									const status =
-										statusConfig[order.status] || statusConfig.pending;
-									const StatusIcon = status.icon;
-									return (
-										<motion.tr
-											key={order.id}
-											initial={{ opacity: 0, y: 10 }}
-											animate={{ opacity: 1, y: 0 }}
-											transition={{ delay: index * 0.05 }}
-											className="hover:bg-surface-muted transition-colors"
-										>
-											<TableCell>
-												<code className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-medium">
-													{order.order_number}
-												</code>
-											</TableCell>
-											<TableCell>
-												<div className="flex items-center gap-2">
-													<User className="h-4 w-4 text-gray-400" />
-													<span>
-														{order.customer?.name || "Cliente removido"}
+								<AnimatePresence>
+									{filteredOrders.map((order, index) => {
+										const status =
+											statusConfig[order.status] || statusConfig.pending;
+										const StatusIcon = status.icon;
+										return (
+											<motion.tr
+												key={order.id}
+												initial={{ opacity: 0, y: 10 }}
+												animate={{ opacity: 1, y: 0 }}
+												transition={{ delay: index * 0.05 }}
+												exit={{ opacity: 0, x: -20 }}
+												className="hover:bg-surface-muted transition-colors"
+											>
+												<TableCell>
+													<code className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-medium">
+														{order.order_number}
+													</code>
+												</TableCell>
+												<TableCell>
+													<div className="flex items-center gap-2">
+														<User className="h-4 w-4 text-gray-400" />
+														<span>
+															{order.customer?.name || "Cliente removido"}
+														</span>
+													</div>
+												</TableCell>
+												<TableCell>
+													<div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+														<Calendar className="h-3.5 w-3.5" />
+														{formatDate(order.createdAt)}
+													</div>
+												</TableCell>
+												<TableCell>
+													<span className="font-medium text-gray-900 dark:text-white">
+														{formatCurrency(order.total)}
 													</span>
-												</div>
-											</TableCell>
-											<TableCell>
-												<div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-													<Calendar className="h-3.5 w-3.5" />
-													{formatDate(order.createdAt)}
-												</div>
-											</TableCell>
-											<TableCell>
-												<span className="font-medium text-gray-900 dark:text-white">
-													{formatCurrency(order.total)}
-												</span>
-											</TableCell>
-											<TableCell>
-												<Badge
-													variant={status.variant}
-													className="flex items-center gap-1 w-fit"
-												>
-													<StatusIcon className="h-3 w-3" />
-													{status.label}
-												</Badge>
-											</TableCell>
-											<TableCell className="text-right">
-												<ActionMenu>
-													<ActionMenuItem
-														onClick={() => setViewingOrder(order)}
+												</TableCell>
+												<TableCell>
+													<Badge
+														variant={status.variant}
+														className="flex items-center gap-1 w-fit transition-colors duration-300"
 													>
-														<Eye className="h-4 w-4" />
-														Ver Detalhes
-													</ActionMenuItem>
-													<ActionMenuDivider />
-													<ActionMenuLabel>Atualizar Status</ActionMenuLabel>
-													{Object.entries(statusConfig).map(([key, config]) => (
+														<StatusIcon className="h-3 w-3" />
+														{status.label}
+													</Badge>
+												</TableCell>
+												<TableCell className="text-right">
+													<ActionMenu>
 														<ActionMenuItem
-															key={key}
-															onClick={() => handleUpdateStatus(order.id, key)}
+															onClick={() => setViewingOrder(order)}
 														>
-															<config.icon className="h-4 w-4" />
-															{config.label}
+															<Eye className="h-4 w-4" />
+															Ver Detalhes
 														</ActionMenuItem>
-													))}
-													<ActionMenuDivider />
-													<ActionMenuItem
-														variant="danger"
-														onClick={() => setDeletingOrder(order)}
-													>
-														<Trash2 className="h-4 w-4" />
-														Excluir
-													</ActionMenuItem>
-												</ActionMenu>
-											</TableCell>
-										</motion.tr>
-									);
-								})}
+														<ActionMenuDivider />
+														<ActionMenuLabel>Atualizar Status</ActionMenuLabel>
+														{Object.entries(statusConfig).map(
+															([key, config]) => (
+																<ActionMenuItem
+																	key={key}
+																	onClick={() =>
+																		handleUpdateStatus(order.id, key)
+																	}
+																>
+																	<config.icon className="h-4 w-4" />
+																	{config.label}
+																</ActionMenuItem>
+															),
+														)}
+														<ActionMenuDivider />
+														<ActionMenuItem
+															variant="danger"
+															onClick={() => setDeletingOrder(order)}
+														>
+															<Trash2 className="h-4 w-4" />
+															Excluir
+														</ActionMenuItem>
+													</ActionMenu>
+												</TableCell>
+											</motion.tr>
+										);
+									})}
+								</AnimatePresence>
 							</TableBody>
 						</Table>
 					)}

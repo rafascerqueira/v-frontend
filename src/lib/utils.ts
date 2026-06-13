@@ -12,11 +12,19 @@ export function formatCurrency(value: number): string {
 	}).format(value / 100);
 }
 
-export function formatDate(date: string | Date): string {
+export function formatDate(
+	date: string | Date | null | undefined,
+	fallback = "—",
+): string {
+	// Guard against null/undefined/empty and invalid dates: new Date(null) is the Unix
+	// epoch (01/01/1970) and new Date("") is Invalid Date — neither should ever render.
+	if (date == null || date === "") return fallback;
+	const parsed = new Date(date);
+	if (Number.isNaN(parsed.getTime())) return fallback;
 	return new Intl.DateTimeFormat("pt-BR", {
 		day: "2-digit",
 		month: "2-digit",
 		year: "numeric",
 		timeZone: "UTC",
-	}).format(new Date(date));
+	}).format(parsed);
 }
