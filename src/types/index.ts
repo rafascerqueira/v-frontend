@@ -24,6 +24,7 @@ export interface Product {
 	specifications: Record<string, unknown>;
 	images: string[];
 	active: boolean;
+	allow_oversell: boolean;
 	prices?: ProductPrice[];
 	stock?: ProductStock | null;
 	createdAt: string;

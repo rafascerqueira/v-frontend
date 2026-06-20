@@ -151,15 +151,15 @@ export default function BillingsPage() {
 		fetchBillings();
 	}, [fetchBillings]);
 
-	const handleUpdateStatus = async (
+	// Status/payment_status are derived server-side from the amounts, so the client
+	// only sends the money it collected — never a status string.
+	const handleRegisterPayment = async (
 		billingId: number,
-		status: string,
-		paidAmount?: number,
+		paidAmount: number,
 		method?: string,
 	) => {
 		try {
 			await api.patch(`/billings/${billingId}`, {
-				status,
 				paid_amount: paidAmount,
 				payment_method: method,
 			});
@@ -170,6 +170,20 @@ export default function BillingsPage() {
 			const msg =
 				(error as { response?: { data?: { message?: string } } })?.response
 					?.data?.message ?? "Erro ao atualizar cobrança";
+			toast.error(msg);
+		}
+	};
+
+	// Cancelling is an explicit lifecycle action with its own endpoint.
+	const handleCancelBilling = async (billingId: number) => {
+		try {
+			await api.patch(`/billings/${billingId}/cancel`);
+			toast.success("Cobrança cancelada!");
+			fetchBillings();
+		} catch (error: unknown) {
+			const msg =
+				(error as { response?: { data?: { message?: string } } })?.response
+					?.data?.message ?? "Erro ao cancelar cobrança";
 			toast.error(msg);
 		}
 	};
@@ -504,10 +518,7 @@ export default function BillingsPage() {
 																		variant="warning"
 																		onClick={() => {
 																			if (confirm("Cancelar esta cobrança?")) {
-																				handleUpdateStatus(
-																					billing.id,
-																					"canceled",
-																				);
+																				handleCancelBilling(billing.id);
 																			}
 																		}}
 																	>
@@ -697,13 +708,9 @@ export default function BillingsPage() {
 									const newPaid =
 										updatingBilling.paid_amount +
 										Math.min(partialAmount, remaining);
-									const newStatus =
-										newPaid >= updatingBilling.total_amount
-											? "paid"
-											: "partial";
-									handleUpdateStatus(
+									// Server derives partial/paid from this amount.
+									handleRegisterPayment(
 										updatingBilling.id,
-										newStatus,
 										newPaid,
 										paymentMethod,
 									);
@@ -715,9 +722,8 @@ export default function BillingsPage() {
 								type="button"
 								className="flex-1"
 								onClick={() =>
-									handleUpdateStatus(
+									handleRegisterPayment(
 										updatingBilling.id,
-										"paid",
 										updatingBilling.total_amount,
 										paymentMethod,
 									)

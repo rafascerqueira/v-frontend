@@ -24,8 +24,10 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
+import { FeatureLock } from "@/components/subscription";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useExport } from "@/hooks/useExport";
 import { api } from "@/lib/api";
 import { formatCurrency } from "@/lib/utils";
@@ -55,6 +57,8 @@ export default function ReportsPage() {
 	const [error, setError] = useState<string | null>(null);
 	const [data, setData] = useState<ReportData | null>(null);
 	const { exportData, isExporting } = useExport();
+	const { hasFeature } = useSubscription();
+	const canViewReports = hasFeature("reports");
 
 	const fetchReport = useCallback(async () => {
 		setIsLoading(true);
@@ -71,8 +75,18 @@ export default function ReportsPage() {
 	}, [period]);
 
 	useEffect(() => {
+		// Reports is a Pro feature — don't fetch (the API returns 403) when locked.
+		if (!canViewReports) {
+			setIsLoading(false);
+			return;
+		}
 		fetchReport();
-	}, [fetchReport]);
+	}, [fetchReport, canViewReports]);
+
+	// Locked state with upgrade CTA for free sellers (backend also enforces 403).
+	if (!canViewReports) {
+		return <FeatureLock feature="reports">{null}</FeatureLock>;
+	}
 
 	if (isLoading) {
 		return (

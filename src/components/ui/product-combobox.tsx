@@ -53,7 +53,7 @@ export function ProductCombobox({
 		: products;
 
 	return (
-		<div ref={containerRef} className="relative flex-1">
+		<div ref={containerRef} className="relative flex-1 min-w-0">
 			<button
 				type="button"
 				onClick={() => setOpen((prev) => !prev)}

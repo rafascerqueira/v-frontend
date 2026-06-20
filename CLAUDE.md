@@ -20,13 +20,16 @@ admin panel, public storefront and marketing/landing pages.
 | Theme | next-themes — dark mode required on every component |
 | PWA | `@ducanh2912/next-pwa` |
 | Linting | Biome 2 — **never ESLint/Prettier** |
+| Testing | Vitest + Testing Library + msw (jsdom) — see the `frontend-test-setup` skill |
 
 ## Commands
 
 ```bash
 pnpm install
 pnpm dev          # next dev
-pnpm build        # next build (also the TypeScript gate — there is no test suite)
+pnpm build        # next build (also the TypeScript gate)
+pnpm test         # vitest run (unit/component — see frontend-test-setup skill)
+pnpm test:watch   # vitest watch mode
 pnpm lint         # biome check src/
 pnpm lint:fix     # biome check src/ --write
 pnpm format       # biome format src/ --write

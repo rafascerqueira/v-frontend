@@ -466,8 +466,10 @@ export default function OrdersPage() {
 								{orderItems.map((item, index) => (
 									<div
 										key={index}
-										className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg"
+										className="flex flex-col gap-2 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg"
 									>
+										{/* Product selector gets its own full-width line so even
+										    long names stay readable; controls sit on the line below. */}
 										<ProductCombobox
 											products={products}
 											value={item.product_id}
@@ -476,39 +478,41 @@ export default function OrdersPage() {
 												updateOrderItem(index, "product_id", productId)
 											}
 										/>
-										<input
-											type="number"
-											min="1"
-											placeholder="Qtd"
-											value={item.quantity}
-											onChange={(e) =>
-												updateOrderItem(
-													index,
-													"quantity",
-													Number(e.target.value),
-												)
-											}
-											className="w-20 px-3 py-2 border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-										/>
-										<div className="w-36">
-											<CurrencyInput
-												value={item.unit_price}
-												onChange={(value) =>
-													updateOrderItem(index, "unit_price", value)
+										<div className="flex items-center gap-2">
+											<input
+												type="number"
+												min="1"
+												placeholder="Qtd"
+												value={item.quantity}
+												onChange={(e) =>
+													updateOrderItem(
+														index,
+														"quantity",
+														Number(e.target.value),
+													)
 												}
-												className="text-sm py-2"
+												className="w-20 shrink-0 px-3 py-2 border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
 											/>
+											<div className="w-36 shrink-0">
+												<CurrencyInput
+													value={item.unit_price}
+													onChange={(value) =>
+														updateOrderItem(index, "unit_price", value)
+													}
+													className="text-sm py-2"
+												/>
+											</div>
+											<div className="flex-1 min-w-0 text-right text-sm font-semibold text-gray-900 dark:text-white">
+												{formatCurrency(item.quantity * item.unit_price)}
+											</div>
+											<button
+												type="button"
+												onClick={() => removeOrderItem(index)}
+												className="shrink-0 p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg"
+											>
+												<Trash2 className="h-4 w-4" />
+											</button>
 										</div>
-										<div className="w-24 text-right text-sm font-semibold text-gray-900 dark:text-white">
-											{formatCurrency(item.quantity * item.unit_price)}
-										</div>
-										<button
-											type="button"
-											onClick={() => removeOrderItem(index)}
-											className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
-										>
-											<Trash2 className="h-4 w-4" />
-										</button>
 									</div>
 								))}
 								<div className="flex justify-end pt-2 border-t border-gray-200 dark:border-gray-700">

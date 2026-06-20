@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "@/components/ui/toast";
+import { useSubscription } from "@/contexts/SubscriptionContext";
 import { api } from "@/lib/api";
 
 type ExportFormat = "excel" | "pdf";
@@ -9,12 +10,22 @@ type ExportType = "orders" | "products" | "customers";
 
 export function useExport() {
 	const [isExporting, setIsExporting] = useState(false);
+	const { hasFeature } = useSubscription();
 
 	const exportData = async (
 		type: ExportType,
 		format: ExportFormat,
 		params?: { startDate?: string; endDate?: string },
 	) => {
+		// Data export is a paid feature; the backend also returns 403. Surface the
+		// upgrade prompt without firing a request we know will be rejected.
+		if (!hasFeature("exportData")) {
+			toast.error(
+				"A exportação de dados está disponível no plano Pro. Faça upgrade para acessar.",
+			);
+			return;
+		}
+
 		setIsExporting(true);
 		try {
 			const queryParams = new URLSearchParams({ format });

@@ -30,6 +30,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { toast } from "@/components/ui/toast";
+import { useSubscription } from "@/contexts/SubscriptionContext";
 import { api } from "@/lib/api";
 import type { Product } from "@/types";
 
@@ -40,6 +41,7 @@ const productSchema = z.object({
 	category: z.string().optional().or(z.literal("")),
 	brand: z.string().optional().or(z.literal("")),
 	unit: z.string().min(1, "Unidade é obrigatória"),
+	allow_oversell: z.boolean().optional(),
 });
 
 type ProductFormData = z.infer<typeof productSchema>;
@@ -55,6 +57,8 @@ export default function ProductsPage() {
 	const [initialStock, setInitialStock] = useState<number>(0);
 	const [productImages, setProductImages] = useState<string[]>([]);
 	const [uploadingImage, setUploadingImage] = useState(false);
+	const { hasFeature } = useSubscription();
+	const allowMultipleImages = hasFeature("multipleImages");
 
 	const {
 		register,
@@ -103,6 +107,7 @@ export default function ProductsPage() {
 			category: "",
 			brand: "",
 			unit: "un",
+			allow_oversell: false,
 		});
 		setIsModalOpen(true);
 	};
@@ -119,6 +124,7 @@ export default function ProductsPage() {
 			category: product.category ?? "",
 			brand: product.brand ?? "",
 			unit: product.unit,
+			allow_oversell: product.allow_oversell ?? false,
 		});
 		setIsModalOpen(true);
 	};
@@ -133,6 +139,19 @@ export default function ProductsPage() {
 	const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const files = e.target.files;
 		if (!files || files.length === 0) return;
+
+		// Multiple images is a Pro feature; cap free sellers at a single image
+		// (the backend rejects > 1 on save as well).
+		if (
+			!allowMultipleImages &&
+			(productImages.length >= 1 || files.length > 1)
+		) {
+			toast.error(
+				"Adicionar várias imagens por produto está disponível no plano Pro. Faça upgrade para acessar.",
+			);
+			e.target.value = "";
+			return;
+		}
 
 		try {
 			setUploadingImage(true);
@@ -413,20 +432,22 @@ export default function ProductsPage() {
 									</button>
 								</div>
 							))}
-							<label className="w-20 h-20 flex flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 cursor-pointer hover:border-primary-500 hover:text-primary-600 transition-colors">
-								<ImagePlus className="w-5 h-5" />
-								<span className="text-xs">
-									{uploadingImage ? "Enviando..." : "Adicionar"}
-								</span>
-								<input
-									type="file"
-									accept="image/*"
-									multiple
-									className="hidden"
-									onChange={handleImageUpload}
-									disabled={uploadingImage}
-								/>
-							</label>
+							{(allowMultipleImages || productImages.length === 0) && (
+								<label className="w-20 h-20 flex flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 cursor-pointer hover:border-primary-500 hover:text-primary-600 transition-colors">
+									<ImagePlus className="w-5 h-5" />
+									<span className="text-xs">
+										{uploadingImage ? "Enviando..." : "Adicionar"}
+									</span>
+									<input
+										type="file"
+										accept="image/*"
+										multiple={allowMultipleImages}
+										className="hidden"
+										onChange={handleImageUpload}
+										disabled={uploadingImage}
+									/>
+								</label>
+							)}
 						</div>
 					</div>
 					<Input
@@ -487,6 +508,25 @@ export default function ProductsPage() {
 							/>
 						)}
 					</div>
+					<label className="flex items-start gap-3 rounded-lg border border-gray-200 dark:border-gray-700 p-3 cursor-pointer">
+						<span className="relative inline-flex items-center cursor-pointer shrink-0 mt-0.5">
+							<input
+								type="checkbox"
+								className="sr-only peer"
+								{...register("allow_oversell")}
+							/>
+							<div className="w-11 h-6 bg-gray-200 dark:bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 dark:after:border-gray-500 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+						</span>
+						<span className="text-sm">
+							<span className="block font-medium text-gray-700 dark:text-gray-300">
+								Permitir venda sem estoque
+							</span>
+							<span className="block text-gray-500 dark:text-gray-400">
+								Quando ativo, o produto pode ser vendido pela loja mesmo sem
+								estoque (entrega pendente). Não se aplica a pedidos do catálogo.
+							</span>
+						</span>
+					</label>
 					<div className="flex justify-end gap-3 pt-4">
 						<Button type="button" variant="outline" onClick={closeModal}>
 							Cancelar

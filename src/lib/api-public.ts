@@ -205,9 +205,10 @@ export const catalogApi = {
 			{ token, password },
 		),
 
-	// Orders
-	createOrder: (data: CreateCatalogOrder) =>
-		apiPublic.post<CatalogOrderResponse>("/catalog/orders", data),
+	// Orders — scoped to the store the customer is browsing; the backend resolves
+	// the seller from the slug (never inferred from the posted product ids).
+	createOrder: (slug: string, data: CreateCatalogOrder) =>
+		apiPublic.post<CatalogOrderResponse>(`/catalog/loja/${slug}/orders`, data),
 	trackOrder: (orderNumber: string) =>
 		apiPublic.get<OrderTrackingResponse>(
 			`/catalog/orders/${orderNumber}/track`,

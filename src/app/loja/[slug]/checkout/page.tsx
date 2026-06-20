@@ -344,7 +344,7 @@ export default function StoreCheckoutPage() {
 				zip_code: data.zip_code?.replace(/\D/g, "") || undefined,
 			};
 
-			const res = await catalogApi.createOrder({
+			const res = await catalogApi.createOrder(slug, {
 				customer: customerData,
 				items: items.map((item) => ({
 					product_id: item.product.id,
