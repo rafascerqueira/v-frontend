@@ -11,6 +11,26 @@ export interface ProductStock {
 	reserved_quantity: number;
 	min_stock: number;
 	max_stock: number;
+	// Units owed to open orders (sold past stock). The UI shows `quantity` clamped
+	// to 0 plus an "aguardando reposição" badge when this is > 0.
+	owed_quantity?: number;
+	pending_orders_count?: number;
+}
+
+export type BackorderStatus = "pending" | "fulfilled" | "canceled";
+
+export interface Backorder {
+	id: number;
+	order_id: number;
+	order_item_id: number;
+	product_id: number;
+	quantity: number;
+	fulfilled_quantity: number;
+	status: BackorderStatus;
+	fulfilledAt: string | null;
+	createdAt: string;
+	order?: { id: number; order_number: string; status: string };
+	product?: { id: number; name: string } | null;
 }
 
 export interface Product {
@@ -48,6 +68,24 @@ export interface Customer {
 	updatedAt: string;
 }
 
+export interface OrderItem {
+	id: number;
+	product_id: number;
+	quantity: number;
+	unit_price: number;
+	discount: number;
+	total: number;
+	product?: { id: number; name: string } | null;
+	// Present when this line was sold past stock — drives the per-item
+	// "aguardando reposição / reposto" status in the order detail view.
+	backorder?: {
+		id: number;
+		quantity: number;
+		fulfilled_quantity: number;
+		status: BackorderStatus;
+	} | null;
+}
+
 export interface Order {
 	id: number;
 	order_number: string;
@@ -63,6 +101,9 @@ export interface Order {
 	shipping: number;
 	total: number;
 	notes?: string;
+	// Included by GET /orders and GET /orders/:id (relation is named Order_item
+	// on the backend payload).
+	Order_item?: OrderItem[];
 	createdAt: string;
 	updatedAt: string;
 }

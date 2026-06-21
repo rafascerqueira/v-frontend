@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
 import {
+	AlertTriangle,
 	Calendar,
 	CheckCircle,
 	Clock,
@@ -42,6 +43,7 @@ import {
 } from "@/components/ui/table";
 import { toast } from "@/components/ui/toast";
 import { api, fetchAllRecords } from "@/lib/api";
+import { getLineStockWarning } from "@/lib/stock";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { Customer, Order, Product } from "@/types";
 
@@ -191,6 +193,13 @@ export default function OrdersPage() {
 			return;
 		}
 
+		if (blockedByStock) {
+			toast.error(
+				'Há itens sem estoque suficiente. Reduza a quantidade ou ative "Permitir venda sem estoque" no produto.',
+			);
+			return;
+		}
+
 		try {
 			// Prices are already in cents
 			await api.post("/orders", {
@@ -254,6 +263,24 @@ export default function OrdersPage() {
 	const takenProductIds = orderItems
 		.map((item) => item.product_id)
 		.filter((id) => id > 0);
+
+	// Per-line stock check against the selected product's available stock, so the
+	// modal can warn (oversell) or block (no oversell) BEFORE the API would 400.
+	const lineStockWarning = (item: { product_id: number; quantity: number }) =>
+		getLineStockWarning(
+			products.find((p) => p.id === item.product_id),
+			item.quantity,
+		);
+
+	// True when at least one line is short AND its product can't be oversold — that
+	// order would 400, so we block submit and flag the line instead.
+	const blockedByStock = orderItems.some((item) => {
+		const warning = lineStockWarning(item);
+		return warning !== null && !warning.allowOversell;
+	});
+
+	const orderHasPendingBackorder = (order: Order) =>
+		order.Order_item?.some((it) => it.backorder?.status === "pending") ?? false;
 
 	return (
 		<div className="space-y-6">
@@ -328,9 +355,20 @@ export default function OrdersPage() {
 												className="hover:bg-surface-muted transition-colors"
 											>
 												<TableCell>
-													<code className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-medium">
-														{order.order_number}
-													</code>
+													<div className="flex flex-col items-start gap-1">
+														<code className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-medium">
+															{order.order_number}
+														</code>
+														{orderHasPendingBackorder(order) && (
+															<Badge
+																variant="warning"
+																className="flex items-center gap-1 w-fit"
+															>
+																<Clock className="h-3 w-3" />
+																Aguardando reposição
+															</Badge>
+														)}
+													</div>
 												</TableCell>
 												<TableCell>
 													<div className="flex items-center gap-2">
@@ -513,6 +551,24 @@ export default function OrdersPage() {
 												<Trash2 className="h-4 w-4" />
 											</button>
 										</div>
+										{(() => {
+											const warning = lineStockWarning(item);
+											if (!warning) return null;
+											return warning.allowOversell ? (
+												<p className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
+													<Clock className="h-3 w-3 shrink-0" />
+													Será vendido sem estoque (entrega pendente):{" "}
+													{warning.shortage} un.
+												</p>
+											) : (
+												<p className="flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
+													<AlertTriangle className="h-3 w-3 shrink-0" />
+													Estoque insuficiente — disponível: {warning.available}
+													, solicitado: {item.quantity}. Ative "Permitir venda
+													sem estoque" no produto para vender mesmo assim.
+												</p>
+											);
+										})()}
 									</div>
 								))}
 								<div className="flex justify-end pt-2 border-t border-gray-200 dark:border-gray-700">
@@ -534,7 +590,11 @@ export default function OrdersPage() {
 						<Button type="button" variant="outline" onClick={closeModal}>
 							Cancelar
 						</Button>
-						<Button type="submit" isLoading={isSubmitting}>
+						<Button
+							type="submit"
+							isLoading={isSubmitting}
+							disabled={blockedByStock}
+						>
 							Criar Pedido
 						</Button>
 					</div>
@@ -579,6 +639,57 @@ export default function OrdersPage() {
 								</p>
 							</div>
 						</div>
+						{viewingOrder.Order_item && viewingOrder.Order_item.length > 0 && (
+							<div>
+								<p className="text-sm text-gray-500 mb-2">Itens</p>
+								<div className="space-y-2">
+									{viewingOrder.Order_item.map((it) => {
+										const pending =
+											it.backorder?.status === "pending"
+												? it.backorder.quantity -
+													it.backorder.fulfilled_quantity
+												: 0;
+										return (
+											<div
+												key={it.id}
+												className="flex items-center justify-between gap-3 text-sm border-b border-gray-100 dark:border-gray-800 pb-2 last:border-0"
+											>
+												<div className="min-w-0">
+													<p className="font-medium text-gray-900 dark:text-white truncate">
+														{it.product?.name ?? `Produto #${it.product_id}`}
+													</p>
+													<p className="text-gray-500">
+														{it.quantity} × {formatCurrency(it.unit_price)}
+													</p>
+												</div>
+												<div className="flex items-center gap-2 shrink-0">
+													{pending > 0 ? (
+														<Badge
+															variant="warning"
+															className="flex items-center gap-1"
+														>
+															<Clock className="h-3 w-3" />
+															Aguardando {pending} un
+														</Badge>
+													) : it.backorder?.status === "fulfilled" ? (
+														<Badge
+															variant="success"
+															className="flex items-center gap-1"
+														>
+															<CheckCircle className="h-3 w-3" />
+															Reposto
+														</Badge>
+													) : null}
+													<span className="font-medium text-gray-900 dark:text-white">
+														{formatCurrency(it.total)}
+													</span>
+												</div>
+											</div>
+										);
+									})}
+								</div>
+							</div>
+						)}
 						{viewingOrder.notes && (
 							<div>
 								<p className="text-sm text-gray-500">Observações</p>

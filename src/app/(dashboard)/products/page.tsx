@@ -3,6 +3,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
 import {
+	ChevronDown,
+	ChevronRight,
+	Clock,
 	Edit2,
 	ImagePlus,
 	Package,
@@ -32,7 +35,8 @@ import {
 import { toast } from "@/components/ui/toast";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { api } from "@/lib/api";
-import type { Product } from "@/types";
+import { displayStock } from "@/lib/stock";
+import type { Backorder, Product } from "@/types";
 
 const productSchema = z.object({
 	name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
@@ -59,6 +63,42 @@ export default function ProductsPage() {
 	const [uploadingImage, setUploadingImage] = useState(false);
 	const { hasFeature } = useSubscription();
 	const allowMultipleImages = hasFeature("multipleImages");
+
+	// Accordion: which product's "aguardando reposição" breakdown is open, plus a
+	// per-product cache of the pending backorders fetched on demand.
+	const [expandedId, setExpandedId] = useState<number | null>(null);
+	const [backorders, setBackorders] = useState<Record<number, Backorder[]>>({});
+	const [loadingBackordersId, setLoadingBackordersId] = useState<number | null>(
+		null,
+	);
+
+	const toggleBackorders = useCallback(
+		async (product: Product) => {
+			if ((product.stock?.owed_quantity ?? 0) <= 0) return;
+			if (expandedId === product.id) {
+				setExpandedId(null);
+				return;
+			}
+			setExpandedId(product.id);
+			if (backorders[product.id]) return;
+			try {
+				setLoadingBackordersId(product.id);
+				const { data } = await api.get("/backorders", {
+					params: { product_id: product.id, status: "pending" },
+				});
+				setBackorders((prev) => ({
+					...prev,
+					[product.id]: Array.isArray(data) ? data : [],
+				}));
+			} catch (error) {
+				console.error(error);
+				toast.error("Erro ao carregar pedidos aguardando reposição");
+			} finally {
+				setLoadingBackordersId(null);
+			}
+		},
+		[expandedId, backorders],
+	);
 
 	const {
 		register,
@@ -312,86 +352,165 @@ export default function ProductsPage() {
 							</TableHeader>
 							<TableBody>
 								<AnimatePresence>
-									{filteredProducts.map((product, index) => (
-										<motion.tr
-											key={product.id}
-											initial={{ opacity: 0, y: 10 }}
-											animate={{ opacity: 1, y: 0 }}
-											transition={{ delay: index * 0.05 }}
-											exit={{ opacity: 0, x: -20 }}
-											className="hover:bg-surface-muted transition-colors"
-										>
-											<TableCell>
-												<div className="flex items-center gap-3">
-													<div className="w-10 h-10 shrink-0 rounded-md overflow-hidden bg-gray-100 dark:bg-gray-700 flex items-center justify-center border border-gray-200 dark:border-gray-600">
-														{product.images?.[0] ? (
-															<img
-																src={product.images[0]}
-																alt={product.name}
-																loading="lazy"
-																decoding="async"
-																className="w-full h-full object-cover"
-															/>
-														) : (
-															<Package className="w-5 h-5 text-gray-400" />
+									{filteredProducts.flatMap((product, index) => {
+										const rawQty = product.stock?.quantity ?? 0;
+										const owed = product.stock?.owed_quantity ?? 0;
+										// Never show a negative number — a deficit is conveyed by the
+										// "aguardando reposição" badge, not by a negative stock count.
+										const displayQty = displayStock(rawQty);
+										const isLow = displayQty <= (product.stock?.min_stock ?? 0);
+										const isExpanded = expandedId === product.id;
+										const rows: React.ReactNode[] = [
+											<motion.tr
+												key={product.id}
+												initial={{ opacity: 0, y: 10 }}
+												animate={{ opacity: 1, y: 0 }}
+												transition={{ delay: index * 0.05 }}
+												exit={{ opacity: 0, x: -20 }}
+												className="hover:bg-surface-muted transition-colors"
+											>
+												<TableCell>
+													<div className="flex items-center gap-3">
+														<div className="w-10 h-10 shrink-0 rounded-md overflow-hidden bg-gray-100 dark:bg-gray-700 flex items-center justify-center border border-gray-200 dark:border-gray-600">
+															{product.images?.[0] ? (
+																<img
+																	src={product.images[0]}
+																	alt={product.name}
+																	loading="lazy"
+																	decoding="async"
+																	className="w-full h-full object-cover"
+																/>
+															) : (
+																<Package className="w-5 h-5 text-gray-400" />
+															)}
+														</div>
+														<div className="min-w-0">
+															<p className="font-medium text-gray-900 dark:text-white truncate">
+																{product.name}
+															</p>
+															<p className="text-sm text-gray-500 truncate max-w-xs">
+																{product.description}
+															</p>
+														</div>
+													</div>
+												</TableCell>
+												<TableCell>
+													<code className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs">
+														{product.sku || "-"}
+													</code>
+												</TableCell>
+												<TableCell>
+													{product.prices?.[0]?.price
+														? `R$ ${(product.prices[0].price / 100).toFixed(2)}`
+														: "-"}
+												</TableCell>
+												<TableCell>
+													<div className="flex flex-col items-start gap-1">
+														<span
+															className={`font-medium ${
+																isLow
+																	? "text-red-600"
+																	: "text-gray-900 dark:text-gray-100"
+															}`}
+														>
+															{displayQty}
+														</span>
+														{owed > 0 && (
+															<button
+																type="button"
+																onClick={() => toggleBackorders(product)}
+																aria-expanded={isExpanded}
+																className="rounded-full"
+															>
+																<Badge
+																	variant="warning"
+																	className="flex items-center gap-1 cursor-pointer"
+																>
+																	<Clock className="h-3 w-3" />
+																	{owed} aguardando reposição
+																	{isExpanded ? (
+																		<ChevronDown className="h-3 w-3" />
+																	) : (
+																		<ChevronRight className="h-3 w-3" />
+																	)}
+																</Badge>
+															</button>
 														)}
 													</div>
-													<div className="min-w-0">
-														<p className="font-medium text-gray-900 dark:text-white truncate">
-															{product.name}
-														</p>
-														<p className="text-sm text-gray-500 truncate max-w-xs">
-															{product.description}
-														</p>
-													</div>
-												</div>
-											</TableCell>
-											<TableCell>
-												<code className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs">
-													{product.sku || "-"}
-												</code>
-											</TableCell>
-											<TableCell>
-												{product.prices?.[0]?.price
-													? `R$ ${(product.prices[0].price / 100).toFixed(2)}`
-													: "-"}
-											</TableCell>
-											<TableCell>
-												<span
-													className={`font-medium ${
-														(product.stock?.quantity ?? 0) <=
-														(product.stock?.min_stock ?? 0)
-															? "text-red-600"
-															: "text-gray-900 dark:text-gray-100"
-													}`}
+												</TableCell>
+												<TableCell>
+													<Badge variant={product.active ? "success" : "error"}>
+														{product.active ? "Ativo" : "Inativo"}
+													</Badge>
+												</TableCell>
+												<TableCell className="text-right">
+													<ActionMenu className="w-36">
+														<ActionMenuItem
+															onClick={() => openEditModal(product)}
+														>
+															<Edit2 className="h-4 w-4" />
+															Editar
+														</ActionMenuItem>
+														<ActionMenuItem
+															variant="danger"
+															onClick={() => setDeletingProduct(product)}
+														>
+															<Trash2 className="h-4 w-4" />
+															Excluir
+														</ActionMenuItem>
+													</ActionMenu>
+												</TableCell>
+											</motion.tr>,
+										];
+
+										if (isExpanded) {
+											const list = backorders[product.id];
+											rows.push(
+												<motion.tr
+													key={`${product.id}-backorders`}
+													initial={{ opacity: 0 }}
+													animate={{ opacity: 1 }}
+													exit={{ opacity: 0 }}
+													className="bg-surface-muted"
 												>
-													{product.stock?.quantity ?? 0}
-												</span>
-											</TableCell>
-											<TableCell>
-												<Badge variant={product.active ? "success" : "error"}>
-													{product.active ? "Ativo" : "Inativo"}
-												</Badge>
-											</TableCell>
-											<TableCell className="text-right">
-												<ActionMenu className="w-36">
-													<ActionMenuItem
-														onClick={() => openEditModal(product)}
-													>
-														<Edit2 className="h-4 w-4" />
-														Editar
-													</ActionMenuItem>
-													<ActionMenuItem
-														variant="danger"
-														onClick={() => setDeletingProduct(product)}
-													>
-														<Trash2 className="h-4 w-4" />
-														Excluir
-													</ActionMenuItem>
-												</ActionMenu>
-											</TableCell>
-										</motion.tr>
-									))}
+													<td colSpan={6} className="px-6 py-3">
+														{loadingBackordersId === product.id ? (
+															<p className="text-sm text-gray-500">
+																Carregando pedidos…
+															</p>
+														) : list && list.length > 0 ? (
+															<div className="space-y-1.5">
+																<p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+																	Pedidos aguardando reposição
+																</p>
+																{list.map((bo) => (
+																	<div
+																		key={bo.id}
+																		className="flex items-center justify-between text-sm"
+																	>
+																		<span className="font-medium text-gray-700 dark:text-gray-200">
+																			{bo.order?.order_number ??
+																				`Pedido #${bo.order_id}`}
+																		</span>
+																		<span className="text-gray-500 dark:text-gray-400">
+																			{bo.quantity - bo.fulfilled_quantity} un
+																			aguardando
+																		</span>
+																	</div>
+																))}
+															</div>
+														) : (
+															<p className="text-sm text-gray-500">
+																Nenhum pedido aguardando reposição.
+															</p>
+														)}
+													</td>
+												</motion.tr>,
+											);
+										}
+
+										return rows;
+									})}
 								</AnimatePresence>
 							</TableBody>
 						</Table>

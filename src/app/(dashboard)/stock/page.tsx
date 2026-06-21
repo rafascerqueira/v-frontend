@@ -5,6 +5,9 @@ import {
 	AlertTriangle,
 	ArrowDownCircle,
 	ArrowUpCircle,
+	ChevronDown,
+	ChevronRight,
+	Clock,
 	Edit2,
 	Package,
 	Plus,
@@ -28,6 +31,8 @@ import {
 } from "@/components/ui/table";
 import { toast } from "@/components/ui/toast";
 import { api, fetchAllRecords } from "@/lib/api";
+import { displayStock } from "@/lib/stock";
+import type { Backorder } from "@/types";
 
 interface StockItem {
 	id: number;
@@ -37,6 +42,9 @@ interface StockItem {
 	min_stock: number;
 	max_stock: number;
 	isLowStock: boolean;
+	// Units owed to open orders (sold past stock) and how many orders wait on them.
+	owed_quantity?: number;
+	pending_orders_count?: number;
 	product: {
 		id: number;
 		name: string;
@@ -74,6 +82,42 @@ export default function StockPage() {
 		null,
 	);
 	const [newStockModal, setNewStockModal] = useState(false);
+
+	// Accordion: which product's "aguardando reposição" breakdown is open, plus a
+	// per-product cache of the pending backorders fetched on demand.
+	const [expandedId, setExpandedId] = useState<number | null>(null);
+	const [backorders, setBackorders] = useState<Record<number, Backorder[]>>({});
+	const [loadingBackordersId, setLoadingBackordersId] = useState<number | null>(
+		null,
+	);
+
+	const toggleBackorders = useCallback(
+		async (stock: StockItem) => {
+			if ((stock.owed_quantity ?? 0) <= 0) return;
+			if (expandedId === stock.product_id) {
+				setExpandedId(null);
+				return;
+			}
+			setExpandedId(stock.product_id);
+			if (backorders[stock.product_id]) return;
+			try {
+				setLoadingBackordersId(stock.product_id);
+				const { data } = await api.get("/backorders", {
+					params: { product_id: stock.product_id, status: "pending" },
+				});
+				setBackorders((prev) => ({
+					...prev,
+					[stock.product_id]: Array.isArray(data) ? data : [],
+				}));
+			} catch (error) {
+				console.error(error);
+				toast.error("Erro ao carregar pedidos aguardando reposição");
+			} finally {
+				setLoadingBackordersId(null);
+			}
+		},
+		[expandedId, backorders],
+	);
 
 	const fetchStocks = useCallback(async () => {
 		try {
@@ -204,7 +248,12 @@ export default function StockPage() {
 		);
 
 	const lowStockCount = stocks.filter((s) => s.isLowStock).length;
-	const totalItems = stocks.reduce((acc, s) => acc + s.quantity, 0);
+	// On-hand units only — a negative (oversold) quantity is a deficit, not stock, so
+	// it counts as 0 here and is surfaced separately as "aguardando reposição".
+	const totalItems = stocks.reduce(
+		(acc, s) => acc + Math.max(s.quantity, 0),
+		0,
+	);
 	const totalReserved = stocks.reduce((acc, s) => acc + s.reserved_quantity, 0);
 
 	return (
@@ -267,7 +316,7 @@ export default function StockPage() {
 							<div>
 								<p className="text-sm text-gray-500">Disponível</p>
 								<p className="text-2xl font-bold text-gray-900 dark:text-white">
-									{(totalItems - totalReserved).toLocaleString()}
+									{Math.max(totalItems - totalReserved, 0).toLocaleString()}
 								</p>
 							</div>
 						</div>
@@ -397,80 +446,163 @@ export default function StockPage() {
 								</TableRow>
 							</TableHeader>
 							<TableBody>
-								{filteredStocks.map((stock, index) => (
-									<motion.tr
-										key={stock.id}
-										initial={{ opacity: 0, y: 10 }}
-										animate={{ opacity: 1, y: 0 }}
-										transition={{ delay: index * 0.03 }}
-										className={`hover:bg-surface-muted transition-colors ${stock.isLowStock ? "bg-red-50 dark:bg-red-900/20" : ""}`}
-									>
-										<TableCell>
-											<div className="flex items-center gap-3">
-												{stock.isLowStock && (
-													<AlertTriangle className="h-4 w-4 text-red-500 shrink-0" />
-												)}
-												<div>
-													<p className="font-medium text-gray-900 dark:text-white">
-														{stock.product?.name || "Produto não encontrado"}
-													</p>
-													<p className="text-xs text-gray-500">
-														{stock.product?.category}
-													</p>
+								{filteredStocks.flatMap((stock, index) => {
+									const owed = stock.owed_quantity ?? 0;
+									// Never render a negative number — the deficit shows as a badge.
+									const displayQty = displayStock(stock.quantity);
+									const isExpanded = expandedId === stock.product_id;
+									const rows: React.ReactNode[] = [
+										<motion.tr
+											key={stock.id}
+											initial={{ opacity: 0, y: 10 }}
+											animate={{ opacity: 1, y: 0 }}
+											transition={{ delay: index * 0.03 }}
+											className={`hover:bg-surface-muted transition-colors ${stock.isLowStock ? "bg-red-50 dark:bg-red-900/20" : ""}`}
+										>
+											<TableCell>
+												<div className="flex items-center gap-3">
+													{stock.isLowStock && (
+														<AlertTriangle className="h-4 w-4 text-red-500 shrink-0" />
+													)}
+													<div>
+														<p className="font-medium text-gray-900 dark:text-white">
+															{stock.product?.name || "Produto não encontrado"}
+														</p>
+														<p className="text-xs text-gray-500">
+															{stock.product?.category}
+														</p>
+													</div>
 												</div>
-											</div>
-										</TableCell>
-										<TableCell>
-											<code className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs">
-												{stock.product?.sku || "-"}
-											</code>
-										</TableCell>
-										<TableCell>
-											<span
-												className={`font-medium ${stock.isLowStock ? "text-red-600" : "text-gray-900 dark:text-white"}`}
+											</TableCell>
+											<TableCell>
+												<code className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs">
+													{stock.product?.sku || "-"}
+												</code>
+											</TableCell>
+											<TableCell>
+												<div className="flex flex-col items-start gap-1">
+													<span
+														className={`font-medium ${stock.isLowStock ? "text-red-600" : "text-gray-900 dark:text-white"}`}
+													>
+														{displayQty}
+													</span>
+													{owed > 0 && (
+														<button
+															type="button"
+															onClick={() => toggleBackorders(stock)}
+															aria-expanded={isExpanded}
+															className="rounded-full"
+														>
+															<Badge
+																variant="warning"
+																className="flex items-center gap-1 cursor-pointer"
+															>
+																<Clock className="h-3 w-3" />
+																{owed} aguardando reposição
+																{isExpanded ? (
+																	<ChevronDown className="h-3 w-3" />
+																) : (
+																	<ChevronRight className="h-3 w-3" />
+																)}
+															</Badge>
+														</button>
+													)}
+												</div>
+											</TableCell>
+											<TableCell>
+												<span className="text-gray-600 dark:text-gray-400">
+													{stock.reserved_quantity}
+												</span>
+											</TableCell>
+											<TableCell>
+												<span className="text-sm text-gray-600 dark:text-gray-400">
+													{stock.min_stock} / {stock.max_stock}
+												</span>
+											</TableCell>
+											<TableCell>
+												{owed > 0 ? (
+													<Badge variant="warning">Em falta</Badge>
+												) : (
+													<Badge
+														variant={stock.isLowStock ? "error" : "success"}
+													>
+														{stock.isLowStock ? "Baixo" : "Normal"}
+													</Badge>
+												)}
+											</TableCell>
+											<TableCell className="text-right">
+												<ActionMenu className="w-36">
+													<ActionMenuItem
+														variant="success"
+														onClick={() => openMovementModal(stock, "in")}
+													>
+														<ArrowUpCircle className="h-4 w-4" />
+														Entrada
+													</ActionMenuItem>
+													<ActionMenuItem
+														variant="danger"
+														onClick={() => openMovementModal(stock, "out")}
+													>
+														<ArrowDownCircle className="h-4 w-4" />
+														Saída
+													</ActionMenuItem>
+													<ActionMenuItem onClick={() => openEditModal(stock)}>
+														<Edit2 className="h-4 w-4" />
+														Editar
+													</ActionMenuItem>
+												</ActionMenu>
+											</TableCell>
+										</motion.tr>,
+									];
+
+									if (isExpanded) {
+										const list = backorders[stock.product_id];
+										rows.push(
+											<motion.tr
+												key={`${stock.id}-backorders`}
+												initial={{ opacity: 0 }}
+												animate={{ opacity: 1 }}
+												exit={{ opacity: 0 }}
+												className="bg-surface-muted"
 											>
-												{stock.quantity}
-											</span>
-										</TableCell>
-										<TableCell>
-											<span className="text-gray-600 dark:text-gray-400">
-												{stock.reserved_quantity}
-											</span>
-										</TableCell>
-										<TableCell>
-											<span className="text-sm text-gray-600 dark:text-gray-400">
-												{stock.min_stock} / {stock.max_stock}
-											</span>
-										</TableCell>
-										<TableCell>
-											<Badge variant={stock.isLowStock ? "error" : "success"}>
-												{stock.isLowStock ? "Baixo" : "Normal"}
-											</Badge>
-										</TableCell>
-										<TableCell className="text-right">
-											<ActionMenu className="w-36">
-												<ActionMenuItem
-													variant="success"
-													onClick={() => openMovementModal(stock, "in")}
-												>
-													<ArrowUpCircle className="h-4 w-4" />
-													Entrada
-												</ActionMenuItem>
-												<ActionMenuItem
-													variant="danger"
-													onClick={() => openMovementModal(stock, "out")}
-												>
-													<ArrowDownCircle className="h-4 w-4" />
-													Saída
-												</ActionMenuItem>
-												<ActionMenuItem onClick={() => openEditModal(stock)}>
-													<Edit2 className="h-4 w-4" />
-													Editar
-												</ActionMenuItem>
-											</ActionMenu>
-										</TableCell>
-									</motion.tr>
-								))}
+												<td colSpan={7} className="px-6 py-3">
+													{loadingBackordersId === stock.product_id ? (
+														<p className="text-sm text-gray-500">
+															Carregando pedidos…
+														</p>
+													) : list && list.length > 0 ? (
+														<div className="space-y-1.5">
+															<p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+																Pedidos aguardando reposição
+															</p>
+															{list.map((bo) => (
+																<div
+																	key={bo.id}
+																	className="flex items-center justify-between text-sm"
+																>
+																	<span className="font-medium text-gray-700 dark:text-gray-200">
+																		{bo.order?.order_number ??
+																			`Pedido #${bo.order_id}`}
+																	</span>
+																	<span className="text-gray-500 dark:text-gray-400">
+																		{bo.quantity - bo.fulfilled_quantity} un
+																		aguardando
+																	</span>
+																</div>
+															))}
+														</div>
+													) : (
+														<p className="text-sm text-gray-500">
+															Nenhum pedido aguardando reposição.
+														</p>
+													)}
+												</td>
+											</motion.tr>,
+										);
+									}
+
+									return rows;
+								})}
 							</TableBody>
 						</Table>
 					)}
