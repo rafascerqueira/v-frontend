@@ -116,19 +116,59 @@ function formatPrice(cents: number) {
 }
 
 export default function PlansPage() {
-	const { subscription, loading } = useSubscription();
+	const { subscription, loading, plans, refreshSubscription } =
+		useSubscription();
 	const currentPlan = subscription?.plan || "free";
 	const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
 	const searchParams = useSearchParams();
 
 	useEffect(() => {
 		const checkout = searchParams.get("checkout");
-		if (checkout === "success") {
-			toast.success("Assinatura ativada com sucesso! Bem-vindo ao plano Pro.");
-		} else if (checkout === "canceled") {
+		if (checkout === "canceled") {
 			toast("Pagamento cancelado.", { icon: "ℹ️" });
+			return;
 		}
-	}, [searchParams]);
+		if (checkout !== "success") return;
+
+		// Stripe redirects back to success_url as soon as payment completes — which
+		// can land *before* the webhook flips the plan to pro. Poll the subscription
+		// until it activates instead of asserting success blindly.
+		let cancelled = false;
+		const toastId = toast.loading("Confirmando seu pagamento…");
+
+		(async () => {
+			for (let attempt = 0; attempt < 6 && !cancelled; attempt++) {
+				try {
+					const { data } = await api.get("/subscriptions/info");
+					if (data?.plan && data.plan !== "free") {
+						await refreshSubscription();
+						if (!cancelled) {
+							toast.success(
+								"Assinatura ativada com sucesso! Bem-vindo ao plano Pro.",
+								{ id: toastId },
+							);
+						}
+						return;
+					}
+				} catch {
+					// transient — keep polling
+				}
+				await new Promise((resolve) => setTimeout(resolve, 2000));
+			}
+			if (!cancelled) {
+				await refreshSubscription();
+				toast(
+					"Pagamento recebido! Estamos confirmando sua assinatura — pode levar alguns instantes.",
+					{ id: toastId, icon: "⏳" },
+				);
+			}
+		})();
+
+		return () => {
+			cancelled = true;
+			toast.dismiss(toastId);
+		};
+	}, [searchParams, refreshSubscription]);
 
 	const handleSelectPlan = async (planId: string) => {
 		if (planId === currentPlan) {
@@ -192,6 +232,10 @@ export default function PlansPage() {
 				{Object.entries(PLAN_FEATURES).map(([planId, plan], index) => {
 					const isCurrentPlan = currentPlan === planId;
 					const Icon = plan.icon;
+					// Price comes from the backend (GET /subscriptions/plans) — the same
+					// source Stripe charges from — so the displayed value can't drift from
+					// what's actually billed. Static config is only a fallback.
+					const price = plans.find((p) => p.id === planId)?.price ?? plan.price;
 
 					return (
 						<motion.div
@@ -257,9 +301,9 @@ export default function PlansPage() {
 												</div>
 											)}
 											<span className="text-3xl font-bold text-gray-900 dark:text-white">
-												{formatPrice(plan.price)}
+												{formatPrice(price)}
 											</span>
-											{plan.price > 0 && (
+											{price > 0 && (
 												<span className="text-gray-500 dark:text-gray-400">
 													/mês
 												</span>
