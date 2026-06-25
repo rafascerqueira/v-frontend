@@ -2,12 +2,23 @@
 
 import { motion } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
-import { Check, Crown, Sparkles, Star, X, Zap } from "lucide-react";
+import {
+	AlertTriangle,
+	CalendarClock,
+	Check,
+	CreditCard,
+	Crown,
+	Sparkles,
+	Star,
+	X,
+	Zap,
+} from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { api } from "@/lib/api";
+import { formatSubscriptionDate } from "@/lib/subscription-status";
 
 interface PlanFeature {
 	name: string;
@@ -113,6 +124,89 @@ function formatPrice(cents: number) {
 		style: "currency",
 		currency: "BRL",
 	}).format(cents / 100);
+}
+
+function SubscriptionStatusBanner({
+	status,
+	cancelAtPeriodEnd,
+	periodEnd,
+	onManage,
+	managing,
+	disabled,
+}: {
+	status: string;
+	cancelAtPeriodEnd: boolean;
+	periodEnd: string;
+	onManage: () => void;
+	managing: boolean;
+	disabled: boolean;
+}) {
+	const endLabel = formatSubscriptionDate(periodEnd);
+
+	// Priority: a failed renewal is the most urgent, then a scheduled cancellation,
+	// otherwise the normal "renews on" state.
+	const variant =
+		status === "past_due"
+			? {
+					tone: "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800",
+					icon: CreditCard,
+					iconTone: "text-red-600 dark:text-red-400",
+					title: "Pagamento pendente",
+					message:
+						"Não conseguimos renovar sua assinatura. Atualize seu cartão para manter o plano Pro ativo.",
+					cta: "Atualizar pagamento",
+				}
+			: cancelAtPeriodEnd
+				? {
+						tone: "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800",
+						icon: AlertTriangle,
+						iconTone: "text-amber-600 dark:text-amber-400",
+						title: "Assinatura cancelada",
+						message: endLabel
+							? `Você mantém acesso ao plano Pro até ${endLabel}. Depois disso, sua conta volta ao plano Gratuito.`
+							: "Você mantém acesso ao plano Pro até o fim do período atual.",
+						cta: "Reativar assinatura",
+					}
+				: {
+						tone: "bg-primary-50 dark:bg-primary-900/20 border-primary-200 dark:border-primary-800",
+						icon: CalendarClock,
+						iconTone: "text-primary-600 dark:text-primary-400",
+						title: "Plano Pro ativo",
+						message: endLabel
+							? `Sua assinatura renova automaticamente em ${endLabel}.`
+							: "Sua assinatura está ativa.",
+						cta: "Gerenciar assinatura",
+					};
+
+	const Icon = variant.icon;
+
+	return (
+		<motion.div
+			initial={{ opacity: 0, y: 10 }}
+			animate={{ opacity: 1, y: 0 }}
+			className={`mb-8 rounded-2xl border p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-4 ${variant.tone}`}
+		>
+			<div className="flex items-start gap-3 flex-1">
+				<Icon className={`w-5 h-5 mt-0.5 shrink-0 ${variant.iconTone}`} />
+				<div>
+					<p className="font-semibold text-gray-900 dark:text-white">
+						{variant.title}
+					</p>
+					<p className="text-sm text-gray-600 dark:text-gray-300 mt-0.5">
+						{variant.message}
+					</p>
+				</div>
+			</div>
+			<button
+				type="button"
+				onClick={onManage}
+				disabled={disabled}
+				className="shrink-0 py-2 px-4 rounded-xl text-sm font-medium bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+			>
+				{managing ? "Abrindo..." : variant.cta}
+			</button>
+		</motion.div>
+	);
 }
 
 export default function PlansPage() {
@@ -226,6 +320,20 @@ export default function PlansPage() {
 					</p>
 				</motion.div>
 			</div>
+
+			{/* Current subscription status — surfaces "how much Pro time is left",
+			    a scheduled cancellation, or a failed renewal, all read from the
+			    subscription info the app already fetched. */}
+			{subscription?.subscription && currentPlan !== "free" && (
+				<SubscriptionStatusBanner
+					status={subscription.subscription.status}
+					cancelAtPeriodEnd={subscription.subscription.cancel_at_period_end}
+					periodEnd={subscription.subscription.current_period_end}
+					onManage={handleManageSubscription}
+					managing={loadingPlan === "portal"}
+					disabled={loadingPlan !== null}
+				/>
+			)}
 
 			{/* Plans Grid */}
 			<div className="grid md:grid-cols-3 gap-8 mb-12">

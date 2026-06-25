@@ -6,12 +6,19 @@ import {
 	Bell,
 	CheckCheck,
 	CheckCircle,
+	ChevronRight,
 	Info,
 	Trash2,
 	XCircle,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { useSubscription } from "@/contexts/SubscriptionContext";
 import { type Notification, useNotifications } from "@/hooks/useNotifications";
+import {
+	getSubscriptionNotices,
+	type SubscriptionNotice,
+} from "@/lib/subscription-status";
 import { cn } from "@/lib/utils";
 
 const typeIcons = {
@@ -83,11 +90,60 @@ function NotificationItem({
 	);
 }
 
+function SubscriptionNoticeItem({
+	notice,
+	onClick,
+}: {
+	notice: SubscriptionNotice;
+	onClick: () => void;
+}) {
+	const Icon = typeIcons[notice.type];
+
+	return (
+		<button
+			type="button"
+			onClick={onClick}
+			className="w-full text-left p-3 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+		>
+			<div className="flex gap-3">
+				<div className={cn("p-2 rounded-full h-fit", typeColors[notice.type])}>
+					<Icon className="w-4 h-4" />
+				</div>
+				<div className="flex-1 min-w-0">
+					<p className="text-sm font-medium text-gray-900 dark:text-white">
+						{notice.title}
+					</p>
+					<p className="text-sm text-gray-600 dark:text-gray-400">
+						{notice.message}
+					</p>
+					<span className="mt-1 inline-flex items-center gap-0.5 text-xs font-medium text-primary-600 dark:text-primary-400">
+						Gerenciar assinatura
+						<ChevronRight className="w-3 h-3" />
+					</span>
+				</div>
+			</div>
+		</button>
+	);
+}
+
 export function NotificationsDropdown() {
 	const [isOpen, setIsOpen] = useState(false);
 	const dropdownRef = useRef<HTMLDivElement>(null);
+	const router = useRouter();
 	const { notifications, unreadCount, markAsRead, markAllAsRead, clearAll } =
 		useNotifications();
+	const { subscription } = useSubscription();
+
+	// Subscription warnings (failed renewal / scheduled cancellation) are derived from
+	// the already-fetched plan info and pinned above the real-time feed — they're
+	// important and persist while the condition holds, so they aren't dismissible.
+	const subscriptionNotices = getSubscriptionNotices(subscription);
+	const badgeCount = unreadCount + subscriptionNotices.length;
+
+	const goToPlans = () => {
+		setIsOpen(false);
+		router.push("/plans");
+	};
 
 	useEffect(() => {
 		function handleClickOutside(event: MouseEvent) {
@@ -111,9 +167,9 @@ export function NotificationsDropdown() {
 				className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
 			>
 				<Bell className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-				{unreadCount > 0 && (
+				{badgeCount > 0 && (
 					<span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
-						{unreadCount > 9 ? "9+" : unreadCount}
+						{badgeCount > 9 ? "9+" : badgeCount}
 					</span>
 				)}
 			</button>
@@ -155,7 +211,16 @@ export function NotificationsDropdown() {
 						</div>
 
 						<div className="max-h-96 overflow-y-auto">
-							{notifications.length === 0 ? (
+							{subscriptionNotices.map((notice) => (
+								<SubscriptionNoticeItem
+									key={notice.id}
+									notice={notice}
+									onClick={goToPlans}
+								/>
+							))}
+
+							{notifications.length === 0 &&
+							subscriptionNotices.length === 0 ? (
 								<div className="p-8 text-center">
 									<Bell className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
 									<p className="text-sm text-gray-500 dark:text-gray-400">
