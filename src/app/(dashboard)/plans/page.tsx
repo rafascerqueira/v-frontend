@@ -16,6 +16,7 @@ import {
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { notifyCheckoutError } from "@/components/subscription";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { api } from "@/lib/api";
 import {
@@ -263,6 +264,18 @@ export default function PlansPage() {
 		};
 	}, [searchParams, refreshSubscription]);
 
+	// Declared before handleSelectPlan, whose 409 toast calls it from a click.
+	const handleManageSubscription = async () => {
+		setLoadingPlan("portal");
+		try {
+			const { data } = await api.post("/subscriptions/portal");
+			window.location.href = data.url;
+		} catch {
+			toast.error("Erro ao abrir portal de pagamentos.");
+			setLoadingPlan(null);
+		}
+	};
+
 	const handleSelectPlan = async (planId: string) => {
 		if (planId === currentPlan) {
 			toast("Você já está neste plano", { icon: "ℹ️" });
@@ -278,28 +291,11 @@ export default function PlansPage() {
 			const { data } = await api.post("/subscriptions/checkout", { planId });
 			window.location.href = data.url;
 		} catch (error: unknown) {
-			const e = error as {
-				response?: { status?: number; data?: { message?: unknown } };
-			};
-			const message = e.response?.data?.message;
-			// 409: the account already has a subscription — the backend explains how to
-			// switch plans / fix payment through "Gerenciar assinatura".
-			if (e.response?.status === 409 && typeof message === "string") {
-				toast.error(message);
-			} else {
-				toast.error("Erro ao iniciar pagamento. Tente novamente.");
-			}
-			setLoadingPlan(null);
-		}
-	};
-
-	const handleManageSubscription = async () => {
-		setLoadingPlan("portal");
-		try {
-			const { data } = await api.post("/subscriptions/portal");
-			window.location.href = data.url;
-		} catch {
-			toast.error("Erro ao abrir portal de pagamentos.");
+			// 409 SUBSCRIPTION_EXISTS → toast with a "Gerenciar assinatura" button that
+			// opens the portal; 409 CHECKOUT_IN_PROGRESS → "aguarde"; else generic.
+			notifyCheckoutError(error, () => {
+				void handleManageSubscription();
+			});
 			setLoadingPlan(null);
 		}
 	};
