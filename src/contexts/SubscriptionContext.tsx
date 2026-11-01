@@ -30,9 +30,14 @@ export interface SubscriptionInfo {
 	plan: PlanType;
 	subscription: {
 		id: number;
+		/** "active" | "trialing" | "past_due" | "paused" reach the client (GET /subscriptions/info). */
 		status: string;
+		/** Tier this subscription pays for — resolve its display name against `plans`. */
+		plan_type: PlanType;
 		current_period_end: string;
 		cancel_at_period_end: boolean;
+		/** End of the trial (= first charge) when trialing; null otherwise. */
+		trial_end: string | null;
 	} | null;
 	usage: {
 		products: UsageInfo;

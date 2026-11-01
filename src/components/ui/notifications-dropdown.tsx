@@ -17,6 +17,7 @@ import { useSubscription } from "@/contexts/SubscriptionContext";
 import { type Notification, useNotifications } from "@/hooks/useNotifications";
 import {
 	getSubscriptionNotices,
+	getSubscriptionPlanName,
 	type SubscriptionNotice,
 } from "@/lib/subscription-status";
 import { cn } from "@/lib/utils";
@@ -103,22 +104,18 @@ function SubscriptionNoticeItem({
 		<button
 			type="button"
 			onClick={onClick}
-			className="w-full text-left p-3 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+			className="w-full text-left p-3 border-b border-border hover:bg-surface-hover transition-colors"
 		>
 			<div className="flex gap-3">
 				<div className={cn("p-2 rounded-full h-fit", typeColors[notice.type])}>
-					<Icon className="w-4 h-4" />
+					<Icon aria-hidden="true" className="w-4 h-4" />
 				</div>
 				<div className="flex-1 min-w-0">
-					<p className="text-sm font-medium text-gray-900 dark:text-white">
-						{notice.title}
-					</p>
-					<p className="text-sm text-gray-600 dark:text-gray-400">
-						{notice.message}
-					</p>
+					<p className="text-sm font-medium text-foreground">{notice.title}</p>
+					<p className="text-sm text-muted-foreground">{notice.message}</p>
 					<span className="mt-1 inline-flex items-center gap-0.5 text-xs font-medium text-primary-600 dark:text-primary-400">
-						Gerenciar assinatura
-						<ChevronRight className="w-3 h-3" />
+						{notice.cta}
+						<ChevronRight aria-hidden="true" className="w-3 h-3" />
 					</span>
 				</div>
 			</div>
@@ -132,13 +129,28 @@ export function NotificationsDropdown() {
 	const router = useRouter();
 	const { notifications, unreadCount, markAsRead, markAllAsRead, clearAll } =
 		useNotifications();
-	const { subscription } = useSubscription();
+	const { subscription, plans } = useSubscription();
 
 	// Subscription warnings (failed renewal / scheduled cancellation) are derived from
 	// the already-fetched plan info and pinned above the real-time feed — they're
 	// important and persist while the condition holds, so they aren't dismissible.
-	const subscriptionNotices = getSubscriptionNotices(subscription);
-	const badgeCount = unreadCount + subscriptionNotices.length;
+	// That's why they never feed the numeric badge (it could never be cleared);
+	// they get their own dot indicator instead.
+	const subscriptionNotices = getSubscriptionNotices(
+		subscription,
+		getSubscriptionPlanName(subscription, plans),
+	);
+	const hasNotice = subscriptionNotices.length > 0;
+	const hasPastDue = subscriptionNotices.some((n) => n.kind === "past_due");
+	const badgeCount = unreadCount;
+	const bellLabel = [
+		"Notificações",
+		badgeCount > 0 &&
+			`${badgeCount} não ${badgeCount === 1 ? "lida" : "lidas"}`,
+		...subscriptionNotices.map((n) => n.title),
+	]
+		.filter(Boolean)
+		.join(", ");
 
 	const goToPlans = () => {
 		setIsOpen(false);
@@ -164,13 +176,34 @@ export function NotificationsDropdown() {
 			<button
 				type="button"
 				onClick={() => setIsOpen(!isOpen)}
+				aria-label={bellLabel}
+				aria-expanded={isOpen}
 				className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
 			>
-				<Bell className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+				<Bell
+					aria-hidden="true"
+					className="w-5 h-5 text-gray-600 dark:text-gray-300"
+				/>
 				{badgeCount > 0 && (
-					<span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+					<span
+						aria-hidden="true"
+						className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center"
+					>
 						{badgeCount > 9 ? "9+" : badgeCount}
 					</span>
+				)}
+				{/* Subscription notice dot: sits on the bell's top-right corner, and drops
+				    to the bottom-right when the numeric badge is using that corner. */}
+				{hasNotice && (
+					<span
+						aria-hidden="true"
+						data-testid="subscription-notice-dot"
+						className={cn(
+							"absolute size-2.5 rounded-full ring-2 ring-surface-chrome",
+							hasPastDue ? "bg-red-500" : "bg-amber-500",
+							badgeCount > 0 ? "bottom-1 right-1" : "top-1.5 right-1.5",
+						)}
+					/>
 				)}
 			</button>
 
