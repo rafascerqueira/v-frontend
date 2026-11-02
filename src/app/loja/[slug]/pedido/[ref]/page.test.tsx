@@ -4,6 +4,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { OrderTrackingResponse } from "@/lib/api-public";
 import OrderTrackingPage from "./page";
 
+/** Placeholder in the tracking-token format (22 chars). Zero entropy on purpose: secret scanners. */
+const TRACKING_TOKEN = "x".repeat(22);
+
 const trackOrder = vi.fn();
 
 vi.mock("@/lib/api-public", () => ({
@@ -13,7 +16,7 @@ vi.mock("@/lib/api-public", () => ({
 }));
 
 vi.mock("next/navigation", () => ({
-	useParams: () => ({ slug: "minha-loja", ref: "Zm9vYmFyYmF6cXV4MTIzNA" }),
+	useParams: () => ({ slug: "minha-loja", ref: TRACKING_TOKEN }),
 }));
 
 vi.mock("react-hot-toast", () => ({ default: { error: vi.fn() } }));
@@ -69,10 +72,7 @@ describe("OrderTrackingPage (store-scoped)", () => {
 		render(<OrderTrackingPage />);
 
 		expect(await screen.findByText("Doces da Maria")).toBeInTheDocument();
-		expect(trackOrder).toHaveBeenCalledWith(
-			"minha-loja",
-			"Zm9vYmFyYmF6cXV4MTIzNA",
-		);
+		expect(trackOrder).toHaveBeenCalledWith("minha-loja", TRACKING_TOKEN);
 		expect(screen.getByText("Bolo de pote")).toBeInTheDocument();
 		expect(screen.getByRole("link", { name: "Voltar à loja" })).toHaveAttribute(
 			"href",

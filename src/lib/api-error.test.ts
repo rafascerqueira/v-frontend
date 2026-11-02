@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest";
 import { apiErrorCode, apiErrorMessage } from "./api-error";
 import { orderTrackingHref } from "./order-tracking";
 
+/** Placeholder in the tracking-token format (22 chars). Zero entropy on purpose: secret scanners. */
+const TRACKING_TOKEN = "x".repeat(22);
+
 const axiosError = (data: unknown) => ({
 	message: "Request failed with status code 409",
 	response: { status: 409, data },
@@ -58,10 +61,10 @@ describe("orderTrackingHref", () => {
 	it("links by the unguessable tracking token", () => {
 		expect(
 			orderTrackingHref("minha-loja", {
-				tracking_token: "Zm9vYmFyYmF6cXV4MTIzNA",
+				tracking_token: TRACKING_TOKEN,
 				order_number: "PED-000123",
 			}),
-		).toBe("/loja/minha-loja/pedido/Zm9vYmFyYmF6cXV4MTIzNA");
+		).toBe(`/loja/minha-loja/pedido/${TRACKING_TOKEN}`);
 	});
 
 	it("falls back to the order number when an older backend sends no token", () => {

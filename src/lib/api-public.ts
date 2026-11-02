@@ -119,12 +119,8 @@ export interface CatalogOrderResponse {
 	tracking_token?: string | null;
 	status: string;
 	total: number;
-	customer: {
-		id: string;
-		name: string;
-		email: string;
-		phone: string;
-	};
+	// The caller is anonymous: only the first name comes back, never stored data.
+	customer: { firstName: string } | null;
 	items: {
 		product: { id: number; name: string };
 		quantity: number;
