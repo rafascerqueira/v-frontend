@@ -662,7 +662,7 @@ const differentiators = [
 		icon: ShieldCheck,
 		title: "Seguro e em conformidade com a LGPD",
 		description:
-			"Criptografia, verificação em duas etapas e seus dados sempre protegidos, seguindo as normas brasileiras.",
+			"Criptografia, dados de cada loja isolados e sempre protegidos, seguindo as normas brasileiras.",
 		accent: "accent" as const,
 	},
 	{
