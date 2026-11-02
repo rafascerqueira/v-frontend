@@ -420,7 +420,7 @@ export default function StoreCheckoutPage() {
 					</div>
 					<div className="flex flex-col sm:flex-row gap-3">
 						<Link
-							href={`/pedido/${orderNumber}`}
+							href={`/loja/${slug}/pedido/${orderNumber}`}
 							className="flex-1 inline-flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-4 py-3 rounded-xl font-medium transition-colors"
 						>
 							<ClipboardList className="w-5 h-5" />
