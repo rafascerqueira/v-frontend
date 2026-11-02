@@ -209,8 +209,11 @@ export const catalogApi = {
 	// the seller from the slug (never inferred from the posted product ids).
 	createOrder: (slug: string, data: CreateCatalogOrder) =>
 		apiPublic.post<CatalogOrderResponse>(`/catalog/loja/${slug}/orders`, data),
-	trackOrder: (orderNumber: string) =>
+	// Tracking is scoped to the store too: the backend only finds storefront
+	// orders of the seller behind this slug (an unscoped lookup leaked orders).
+	// Both segments come from the URL, so encode them to keep them one segment each.
+	trackOrder: (slug: string, orderNumber: string) =>
 		apiPublic.get<OrderTrackingResponse>(
-			`/catalog/orders/${orderNumber}/track`,
+			`/catalog/loja/${encodeURIComponent(slug)}/orders/${encodeURIComponent(orderNumber)}/track`,
 		),
 };
