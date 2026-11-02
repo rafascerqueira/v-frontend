@@ -15,7 +15,7 @@ import {
 	Trash2,
 	XCircle,
 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
 	ActionMenu,
 	ActionMenuDivider,
@@ -36,7 +36,17 @@ import {
 } from "@/components/ui/table";
 import { toast } from "@/components/ui/toast";
 import { api } from "@/lib/api";
+import {
+	apiErrorCode,
+	apiErrorMessage,
+	IDEMPOTENCY_MISMATCH_MESSAGE,
+} from "@/lib/api-error";
+import {
+	createIdempotencyKeyTracker,
+	withIdempotencyKey,
+} from "@/lib/idempotency";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { type LedgerBillingUpdate, PaymentHistory } from "./payment-history";
 
 interface Billing {
 	id: number;
@@ -128,6 +138,9 @@ export default function BillingsPage() {
 	const [editingBilling, setEditingBilling] = useState<Billing | null>(null);
 	const [partialAmount, setPartialAmount] = useState(0);
 	const [paymentMethod, setPaymentMethod] = useState("cash");
+	// One Idempotency-Key per payment: a retry (double click, timeout) replays it
+	// on the server instead of recording the money twice.
+	const paymentIdempotency = useRef(createIdempotencyKeyTracker());
 
 	// edit form state
 	const [editDueDate, setEditDueDate] = useState("");
@@ -151,27 +164,45 @@ export default function BillingsPage() {
 		fetchBillings();
 	}, [fetchBillings]);
 
-	// Status/payment_status are derived server-side from the amounts, so the client
-	// only sends the money it collected — never a status string.
+	// Records the money RECEIVED now as a ledger entry (never a new absolute
+	// total, which a stale list or a second tab could turn into a lost payment).
+	// The server derives paid_amount and the status from the ledger.
 	const handleRegisterPayment = async (
 		billingId: number,
-		paidAmount: number,
-		method?: string,
+		amount: number,
+		method: string,
 	) => {
+		const payment = { amount, method };
 		try {
-			await api.patch(`/billings/${billingId}`, {
-				paid_amount: paidAmount,
-				payment_method: method,
-			});
-			toast.success("Cobrança atualizada!");
+			await api.post(
+				`/billings/${billingId}/payments`,
+				payment,
+				withIdempotencyKey(
+					paymentIdempotency.current.keyFor({ billingId, ...payment }),
+				),
+			);
+			paymentIdempotency.current.reset();
+			toast.success("Pagamento registrado!");
 			fetchBillings();
 			setUpdatingBilling(null);
 		} catch (error: unknown) {
-			const msg =
-				(error as { response?: { data?: { message?: string } } })?.response
-					?.data?.message ?? "Erro ao atualizar cobrança";
-			toast.error(msg);
+			if (apiErrorCode(error) === "IDEMPOTENCY_KEY_MISMATCH") {
+				paymentIdempotency.current.reset();
+				toast.error(IDEMPOTENCY_MISMATCH_MESSAGE);
+				return;
+			}
+			toast.error(apiErrorMessage(error, "Erro ao registrar pagamento"));
 		}
+	};
+
+	// A reversal changed the charge: show it in the open panel and refresh the list.
+	const handleLedgerChanged = (updated: LedgerBillingUpdate) => {
+		setViewingBilling((current) =>
+			current && current.id === updated.id
+				? ({ ...current, ...updated } as typeof current)
+				: current,
+		);
+		fetchBillings();
 	};
 
 	// Cancelling is an explicit lifecycle action with its own endpoint.
@@ -181,10 +212,7 @@ export default function BillingsPage() {
 			toast.success("Cobrança cancelada!");
 			fetchBillings();
 		} catch (error: unknown) {
-			const msg =
-				(error as { response?: { data?: { message?: string } } })?.response
-					?.data?.message ?? "Erro ao cancelar cobrança";
-			toast.error(msg);
+			toast.error(apiErrorMessage(error, "Erro ao cancelar cobrança"));
 		}
 	};
 
@@ -204,8 +232,8 @@ export default function BillingsPage() {
 			toast.success("Cobrança atualizada!");
 			fetchBillings();
 			setEditingBilling(null);
-		} catch {
-			toast.error("Erro ao atualizar cobrança");
+		} catch (error: unknown) {
+			toast.error(apiErrorMessage(error, "Erro ao atualizar cobrança"));
 		}
 	};
 
@@ -215,8 +243,9 @@ export default function BillingsPage() {
 			await api.delete(`/billings/${billingId}`);
 			toast.success("Cobrança excluída!");
 			fetchBillings();
-		} catch {
-			toast.error("Erro ao excluir cobrança");
+		} catch (error: unknown) {
+			// e.g. 409 HAS_PAYMENTS: a charge with payment history is canceled instead.
+			toast.error(apiErrorMessage(error, "Erro ao excluir cobrança"));
 		}
 	};
 
@@ -228,6 +257,7 @@ export default function BillingsPage() {
 	};
 
 	const openPaymentModal = (billing: Billing) => {
+		paymentIdempotency.current.reset();
 		setUpdatingBilling(billing);
 		setPartialAmount(billing.total_amount - billing.paid_amount);
 		setPaymentMethod(billing.payment_method || "cash");
@@ -633,6 +663,10 @@ export default function BillingsPage() {
 								</p>
 							</div>
 						)}
+						<PaymentHistory
+							billingId={viewingBilling.id}
+							onChanged={handleLedgerChanged}
+						/>
 						<div className="flex justify-end pt-2">
 							<Button
 								type="button"
@@ -702,19 +736,14 @@ export default function BillingsPage() {
 									partialAmount >
 										updatingBilling.total_amount - updatingBilling.paid_amount
 								}
-								onClick={() => {
-									const remaining =
-										updatingBilling.total_amount - updatingBilling.paid_amount;
-									const newPaid =
-										updatingBilling.paid_amount +
-										Math.min(partialAmount, remaining);
-									// Server derives partial/paid from this amount.
+								onClick={() =>
+									// The amount received now — the server adds it to the ledger.
 									handleRegisterPayment(
 										updatingBilling.id,
-										newPaid,
+										partialAmount,
 										paymentMethod,
-									);
-								}}
+									)
+								}
 							>
 								Registrar Parcial
 							</Button>
@@ -722,9 +751,10 @@ export default function BillingsPage() {
 								type="button"
 								className="flex-1"
 								onClick={() =>
+									// "Pago total" records exactly what is still open.
 									handleRegisterPayment(
 										updatingBilling.id,
-										updatingBilling.total_amount,
+										updatingBilling.total_amount - updatingBilling.paid_amount,
 										paymentMethod,
 									)
 								}
