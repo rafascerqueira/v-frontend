@@ -24,15 +24,11 @@ export const releases: Release[] = [
 	{
 		version: "1.5.0",
 		date: "2026-06-04",
-		title: "Mais proteção na sua conta",
+		title: "Perfil mais completo",
 		summary:
-			"Adicionamos verificação em duas etapas e ampliamos os dados de perfil para você manter a conta mais segura e completa.",
-		tags: ["Segurança", "Conta"],
+			"Ampliamos os dados de perfil para você manter a conta mais completa, com ajustes internos de segurança e performance.",
+		tags: ["Conta", "Segurança"],
 		changes: [
-			{
-				type: "security",
-				text: "Verificação em duas etapas (2FA) com aplicativo autenticador — uma camada extra de proteção no login.",
-			},
 			{
 				type: "feature",
 				text: "Perfil de conta expandido com novos campos para personalizar suas informações.",
