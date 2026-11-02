@@ -1,0 +1,6 @@
+# False positives, one fingerprint per line (commit:file:rule:line). Explain each.
+#
+# A test placeholder for a storefront tracking token ("foobarbazqux1234" in
+# base64) read as a generic API key. Replaced by a zero-entropy fixture in
+# e7661ff, but it stays in this PR commit's history.
+efc4a209c616908742d3cbe24992a6fcb376f3d0:src/lib/api-error.test.ts:generic-api-key:61
