@@ -13,7 +13,7 @@ vi.mock("@/lib/api-public", () => ({
 }));
 
 vi.mock("next/navigation", () => ({
-	useParams: () => ({ slug: "minha-loja", orderNumber: "PED-ABC123" }),
+	useParams: () => ({ slug: "minha-loja", ref: "Zm9vYmFyYmF6cXV4MTIzNA" }),
 }));
 
 vi.mock("react-hot-toast", () => ({ default: { error: vi.fn() } }));
@@ -63,13 +63,16 @@ describe("OrderTrackingPage (store-scoped)", () => {
 		trackOrder.mockReset();
 	});
 
-	it("tracks the order inside the store from the URL and links back to it", async () => {
+	it("tracks the order by the token in the URL, inside its store, and links back to it", async () => {
 		trackOrder.mockResolvedValue({ data: order });
 
 		render(<OrderTrackingPage />);
 
 		expect(await screen.findByText("Doces da Maria")).toBeInTheDocument();
-		expect(trackOrder).toHaveBeenCalledWith("minha-loja", "PED-ABC123");
+		expect(trackOrder).toHaveBeenCalledWith(
+			"minha-loja",
+			"Zm9vYmFyYmF6cXV4MTIzNA",
+		);
 		expect(screen.getByText("Bolo de pote")).toBeInTheDocument();
 		expect(screen.getByRole("link", { name: "Voltar à loja" })).toHaveAttribute(
 			"href",

@@ -64,18 +64,20 @@ const PAYMENT_STATUS_LABEL: Record<string, string> = {
 export default function OrderTrackingPage() {
 	const params = useParams();
 	const slug = params.slug as string;
-	const orderNumber = params.orderNumber as string;
+	// The order's tracking token (or, for links issued before backend Phase 1A,
+	// the then-random order number). The page shows the real number from the API.
+	const ref = params.ref as string;
 	const storeHref = `/loja/${slug}`;
 	const [order, setOrder] = useState<OrderTrackingResponse | null>(null);
 	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {
 		catalogApi
-			.trackOrder(slug, orderNumber)
+			.trackOrder(slug, ref)
 			.then((res) => setOrder(res.data))
 			.catch(() => toast.error("Pedido não encontrado"))
 			.finally(() => setLoading(false));
-	}, [slug, orderNumber]);
+	}, [slug, ref]);
 
 	if (loading) {
 		return (
