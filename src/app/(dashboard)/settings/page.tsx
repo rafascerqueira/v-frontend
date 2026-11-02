@@ -5,7 +5,6 @@ import { motion, useReducedMotion } from "framer-motion";
 import {
 	Bell,
 	Camera,
-	Check,
 	Copy,
 	ExternalLink,
 	Eye,
@@ -20,12 +19,10 @@ import {
 	Phone,
 	Save,
 	Shield,
-	ShieldCheck,
 	Store,
 	Sun,
 	Trash2,
 	User,
-	X,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
@@ -126,16 +123,6 @@ export default function SettingsPage() {
 	const [showCurrentPassword, setShowCurrentPassword] = useState(false);
 	const [showNewPassword, setShowNewPassword] = useState(false);
 	const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-	const [twoFactorEnabled, setTwoFactorEnabled] = useState(
-		user?.two_factor_enabled || false,
-	);
-	const [twoFactorSetup, setTwoFactorSetup] = useState<{
-		qrCode: string;
-		secret: string;
-	} | null>(null);
-	const [verificationCode, setVerificationCode] = useState("");
-	// biome-ignore lint/correctness/noUnusedVariables: kept for the upcoming 2FA feature (button temporarily disabled)
-	const [isEnabling2FA, setIsEnabling2FA] = useState(false);
 	const [profileImage, setProfileImage] = useState<string | null>(
 		user?.avatar || null,
 	);
@@ -267,49 +254,6 @@ export default function SettingsPage() {
 		} catch (error: unknown) {
 			const message =
 				error instanceof Error ? error.message : "Erro ao alterar senha";
-			toast.error(message);
-		}
-	};
-
-	// biome-ignore lint/correctness/noUnusedVariables: kept for the upcoming 2FA feature (button temporarily disabled)
-	const handleEnable2FA = async () => {
-		try {
-			setIsEnabling2FA(true);
-			const response = await api.post("/auth/2fa/setup");
-			setTwoFactorSetup(response.data);
-		} catch (error: unknown) {
-			const message =
-				error instanceof Error ? error.message : "Erro ao configurar 2FA";
-			toast.error(message);
-		} finally {
-			setIsEnabling2FA(false);
-		}
-	};
-
-	const handleVerify2FA = async () => {
-		try {
-			await api.post("/auth/2fa/verify", { code: verificationCode });
-			setTwoFactorEnabled(true);
-			setTwoFactorSetup(null);
-			setVerificationCode("");
-			toast.success("Autenticação em duas etapas ativada!");
-			refreshUser?.();
-		} catch (error: unknown) {
-			const message =
-				error instanceof Error ? error.message : "Código inválido";
-			toast.error(message);
-		}
-	};
-
-	const handleDisable2FA = async () => {
-		try {
-			await api.post("/auth/2fa/disable");
-			setTwoFactorEnabled(false);
-			toast.success("Autenticação em duas etapas desativada!");
-			refreshUser?.();
-		} catch (error: unknown) {
-			const message =
-				error instanceof Error ? error.message : "Erro ao desativar 2FA";
 			toast.error(message);
 		}
 	};
@@ -760,114 +704,6 @@ export default function SettingsPage() {
 											</Button>
 										</div>
 									</form>
-								</CardContent>
-							</Card>
-
-							<Card>
-								<CardHeader>
-									<CardTitle className="flex items-center gap-2">
-										<ShieldCheck className="h-5 w-5 text-primary-500" />
-										Autenticação em Duas Etapas (2FA)
-									</CardTitle>
-									<CardDescription>
-										Adicione uma camada extra de segurança à sua conta
-									</CardDescription>
-								</CardHeader>
-								<CardContent className="space-y-4">
-									{twoFactorEnabled ? (
-										<div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-											<div className="flex items-center gap-3">
-												<div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-													<Check className="w-5 h-5 text-green-600" />
-												</div>
-												<div>
-													<p className="font-medium text-green-800">
-														2FA Ativado
-													</p>
-													<p className="text-sm text-green-600">
-														Sua conta está protegida com autenticação em duas
-														etapas
-													</p>
-												</div>
-											</div>
-											<Button
-												variant="outline"
-												className="mt-4 text-red-600 border-red-200 dark:border-red-900/40 hover:bg-red-50 dark:hover:bg-red-900/20"
-												onClick={handleDisable2FA}
-											>
-												<X className="h-4 w-4 mr-2" />
-												Desativar 2FA
-											</Button>
-										</div>
-									) : twoFactorSetup ? (
-										<div className="space-y-4">
-											<div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg text-center">
-												<p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-													Escaneie o QR Code com seu aplicativo autenticador
-												</p>
-												<img
-													src={twoFactorSetup.qrCode}
-													alt="QR Code 2FA"
-													className="mx-auto mb-4"
-												/>
-												<div className="flex items-center justify-center gap-2 p-2 bg-gray-100 dark:bg-gray-700 rounded">
-													<code className="min-w-0 break-all text-sm font-mono">
-														{twoFactorSetup.secret}
-													</code>
-													<button
-														type="button"
-														onClick={() => {
-															navigator.clipboard.writeText(
-																twoFactorSetup.secret,
-															);
-															toast.success("Código copiado!");
-														}}
-														className="shrink-0 p-1 hover:bg-surface-hover rounded"
-													>
-														<Copy className="h-4 w-4 text-muted-foreground" />
-													</button>
-												</div>
-											</div>
-											<Input
-												label="Código de Verificação"
-												placeholder="000000"
-												value={verificationCode}
-												onChange={(e) => setVerificationCode(e.target.value)}
-												maxLength={6}
-											/>
-											<div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
-												<Button
-													variant="outline"
-													onClick={() => setTwoFactorSetup(null)}
-												>
-													Cancelar
-												</Button>
-												<Button
-													onClick={handleVerify2FA}
-													disabled={verificationCode.length !== 6}
-												>
-													Verificar e Ativar
-												</Button>
-											</div>
-										</div>
-									) : (
-										<div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-											<p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-												A autenticação em duas etapas adiciona uma camada extra
-												de segurança exigindo um código do seu celular além da
-												senha.
-											</p>
-											<div className="flex items-center gap-3">
-												<Button disabled>
-													<ShieldCheck className="h-4 w-4 mr-2" />
-													Configurar 2FA
-												</Button>
-												<span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
-													Em breve
-												</span>
-											</div>
-										</div>
-									)}
 								</CardContent>
 							</Card>
 						</motion.div>
