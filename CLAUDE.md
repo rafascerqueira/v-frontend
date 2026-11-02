@@ -44,7 +44,7 @@ pnpm format       # biome format src/ --write
 | `(auth)/` | login, register, forgot-password, reset-password |
 | `(dashboard)/` | Seller app: dashboard, products, customers, orders, billings, stock, suppliers, promotions, bundles, plans, reports, catalog-share, settings |
 | `(admin)/` | Admin panel: users, logs, activity, exceptions, settings |
-| `loja/[slug]/` | Public storefront + checkout + customer area (`c/[customerId]`, `definir-senha`) + order tracking (`pedido/[orderNumber]`, store-scoped) |
+| `loja/[slug]/` | Public storefront + checkout + customer area (`c/[customerId]`, `definir-senha`) + order tracking (`pedido/[ref]`, store-scoped; `ref` = the order's `tracking_token`, or a legacy pre-Phase-1A order number) |
 | `pedido/[orderNumber]/` | Retired unscoped tracking URL — static notice only, never calls the API |
 
 ## Key modules (`src/`)

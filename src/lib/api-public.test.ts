@@ -30,3 +30,44 @@ describe("catalogApi.trackOrder", () => {
 		);
 	});
 });
+
+describe("catalogApi.createOrder", () => {
+	const order = {
+		customer: { name: "Maria", phone: "11988887777" },
+		items: [{ product_id: 1, quantity: 1 }],
+	};
+
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
+	it("sends the Idempotency-Key header when given one", async () => {
+		const post = vi
+			.spyOn(apiPublic, "post")
+			.mockResolvedValue({ data: {} } as never);
+
+		await catalogApi.createOrder("minha-loja", order, "key-1");
+
+		expect(post).toHaveBeenCalledWith(
+			"/catalog/loja/minha-loja/orders",
+			order,
+			{
+				headers: { "Idempotency-Key": "key-1" },
+			},
+		);
+	});
+
+	it("sends no extra config without a key", async () => {
+		const post = vi
+			.spyOn(apiPublic, "post")
+			.mockResolvedValue({ data: {} } as never);
+
+		await catalogApi.createOrder("minha-loja", order);
+
+		expect(post).toHaveBeenCalledWith(
+			"/catalog/loja/minha-loja/orders",
+			order,
+			undefined,
+		);
+	});
+});

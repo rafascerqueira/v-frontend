@@ -1,4 +1,5 @@
 import axios from "axios";
+import { withIdempotencyKey } from "./idempotency";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
@@ -111,14 +112,15 @@ export type CreateCatalogOrder =
 export interface CatalogOrderResponse {
 	id: number;
 	order_number: string;
+	/**
+	 * Unguessable handle for the public tracking link (order numbers are
+	 * sequential per store since backend Phase 1A). Absent from older backends.
+	 */
+	tracking_token?: string | null;
 	status: string;
 	total: number;
-	customer: {
-		id: string;
-		name: string;
-		email: string;
-		phone: string;
-	};
+	// The caller is anonymous: only the first name comes back, never stored data.
+	customer: { firstName: string } | null;
 	items: {
 		product: { id: number; name: string };
 		quantity: number;
@@ -207,13 +209,24 @@ export const catalogApi = {
 
 	// Orders — scoped to the store the customer is browsing; the backend resolves
 	// the seller from the slug (never inferred from the posted product ids).
-	createOrder: (slug: string, data: CreateCatalogOrder) =>
-		apiPublic.post<CatalogOrderResponse>(`/catalog/loja/${slug}/orders`, data),
+	// Pass an Idempotency-Key (see lib/idempotency) so a retry can't duplicate the order.
+	createOrder: (
+		slug: string,
+		data: CreateCatalogOrder,
+		idempotencyKey?: string,
+	) =>
+		apiPublic.post<CatalogOrderResponse>(
+			`/catalog/loja/${slug}/orders`,
+			data,
+			idempotencyKey ? withIdempotencyKey(idempotencyKey) : undefined,
+		),
 	// Tracking is scoped to the store too: the backend only finds storefront
 	// orders of the seller behind this slug (an unscoped lookup leaked orders).
 	// Both segments come from the URL, so encode them to keep them one segment each.
-	trackOrder: (slug: string, orderNumber: string) =>
+	// `ref` is the order's tracking_token; links issued before backend Phase 1A
+	// carry the (then random) order number, which the backend still resolves.
+	trackOrder: (slug: string, ref: string) =>
 		apiPublic.get<OrderTrackingResponse>(
-			`/catalog/loja/${encodeURIComponent(slug)}/orders/${encodeURIComponent(orderNumber)}/track`,
+			`/catalog/loja/${encodeURIComponent(slug)}/orders/${encodeURIComponent(ref)}/track`,
 		),
 };
