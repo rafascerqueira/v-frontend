@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
-import { Fragment } from "react";
+import { Fragment, useEffect, useId } from "react";
 import { cn } from "@/lib/utils";
 
 interface ModalProps {
@@ -27,6 +27,18 @@ export function Modal({
 	children,
 	size = "md",
 }: ModalProps) {
+	const titleId = useId();
+
+	// Escape closes the dialog, as screen-reader and keyboard users expect.
+	useEffect(() => {
+		if (!isOpen) return;
+		const onKeyDown = (event: KeyboardEvent) => {
+			if (event.key === "Escape") onClose();
+		};
+		document.addEventListener("keydown", onKeyDown);
+		return () => document.removeEventListener("keydown", onKeyDown);
+	}, [isOpen, onClose]);
+
 	return (
 		<AnimatePresence>
 			{isOpen && (
@@ -40,6 +52,9 @@ export function Modal({
 					/>
 					<div className="fixed inset-0 z-50 flex items-center justify-center p-4">
 						<motion.div
+							role="dialog"
+							aria-modal="true"
+							aria-labelledby={title ? titleId : undefined}
 							initial={{ opacity: 0, scale: 0.95, y: 20 }}
 							animate={{ opacity: 1, scale: 1, y: 0 }}
 							exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -52,12 +67,16 @@ export function Modal({
 						>
 							{title && (
 								<div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-									<h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+									<h2
+										id={titleId}
+										className="text-lg font-semibold text-gray-900 dark:text-white"
+									>
 										{title}
 									</h2>
 									<button
 										type="button"
 										onClick={onClose}
+										aria-label="Fechar"
 										className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
 									>
 										<X className="h-5 w-5" />
