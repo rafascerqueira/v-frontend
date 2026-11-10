@@ -20,16 +20,23 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { z } from "zod";
 import { useCart } from "@/contexts/CartContext";
 import {
+	apiErrorCode,
+	apiErrorMessage,
+	IDEMPOTENCY_MISMATCH_MESSAGE,
+} from "@/lib/api-error";
+import {
 	type AuthenticatedCustomer,
 	type CatalogCustomer,
 	catalogApi,
 } from "@/lib/api-public";
+import { createIdempotencyKeyTracker } from "@/lib/idempotency";
+import { orderTrackingHref } from "@/lib/order-tracking";
 
 // ─── Schemas ────────────────────────────────────────────────────────────────
 
@@ -144,7 +151,11 @@ export default function StoreCheckoutPage() {
 	const [lookupLoading, setLookupLoading] = useState(false);
 	const [authLoading, setAuthLoading] = useState(false);
 	const [orderNumber, setOrderNumber] = useState("");
+	const [trackingHref, setTrackingHref] = useState("");
 	const [submitLoading, setSubmitLoading] = useState(false);
+	// One Idempotency-Key per submission: a retry (double click, flaky network)
+	// replays the same order instead of creating a second one.
+	const idempotency = useRef(createIdempotencyKeyTracker());
 
 	// ─── Forms ──────────────────────────────────────────────────────────────
 
@@ -344,22 +355,33 @@ export default function StoreCheckoutPage() {
 				zip_code: data.zip_code?.replace(/\D/g, "") || undefined,
 			};
 
-			const res = await catalogApi.createOrder(slug, {
+			const order = {
 				customer: customerData,
 				items: items.map((item) => ({
 					product_id: item.product.id,
 					quantity: item.quantity,
 				})),
 				notes: data.notes,
-			});
+			};
+			const res = await catalogApi.createOrder(
+				slug,
+				order,
+				idempotency.current.keyFor({ slug, order }),
+			);
 
+			idempotency.current.reset();
 			setOrderNumber(res.data.order_number);
+			setTrackingHref(orderTrackingHref(slug, res.data));
 			setStep("success");
 			clearCart();
 			toast.success("Pedido realizado com sucesso!");
 		} catch (err: unknown) {
-			const e = err as { response?: { data?: { message?: string } } };
-			toast.error(e.response?.data?.message ?? "Erro ao criar pedido");
+			if (apiErrorCode(err) === "IDEMPOTENCY_KEY_MISMATCH") {
+				idempotency.current.reset();
+				toast.error(IDEMPOTENCY_MISMATCH_MESSAGE);
+			} else {
+				toast.error(apiErrorMessage(err, "Erro ao criar pedido"));
+			}
 		} finally {
 			setSubmitLoading(false);
 		}
@@ -420,7 +442,7 @@ export default function StoreCheckoutPage() {
 					</div>
 					<div className="flex flex-col sm:flex-row gap-3">
 						<Link
-							href={`/loja/${slug}/pedido/${orderNumber}`}
+							href={trackingHref}
 							className="flex-1 inline-flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-4 py-3 rounded-xl font-medium transition-colors"
 						>
 							<ClipboardList className="w-5 h-5" />
